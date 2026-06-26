@@ -13,7 +13,7 @@ any Claude Code session.
 > The skill's actual instructions live in [`SKILL.md`](SKILL.md); the deep, per-topic
 > standards live in [`references/`](references/).
 
-- **Author:** Brian Greenberg · **Contact:** brian@briangreenberg.net
+- **Author:** Brian Greenberg · **Web:** https://briangreenberg.net
 - **Version:** see the metadata table at the bottom of [`SKILL.md`](SKILL.md) (currently v1.0.0)
 - **Invoke:** `/senior-engineering-partner` in Claude Code, optionally prefixed with a
   mode trigger word (see [Modes](#modes--triggers)).
