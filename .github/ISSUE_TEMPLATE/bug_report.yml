@@ -1,0 +1,53 @@
+name: Bug report
+description: Something in the skill is wrong, broken, or unclear.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve the skill.
+
+        **For questions, ideas, or general feedback, please use
+        [Discussions](https://github.com/bjgreenberg/senior-engineering-partner/discussions)
+        instead** — Issues are for actionable bugs. For anything security-related, see
+        [SECURITY.md](https://github.com/bjgreenberg/senior-engineering-partner/blob/main/SECURITY.md)
+        (don't file it here).
+  - type: textarea
+    id: what
+    attributes:
+      label: What's wrong?
+      description: What does the skill do, say, or recommend that's incorrect, broken, or confusing?
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where in the skill?
+      description: Which file or section (e.g. `SKILL.md`, `references/databases.md`, a specific rule)?
+    validations:
+      required: false
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: The prompt or task you gave, and what the assistant produced.
+      placeholder: |
+        1. Invoked the skill with: …
+        2. Asked it to: …
+        3. It responded: …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs. actual
+      description: What should have happened, and what actually happened?
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: Claude Code version, OS, model (e.g. Opus 4.x), and how you invoked the skill.
+    validations:
+      required: false
