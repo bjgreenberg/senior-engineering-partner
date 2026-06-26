@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-06-25 10:35 PM CDT
+Last updated: 2026-06-26 11:57 AM CDT
 
 A custom Claude Code skill: a strict **code reviewer, pair programmer, debugger, and mentor** for
 Python, Bash, Google Apps Script, and JavaScript. It encodes a security-first,
@@ -234,3 +234,11 @@ environment-specific claim**, so the more complete it is, the more grounded the 
 ## License
 
 Apache-2.0 © Brian Greenberg. See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
+
+## Disclaimer
+
+This skill is provided **as is**, without warranty of any kind, under the Apache-2.0 license —
+see the *Disclaimer of Warranty* (§7) and *Limitation of Liability* (§8) sections of
+[`LICENSE`](LICENSE). It offers **engineering guidance, not professional security, legal, or
+compliance advice**. Review and validate any code, configuration, or security decision it
+influences before relying on it — you are responsible for what you ship.
