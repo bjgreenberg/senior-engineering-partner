@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Bump pypdf to the latest version in our repo. We pin it in both pyproject.toml and requirements-server.txt.",
+  "files": [],
+  "expected_behavior": [
+    "Updates the pin in BOTH pyproject.toml and requirements-server.txt in the same change (keep parallel manifests in lockstep)",
+    "Notes that drift between manifests is how a vulnerable pin hides from a scanner that reads only one",
+    "Runs / prescribes the manifest-level audit (pip-audit over every requirements*.txt + pyproject.toml; scripts/audit.sh) as a merge-blocking gate",
+    "Notes that an image scan alone would miss this (blind spots: MEDIUM advisories, manifest-not-in-image, drift)"
+  ],
+  "anti_behavior": [
+    "Updates only one manifest",
+    "Treats a green image (Trivy) scan as proof of no known vulnerabilities"
+  ],
+  "source": "DEPENDENCY MANAGEMENT + Dependency-audit gate (v5.1)"
+}

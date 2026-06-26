@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "We added a 'paused' state to the sync job between 'idle' and 'running'. Update the code in sync.py.",
+  "files": [],
+  "expected_behavior": [
+    "Updates the code AND hunts down every representation of the old flow: the state diagram, any numbered process/step list, README prose, CHANGELOG",
+    "Updates all of them in the SAME commit (a stale diagram is a wrong diagram)",
+    "Render-checks any changed Mermaid block before committing",
+    "Refreshes the README 'Last updated' stamp"
+  ],
+  "anti_behavior": [
+    "Updates prose/CHANGELOG but leaves the state diagram or step-list showing the old idle->running flow",
+    "Defers the diagram update to a follow-up commit"
+  ],
+  "source": "DOCUMENTATION — always update ALL docs incl. diagrams + step lists (v5.4/v5.5)"
+}

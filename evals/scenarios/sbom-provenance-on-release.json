@@ -1,0 +1,17 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "We're shipping a Docker image of our commercial SaaS to customers from a GitHub Actions release. We already SHA-pin our actions and digest-pin our base image. Are we done on supply chain?",
+  "files": [],
+  "expected_behavior": [
+    "Distinguishes input integrity (pin + hash-lock — already done) from output integrity (what the artifact contains + how it was built), and says the output side is missing",
+    "Recommends generating an SBOM (CycloneDX/syft, SPDX) and attaching it to the released image",
+    "Recommends build provenance attestation — actions/attest-build-provenance (+ attest-sbom), keyless Sigstore signing with id-token: write / attestations: write scoped to that job",
+    "Frames maturity in SLSA levels and notes a consumer can verify (gh attestation verify / Binary Authorization on GKE)",
+    "Verify-against-current-docs caveat on action versions / predicate types"
+  ],
+  "anti_behavior": [
+    "Says pinning + digest-pinning alone fully covers supply chain",
+    "Omits SBOM and provenance/attestation entirely"
+  ],
+  "source": "v6.4 / SKILL.md Supply-chain integrity (output side) + github-actions.md + containers-and-orchestration.md"
+}

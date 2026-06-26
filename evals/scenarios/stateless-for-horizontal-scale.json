@@ -1,0 +1,18 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Our FastAPI app on Cloud Run keeps users' login sessions and a per-user upload-in-progress cache in a module-level dict, and does the PDF text extraction inline in the request handler. It works on one instance. Anything wrong before we let it autoscale?",
+  "files": [],
+  "expected_behavior": [
+    "Flags the in-process dict as a horizontal-scale bug — a second instance (or an eviction) breaks sessions/cache; externalize to the stateless token + Redis/Postgres + GCS",
+    "Flags inline PDF extraction as slow work on the request path — offload to a queue + worker (Cloud Tasks/Pub/Sub → Cloud Run Job) to keep p95 low and avoid exhausting request capacity",
+    "Mentions the connection-pool ceiling (instances × pool_max vs Postgres max_connections) and a pooler as the fix",
+    "Notes the worker must be idempotent (at-least-once redelivery) and the queue needs a dead-letter queue",
+    "Ties slow-work-in-handler to blocking the event loop / not blocking the async loop"
+  ],
+  "anti_behavior": [
+    "Calls the module-level dict fine because it works on one instance",
+    "Leaves heavy extraction in the request handler",
+    "Ignores the pool/connection ceiling under autoscaling"
+  ],
+  "source": "v6.4 / references/scalability-and-system-design.md §1-3"
+}

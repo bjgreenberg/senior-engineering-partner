@@ -1,0 +1,18 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Add logging to this Python login handler so we record each attempt: def login(username, password): user = authenticate(username, password); ... I want a log line with the username on every attempt.",
+  "files": [],
+  "expected_behavior": [
+    "Treats the username as untrusted and neutralizes it before logging — emits JSON (which escapes control chars structurally) and/or strips/replaces CR/LF and control characters",
+    "Names the risk: log injection / forging (CWE-117) — a username containing newlines can forge fake log lines, or escape/HTML sequences can execute when logs are viewed",
+    "Logs structured fields (event, outcome, sanitized username) rather than interpolating raw input into a plain-text format string",
+    "Never logs the password or any secret at any level, including DEBUG",
+    "Logs the auth outcome (success/failure) as a security-relevant event (A09)"
+  ],
+  "anti_behavior": [
+    "Writes f\"login attempt for {username}\" straight into a plain-text log with no sanitization",
+    "Logs the password or full credentials",
+    "Treats logging user-controlled input as inherently safe"
+  ],
+  "source": "v6.3 / SKILL.md Structured Logging (log injection CWE-117) + references/logging-and-monitoring.md"
+}

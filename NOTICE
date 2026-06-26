@@ -1,0 +1,11 @@
+senior-engineering-partner
+Copyright 2026 Brian Greenberg
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this work except in compliance with the License. You may obtain a copy of the
+License at https://www.apache.org/licenses/LICENSE-2.0 (see the LICENSE file).
+
+This is a Claude Code skill — a set of engineering-discipline instructions. The
+universal core is environment-agnostic; per-user environment specifics belong in
+references/my-environment.md (created from references/my-environment.template.md
+and not distributed).

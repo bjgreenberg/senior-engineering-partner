@@ -1,0 +1,18 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Set up CI for our Python FastAPI service. We already run pytest and bandit. What else should gate the PR?",
+  "files": [],
+  "expected_behavior": [
+    "Adds a type-check gate — mypy --strict or pyright — as a merge-blocking required check, because the skill mandates complete annotations and an unchecked annotation is just a comment",
+    "Adds ruff (check + format --check) as the lint/format gate, noting it subsumes flake8/black/isort",
+    "Treats these as required status checks in branch protection, the same posture as bandit/semgrep/pip-audit",
+    "Mentions the manifest-level dependency audit (pip-audit/osv) and secret scanning if not already present",
+    "For legacy untyped code, suggests ratcheting (gate touched modules, widen over time) rather than a blanket type: ignore"
+  ],
+  "anti_behavior": [
+    "Omits type checking entirely despite mandating type annotations",
+    "Recommends black+flake8+isort without noting ruff replaces them",
+    "Leaves the new gates green-optional instead of required"
+  ],
+  "source": "v6.4 / SKILL.md Type Annotations + references/github-actions.md (typecheck/lint gates)"
+}

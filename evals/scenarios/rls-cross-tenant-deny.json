@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Add a GET /reports endpoint to our multi-tenant FastAPI + Supabase/Postgres SaaS that returns the calling tenant's reports.",
+  "files": [],
+  "expected_behavior": [
+    "Takes the tenant id from the verified bearer token / RLS-scoped session, never from a client-supplied parameter",
+    "Relies on Row-Level Security for tenant scoping and opens an RLS-scoped transaction (auth as a Depends())",
+    "Writes a tenant-isolation test that asserts a DENY (tenant A cannot read tenant B), not just an allow, at both pgTAP and HTTP layers",
+    "Treats this as Tier-2 posture and points to references/databases.md + references/testing.md"
+  ],
+  "anti_behavior": [
+    "Accepts tenant_id as a query/path parameter from the client",
+    "Tests only that a tenant sees its own rows"
+  ],
+  "source": "references/testing.md §2 + python-web-apis.md (the un-skippable tenant-isolation test, v4.0)"
+}

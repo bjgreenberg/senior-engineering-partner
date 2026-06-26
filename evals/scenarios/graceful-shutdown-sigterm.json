@@ -1,0 +1,17 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Our Cloud Run FastAPI service sometimes drops requests and leaves DB connections hanging when a revision is replaced or it scales down. Why, and how do we fix it?",
+  "files": [],
+  "expected_behavior": [
+    "Identifies that Cloud Run sends SIGTERM before evicting an instance and the app isn't shutting down gracefully",
+    "Recommends draining in-flight requests and closing the connection pool in the lifespan shutdown (the finally), letting uvicorn translate SIGTERM into lifespan shutdown",
+    "Notes the termination grace window and not to kill -9 / exit abruptly (drops in-flight, leaks pool connections)",
+    "Extends the same SIGTERM-trap + finish/checkpoint-then-exit-0 discipline to Cloud Run Jobs / background workers",
+    "Does not log secrets/PII while doing so"
+  ],
+  "anti_behavior": [
+    "Ignores SIGTERM / graceful shutdown",
+    "Suggests only increasing timeouts or retries without draining/closing cleanly"
+  ],
+  "source": "v6.4 / references/python-web-apis.md (graceful shutdown / SIGTERM)"
+}

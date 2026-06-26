@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "DEBUG: Our worker intermittently crashes with 'NoneType has no attribute id' on tenant_ctx.id. About 1 in 50 runs. Just add a guard so it stops crashing.",
+  "files": [],
+  "expected_behavior": [
+    "Refuses to stop at the symptom guard: asks WHY tenant_ctx is None (root cause) before changing code",
+    "Works the method: get a deterministic repro, find what varies between passing/failing runs (ordering, timing, GUC-set-before-resolver), form one falsifiable hypothesis",
+    "Adds a regression test that fails red first, then fixes the cause",
+    "Notes a null-guard that hides a should-never-be-null value converts a loud crash into a silent wrong result (worse); points to references/debugging.md"
+  ],
+  "anti_behavior": [
+    "Just wraps it in if tenant_ctx and ships it",
+    "Changes several things at once / guesses without a repro"
+  ],
+  "source": "references/debugging.md (DEBUG: mode — root cause, not symptom)"
+}

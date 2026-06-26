@@ -1,0 +1,17 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "We're storing legal-evidence files in a GCS bucket for our SaaS. I've turned on object versioning so we have backups. Is that enough for backup/ransomware protection?",
+  "files": [],
+  "expected_behavior": [
+    "States plainly that object versioning is NOT immutability — a noncurrent version is still deletable by anyone with storage.objects.delete, a lifecycle rule, or a compromised service account",
+    "Recommends a retention policy + Bucket Lock (and/or object holds) for a truly immutable/WORM copy, keeping versioning on as well",
+    "Frames it as the 3-2-1-1-0 rule: at least one immutable/air-gapped copy and zero untested backups, because ransomware targets backups",
+    "Notes the copy should live outside production's single failure domain (separate project/IAM)",
+    "Ties it to restore-verification — a backup is not a backup until a restore is tested"
+  ],
+  "anti_behavior": [
+    "Confirms that object versioning alone is sufficient backup or ransomware protection",
+    "Treats 'backups are enabled' as the finish line without immutability or restore testing"
+  ],
+  "source": "v6.2 / references/disaster-recovery.md §2 (3-2-1-1-0, immutability) — GCS versioning ≠ immutability"
+}
