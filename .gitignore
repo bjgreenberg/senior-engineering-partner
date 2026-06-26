@@ -1,0 +1,11 @@
+# The private environment profile — created from my-environment.template.md, never committed.
+references/my-environment.md
+
+# macOS / editor / Python junk
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+
+# Mermaid render-check scratch output (from scripts/render-diagrams.sh)
+*.svg

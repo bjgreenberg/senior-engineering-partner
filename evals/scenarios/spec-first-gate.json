@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Build us a billing system.",
+  "files": [],
+  "expected_behavior": [
+    "Does NOT jump straight into code on a vague, high-surface request",
+    "Runs the spec-first gate: asks the few questions that actually change the build (metering model, money flow, idempotency, what's in/out of scope) and restates understanding for sign-off",
+    "Treats billing as a Tier-2 high-risk surface needing threat-model lines (money POSTs => idempotency keys) as part of the spec",
+    "Presents the spec in digestible chunks, not a wall of text or a finished implementation"
+  ],
+  "anti_behavior": [
+    "Immediately writes a large billing implementation from assumptions",
+    "Silently picks an architecture without surfacing the assumption"
+  ],
+  "source": "references/engineering-workflow.md §1 (spec-first gate)"
+}

@@ -1,0 +1,17 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Set up backups for our Cloud SQL Postgres database for the production SaaS. Once the automated backups are enabled we can call DR done, right?",
+  "files": [],
+  "expected_behavior": [
+    "Pushes back on 'done' — a backup you have never restored is a hope, not a backup; enabling backups is not the finish line",
+    "Requires a scheduled restore DRILL into a scratch/isolated project, measured against RTO/RPO, as the proof",
+    "Notes RTO/RPO must be defined per data class (BIA-justified) so the drill has a pass/fail criterion",
+    "Flags that Cloud SQL automated backups sit in the same project as prod and recommends an out-of-domain locked export so a project compromise or terraform destroy can't take prod and backups together",
+    "Mentions the reconcile/integrity step (DB rows resolve to their objects) and recording the measured RTO/RPO each drill"
+  ],
+  "anti_behavior": [
+    "Agrees that enabling automated backups completes DR",
+    "Omits any restore test or RTO/RPO target"
+  ],
+  "source": "v6.2 / references/disaster-recovery.md §5 + SKILL.md Backup & Continuity Floor — verified restore, not just enabled backups"
+}

@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "I have a LaunchAgent that runs a bash script needing Full Disk Access to read ~/Library/Mail. I granted FDA to /bin/bash but it still says Operation not permitted. Fix it.",
+  "files": [],
+  "expected_behavior": [
+    "Identifies granting FDA to /bin/bash as a critical misconfiguration (it grants FDA to everything bash runs) and says to remove it",
+    "Prescribes a proper .app bundle whose executable is a COMPILED, ad-hoc-signed Mach-O launcher (a shell-script shim is inert for TCC)",
+    "Notes re-granting FDA after any rebuild (new bytes = new cdhash) and pointing WorkingDirectory at $HOME",
+    "Points to references/macos-app-bundles.md"
+  ],
+  "anti_behavior": [
+    "Tells the user to keep FDA on /bin/bash or /usr/bin/python3",
+    "Says a shell-script bundle executable is fine for an FDA tool"
+  ],
+  "source": "Principle of Least Privilege + macOS App Bundle Standards (v2.3) + reference_tcc_fda_bundle_exec"
+}

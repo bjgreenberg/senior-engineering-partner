@@ -1,0 +1,67 @@
+# Dev-Environment Isolation & Sandboxing
+
+Companion reference for the senior-engineering-partner skill.
+
+
+Isolation is a blast-radius control, not a convenience. Three boundaries are load-bearing: **dev must never touch production** (separate credentials, projects, data), **every project must be isolated on the host** (so one project's dependency tree can't pollute another or the system interpreter), and **untrusted code must run somewhere disposable** (so an unvetted install lands in a container, not in `$HOME` next to your SSH keys and 1Password agent socket). Get these wrong and a test script reads prod data, a `sudo pip` bricks the system Python every other tool depends on, or a `curl | bash` from a random repo runs with your full user privileges. This file makes the "secure virtual environments / containers so dev never interferes with production" requirement first-class. Keep the disciplines here; environment-specific names (cloud projects, the example app, your machine fleet) live in `references/my-environment.md` and appear below only as clearly-marked examples.
+
+---
+
+## 1. Never develop against production
+
+The first boundary is between environments. Dev code runs untested, with verbose logging, against whatever the last branch left lying around — none of that may reach prod data or prod credentials.
+
+- **Separate credentials, projects, databases, and buckets per environment — dev / stage / prod, never one shared set.** Distinct cloud projects, distinct DB instances, distinct object-storage buckets, distinct API keys. IAM, quotas, and a fat-fingered `delete` all stop at the project boundary; a single shared project means a dev test can read prod data and a bad command can nuke prod. One-project-per-environment is the blast-radius wall — see `references/gcp.md` ("one GCP project per environment") and `references/iac-terraform.md` for provisioning the parallel stacks from one module with per-env variables. Example (verify the live names in `references/my-environment.md`): the example SaaS keeps `app-dev`/`-stage`/`-prod` as distinct projects.
+- **Dev code never holds prod secrets.** A dev box authenticates to dev resources only. No prod connection string, prod service-account JSON, or prod API key on a development machine, ever — fetch per-environment secrets at point of use (`op read "op://<vault>/<env>-item/<field>"` — verify the secret-reference syntax against current 1Password CLI docs), scoped to the process, never exported into shell init where every subprocess inherits them. A leaked dev secret should be able to reach dev and nothing else.
+- **Prod data never reaches a dev box.** Don't pull a prod DB dump "to debug." Production rows are PII you're now storing unencrypted on a laptop, outside the prod project's controls, outside the erasure cascade. If you need realistic data, generate synthetic or use a **scrubbed, irreversibly-anonymized** sample produced *inside* the prod boundary and exported as non-personal data. Redaction is not anonymization — re-identifiable data is still personal data. This is `references/data-protection.md`'s minimization rule applied to your own workstation.
+- **Confirm the active environment before every destructive or write command.** The classic outage is a `delete`/`deploy`/migration run against prod because the shell was still pointed there from the last session. Make the active target visible (shell prompt, `gcloud config configurations list`, the `kubectl` context) and check it before you act — cross-ref `references/gcp.md`'s named-configuration switching.
+
+---
+
+## 2. Isolate every project on the host
+
+The second boundary is between projects, and between any project and the system. A dependency installed for one project must not be reachable by another or by the OS's own interpreter.
+
+### Python: a venv per project, never `sudo pip` into the system interpreter
+
+- **One virtual environment per project; the system Python is off-limits for project deps.** `python -m venv .venv` (stdlib) or `uv venv` (which creates `.venv` by default; pin the interpreter with `uv venv --python 3.12` — verify flags against current `uv` docs). Activate it, install into it, commit the lockfile (`requirements.txt`/`pyproject.toml` pinned per SKILL.md), never the `.venv` itself.
+- **`sudo pip install` into `/usr/bin/python3` is the anti-pattern.** It mutates the interpreter the OS and other tools depend on, mixes root-owned and user-owned packages, and creates exactly the polluted-system-interpreter blast-radius problem SKILL.md's least-privilege rule warns about — the same reason it forbids granting **Full Disk Access to `/usr/bin/python3`**: one shared, over-privileged interpreter runs everything, so one bad package or grant contaminates everything. Project deps go in the project's venv; system Python stays pristine. (On interpreters marked externally-managed under PEP 668, modern pip refuses a system-wide install without `--break-system-packages` — treat that error as the guardrail working, not an obstacle to flag past. Verify the exact behavior against current pip docs.)
+- **Never `--system-site-packages` to "save space."** That flag (it sets `include-system-site-packages = true` in the venv's `pyvenv.cfg`) punches a hole between the venv and the system interpreter, reintroducing the cross-contamination the venv exists to prevent. The venv is isolated or it isn't.
+
+### Node: per-project `node_modules` and a pinned toolchain
+
+- **Dependencies live in the project's local `node_modules`, resolved from a committed lockfile** (`package-lock.json` / `pnpm-lock.yaml` / `yarn.lock`). Avoid global installs (`npm i -g`) for anything a project depends on — globals aren't reproducible, aren't pinned, and drift between machines. Run project tools via the local binary (`npx`, `pnpm exec`, or an npm script) so you get the pinned version, not whatever is global.
+- **Pin the Node toolchain itself, not just the libraries.** A version manager (`nvm`/`fnm`/`asdf` — pick one, verify its current invocation) plus a committed `.nvmrc`/`.tool-versions` and the `engines` field in `package.json` makes the runtime reproducible across machines. A project that builds on one Node major and silently breaks on another is an un-pinned-toolchain bug.
+
+### Containers: when the blast radius should be a container, not `$HOME`
+
+- **Develop any project that pulls an unvetted toolchain or a pile of heavy transitive deps inside a `.devcontainer/`.** This elevates the devcontainer rule from `references/dev-environments.md` to a first-class isolation principle: when you can't vouch for what a dependency tree does at install/build time, the place it runs should be a container, **not your `$HOME` with its 1Password agent socket, SSH keys, browser cookies, and cloud credentials in reach**. The container is the boundary; if a postinstall script or a trojaned package misbehaves, it's confined.
+- **Keep the devcontainer least-privilege.** Don't mount your whole home directory in; mount only the project. Don't forward the SSH agent or 1Password socket unless the task genuinely needs it. Run as a non-root user in the container. Lifecycle hooks run **Bash, never PowerShell** (SKILL.md), and the canonical hook for one-time setup is `postCreateCommand` (per the Dev Container spec at `containers.dev` / `devcontainers/spec` — verify the property name and semantics against the current reference, since the spec evolves). `references/containers-and-orchestration.md` owns image-hardening (pin by digest, non-root, scan) — follow it for the container the devcontainer builds on.
+
+---
+
+## 3. Ephemeral & reproducible local environments
+
+Isolation is cheap when the isolated thing is disposable. Prefer environments you can destroy and recreate from committed config over anything hand-tweaked and long-lived.
+
+- **Throwaway test databases, torn down every run — never a shared, long-lived dev DB.** Spin a fresh `postgres:<pinned>` via `docker compose` or `testcontainers`, apply migrations, run the suite, kill the container. State that bleeds between runs turns a real bug green; a fresh DB every run is the fix. This is the standard in `references/testing.md` ("ephemeral DB, torn down every run") — match it.
+- **`docker compose` (or an equivalent) for the local service graph.** When a project needs Postgres + a cache + a queue locally, define them in a compose file so the whole stack comes up reproducibly with one command and tears down clean — not a pile of manually-started daemons that drift from what CI and prod actually run. (Note `docker compose`, the v2 subcommand, vs the legacy standalone `docker-compose` binary — verify which your environment has and the expected compose-file name against current Docker docs.)
+- **Reproducible from committed config, not from memory.** The devcontainer definition, the compose file, the lockfiles, and the migration scripts are the source of truth. "Works on my machine because I installed something six months ago" is the failure mode every item in this section exists to kill — a fresh clone on another machine should reproduce the environment from what's in the repo.
+- **For cloud dev, scale to zero so isolation is cheap.** A dedicated dev environment shouldn't bill like prod while idle. Run dev services so they cost nothing between requests — on Cloud Run, `gcloud run deploy … --min-instances=0` lets a revision scale to zero when idle (verify the flag against current `gcloud` docs) — and provision dev/stage/prod as separate stacks from one IaC module. Cross-ref `references/gcp.md` (scale-to-zero, per-environment projects) and `references/iac-terraform.md` (one module, per-env variables). Cheap-to-run dev is dev that stays properly separated instead of being collapsed into prod to save money.
+
+---
+
+## 4. Sandbox untrusted code and tools
+
+The third boundary is between code you trust and code you don't. Anything you didn't write and haven't vetted runs somewhere disposable first — never on your main machine on first contact.
+
+- **Never `curl | bash` from an unverified source onto your main machine.** Piping a remote script straight into a shell executes arbitrary code with your full user privileges, sight unseen, and the URL can serve different bytes to a pipe than to a browser. Download first, **read it**, pin to a specific version/commit, verify a checksum or signature if the project publishes one, *then* run it — and prefer running it the first time in a container or throwaway VM. This is the install-time analog of SKILL.md's "review every diff" rule.
+- **Run unknown FOSS or agent-suggested installs in a container or throwaway VM before they touch your real environment.** A new open-source tool, an unfamiliar package, or anything an AI agent suggested you `pip install`/`npm i`/`brew install` gets exercised in a disposable sandbox first — so a malicious postinstall script, a typo-squatted package, or a trojaned dependency damages a container you delete, not your home directory. Cross-ref `references/foss-adoption.md` for the vetting checklist (provenance, maintenance, reputation, license) and `references/local-and-agentic-ai-tools.md` for the specific risk that an agent confidently recommends a non-existent or hijacked package — slopsquatting, where an attacker pre-registers a name LLMs tend to hallucinate. Vet first, then sandbox, then adopt.
+- **Treat an agent with shell access like untrusted code with a terminal.** Scope it to one project/worktree, not your whole `$HOME`; deny it reach to your SSH keys, the 1Password agent socket, and unrelated repos; keep destructive commands behind a human gate. A container or dedicated worktree is the right blast-radius for an agent that runs commands — same principle as sandboxing any other code you can't fully vouch for. `references/dev-environments.md` (agentic-IDE / Antigravity guidance) and `references/multi-agent-coordination.md` carry the full agent-isolation standard.
+- **Keep the sandbox actually disposable.** A "throwaway" VM you've been reusing for months, logged into your accounts, with credentials cached, is no longer a sandbox — it's a second unmanaged workstation. Reset it, or rebuild it from a definition, so "disposable" stays true.
+
+---
+
+## The unifying rule
+
+**Dev never touches prod; every project is isolated from the system and from every other project; untrusted code runs somewhere you can throw away.** Each boundary is a wall around a blast radius — separate cloud projects wall off a fat-fingered `delete`, a per-project venv walls off a polluted system interpreter, a container walls off a trojaned dependency. When in doubt, ask what fails if this one thing is compromised, and make that answer as small and as disposable as possible. Stack-specific facts (project names, the fleet, the SaaS) live in `references/my-environment.md`; the disciplines above are universal.

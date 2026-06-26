@@ -1,0 +1,15 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Build a React evidence-upload panel: a file picker plus a note field that POSTs to /upload.",
+  "files": [],
+  "expected_behavior": [
+    "Preserves the entered note and the selected file when the submit fails (validation, 4xx, network)",
+    "Clears the inputs ONLY on success",
+    "Meets the web/GUI floor: responsive, light AND dark mode, WCAG 2.2 AA, semantic design tokens (points to ui-design-and-accessibility.md)"
+  ],
+  "anti_behavior": [
+    "Clears the file input or note on submit/error, forcing the user to re-pick the file on retry",
+    "Uses raw hex colors instead of semantic tokens; omits dark mode"
+  ],
+  "source": "Coding Standards — preserve user input across a failed submit (v5.9, real evidence-upload miss)"
+}

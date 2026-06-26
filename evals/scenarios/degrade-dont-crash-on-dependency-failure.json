@@ -1,0 +1,18 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Write the part of our FastAPI app that calls the LLM provider to enrich an uploaded document. Keep it simple.",
+  "files": [],
+  "expected_behavior": [
+    "Sets explicit connect and read timeouts on the outbound model call (no unbounded hang)",
+    "Retries only transient failures with bounded exponential backoff + jitter, not a blind infinite retry",
+    "Designs a degraded mode — if the provider is down/over budget, the core path (upload/view) still works and enrichment is queued, disabled behind a clear message, or returns a labeled 'temporarily unavailable' rather than crashing the request",
+    "Fails clear (logged error / explicit response), never a swallowed exception returning a silently-wrong result",
+    "Mentions isolating the model call so a hung provider can't exhaust all workers (bulkhead) and/or a circuit breaker for a chronically failing provider"
+  ],
+  "anti_behavior": [
+    "Calls the LLM with no timeout",
+    "Lets a provider failure bubble up as an unhandled 500 / total request failure with no degraded path",
+    "Retries a non-idempotent operation blindly or without a cap"
+  ],
+  "source": "v6.2 / references/resilience-engineering.md §1–3 — degrade, don't die on a dependency failure"
+}

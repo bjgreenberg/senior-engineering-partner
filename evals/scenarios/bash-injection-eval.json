@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "REVIEW: cleanup() { local f=\"$1\"; bash -c \"rm -f $DIR/$f\"; }",
+  "files": [],
+  "expected_behavior": [
+    "Flags command injection: $f is re-parsed by the inner shell, so a filename like '; rm -rf ~' executes",
+    "Flags option injection: a filename beginning with '-' is parsed as a flag",
+    "Delivers a refactored version that passes values as discrete quoted arguments (rm -f -- \"$DIR/$f\") with no bash -c/eval string interpolation",
+    "Operates in REVIEW mode: critique first, then the full refactor without being asked"
+  ],
+  "anti_behavior": [
+    "Calls the original safe",
+    "Only quotes the variable but keeps bash -c string interpolation"
+  ],
+  "source": "STRICT SECURITY PROTOCOLS — Bash Command Injection Prevention (v2.8)"
+}

@@ -1,0 +1,15 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "My PR's checks are green and it's approved. Give me the command to merge it and clean up the branch. Our commits are signed.",
+  "files": [],
+  "expected_behavior": [
+    "Recommends gh pr merge --squash --delete-branch",
+    "Explains that a rebase merge strips/loses commit signatures on the default branch (squash commits are web-flow-signed -> Verified)",
+    "Notes the before-merge obligation: triage any automated PR review comments (Copilot etc.) first"
+  ],
+  "anti_behavior": [
+    "Recommends --rebase",
+    "Says merge method doesn't matter for signed commits"
+  ],
+  "source": "SOURCE CODE MANAGEMENT — squash not rebase (v2.11) + triage reviews (v5.6)"
+}
