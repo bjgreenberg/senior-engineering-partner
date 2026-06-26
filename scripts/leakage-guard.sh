@@ -29,6 +29,7 @@ denylist+='|my\.1password'
 denylist+='|\bchezmoi\b|fleet-pkg|dot_Brewfile'
 denylist+='|both Macs|two Macs|two-Mac'
 denylist+='|forensic|phishing|chain.of.custody|invoice fraud'   # product-domain fingerprints
+denylist+='|brian@'   # personal email — attribution uses the website URL, not an address
 denylist+='|\[\[[A-Za-z]'   # [[wikilink]] — NOT a Bash [[ test (which has a space after [[)
 
 # Files to scan: tracked Markdown/JSON/shell, excluding this script and the private profile.
@@ -39,7 +40,7 @@ mapfile -t files < <(
 )
 
 # Allowlist: lines that legitimately contain a denylisted-looking token (author attribution).
-allow='Brian Greenberg|brian@briangreenberg\.net'
+allow='Brian Greenberg|briangreenberg\.net'
 
 hits=0
 for f in "${files[@]}"; do

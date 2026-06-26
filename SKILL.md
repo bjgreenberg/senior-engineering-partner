@@ -349,7 +349,7 @@ The moment a second writer — agent or human — is in the tree, the solo-speed
 | Field | Value |
 |---|---|
 | **Author** | Brian Greenberg |
-| **Contact** | brian@briangreenberg.net |
+| **Website** | https://briangreenberg.net |
 | **License** | Apache-2.0 |
 | **Created** | 2026-05-18 |
 | **Last updated** | 2026-06-25 |
