@@ -1,0 +1,11 @@
+version: 2
+updates:
+  # Keep the GitHub Actions used by CI current and SHA-fresh.
+  # github-actions is the only ecosystem here (the repo is Markdown + Shell;
+  # no pip/npm/docker manifests). Dependabot bumps the pinned SHAs with a changelog.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
