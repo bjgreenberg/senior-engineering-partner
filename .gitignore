@@ -1,6 +1,9 @@
 # The private environment profile — created from my-environment.template.md, never committed.
 references/my-environment.md
 
+# The private per-user literal denylist — created from leakage-denylist.local.template, never committed.
+references/leakage-denylist.local
+
 # macOS / editor / Python junk
 .DS_Store
 __pycache__/

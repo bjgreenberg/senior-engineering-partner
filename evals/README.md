@@ -36,6 +36,10 @@ the matching scenario catches it instead of a production incident re-teaching th
 `expected_behavior`); they make the "never do this again" framing explicit and trace each scenario to its
 origin.
 
+> **Note on the `source` version tokens.** Some `source` fields cite internal pre-release revisions
+> (e.g. `v4.0`, `v5.4`) that predate the public `v1.0.0` release and intentionally do **not** appear in
+> the SKILL.md changelog — treat them as provenance notes, not resolvable versions.
+
 ## How to run (no built-in runner exists)
 
 There is no first-party eval runner today, so run them as a structured manual/LLM-judge loop:

@@ -12,10 +12,10 @@
 #          scripts/render-diagrams.sh $(git ls-files '*.md')
 #
 # Rendering uses the mermaid-cli container so no host toolchain is needed.
-#   IMPORTANT: pin MMDC_IMAGE to a DIGEST (image@sha256:...), never a moving tag, so the
-#   gate is reproducible. Set the digest for your repo and commit it — this script does NOT
-#   ship a digest because a fabricated one would be worse than none (verify it yourself:
-#   `docker pull <image:tag>` then read the digest it reports).
+#   IMPORTANT: MMDC_IMAGE is pinned to a DIGEST (image@sha256:...), not a moving tag, so the gate
+#   is reproducible. The default below is a published mermaid-cli digest (tag 11.x); override it
+#   via the MMDC_IMAGE env var. When you bump it, re-pin to the exact digest `docker pull` reports
+#   for the new tag — never a fabricated one.
 MMDC_IMAGE="${MMDC_IMAGE:-ghcr.io/mermaid-js/mermaid-cli/mermaid-cli@sha256:cc56b1ed2c15f9d72ef02fe71c04d129f4291ca1ce587b9d03da8fbfbf50e072}"  # tag 11.x; bump deliberately + re-pin
 
 set -euo pipefail

@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-06-26 11:57 AM CDT
+Last updated: 2026-06-28 11:13 PM CDT
 
 A custom Claude Code skill: a strict **code reviewer, pair programmer, debugger, and mentor** for
 Python, Bash, Google Apps Script, and JavaScript. It encodes a security-first,
@@ -14,7 +14,7 @@ any Claude Code session.
 > standards live in [`references/`](references/).
 
 - **Author:** Brian Greenberg · **Web:** https://briangreenberg.net
-- **Version:** see the metadata table at the bottom of [`SKILL.md`](SKILL.md) (currently v1.0.0)
+- **Version:** see the metadata table at the bottom of [`SKILL.md`](SKILL.md) (currently v1.1.0)
 - **Invoke:** `/senior-engineering-partner` in Claude Code, optionally prefixed with a
   mode trigger word (see [Modes](#modes--triggers)).
 
@@ -225,9 +225,12 @@ environment-specific claim**, so the more complete it is, the more grounded the 
   `@mermaid-js/mermaid-cli` (`mmdc`) — see
   [`references/diagrams-and-visual-docs.md`](references/diagrams-and-visual-docs.md). CI
   runs `scripts/render-diagrams.sh` (the `docs-render` gate) on every PR.
-- **No environment-specific leakage in the core:** CI also runs a `leakage-guard` check that
-  greps the tree against a denylist of personal/host/repo identifiers — keep the universal
-  core universal; anything specific belongs in your (un-committed) `my-environment.md`.
+- **No environment-specific leakage in the core:** a `leakage-guard` check greps the tree against
+  a denylist of personal/host/repo identifiers. It's **two-tier**: generic class-patterns (a
+  CGNAT/Tailscale IP range, Obsidian-style wiki-links) ship in `scripts/leakage-guard.sh` and run in CI,
+  while your *literal* identifiers live in an un-committed `references/leakage-denylist.local`
+  (created from its `.template`) so the public repo never has to publish them to block them. Keep
+  the universal core universal; anything specific belongs in your (un-committed) `my-environment.md`.
 - **Add or extend an `evals/` scenario** whenever you add a load-bearing rule — a lesson
   without a guarding eval can silently regress.
 
