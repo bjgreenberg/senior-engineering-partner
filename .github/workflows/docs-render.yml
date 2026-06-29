@@ -20,7 +20,9 @@ jobs:
       - name: Render every Mermaid diagram
         run: |
           set -euo pipefail
-          mapfile -t files < <(grep -rl '```mermaid' --include='*.md' . | sort)
+          files=()
+          while IFS= read -r _f; do files+=("$_f"); done \
+            < <(grep -rl '```mermaid' --include='*.md' . | sort)
           if [[ ${#files[@]} -eq 0 ]]; then echo "no mermaid blocks"; exit 0; fi
           printf 'rendering: %s\n' "${files[@]}"
           bash scripts/render-diagrams.sh "${files[@]}"

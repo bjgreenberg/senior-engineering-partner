@@ -46,7 +46,12 @@ if [[ -f "$local_list" ]]; then
 fi
 
 # Files to scan: tracked Markdown/JSON/shell, excluding this script and the private profile.
-mapfile -t files < <(
+# Portable array fill — `mapfile`/`readarray` is bash 4+, but macOS ships bash 3.2, so a
+# stock-bash run (or a non-login shell) would die with "mapfile: command not found".
+files=()
+while IFS= read -r _f; do
+  files+=("$_f")
+done < <(
   { git ls-files '*.md' '*.json' '*.sh' 2>/dev/null \
       || find . -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' \) -not -path './.git/*'; } \
     | grep -vE '^(\./)?(scripts/leakage-guard\.sh|references/my-environment\.md)$' | sort -u
