@@ -119,6 +119,8 @@ The platform enforces the gate; discipline keeps the gate cheap to pass.
 
 [SOLO+AGENTS] you are the only human, so this is latent — but structure the org now (a team exists, the repo grants are *to the team*) so the first hire is one membership add.
 
+**Conway's Law — the team structure you set up here becomes the architecture.** A system's structure tends to mirror the communication structure of the org that builds it (Conway, 1968): split ownership along the wrong boundaries and the modules calcify along them too. So apply the **inverse-Conway nudge** — shape teams/CODEOWNERS boundaries around the architecture you *want* (one owner per cohesive capability), not the org chart you inherited. *Read [Conway's Law](https://martinfowler.com/bliki/ConwaysLaw.html).*
+
 ---
 
 ## 6. Repo hygiene — templates, labels, tags, signed commits

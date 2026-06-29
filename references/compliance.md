@@ -141,6 +141,10 @@ CSF is *operational* security; **SSDF is the secure-development-lifecycle framew
 
 A real SSDF gap is, again, a *named missing artifact* — "no SBOM published for the released image (PS.3)," not "improve our SDLC."
 
+### Going deeper — AI-governance counterparts to the CSF/SSDF spine
+
+If the product ships AI features, the governance analogues to the CSF (operational) + SSDF (development) spine above are **pointers, not a separate checklist** — governance is lighter-touch here than the security floor. **NIST AI RMF (NIST AI 100-1)** is the voluntary AI risk-management operating model — four functions, **Govern / Map / Measure / Manage** (the AI-specific echo of CSF's Functions); its **Generative AI Profile (NIST AI 600-1)** catalogs the GenAI-specific risk classes (prompt injection, confabulation, data-privacy and IP leakage, value-chain risk) — use it as a risk *menu* to scope what an AI feature must defend, mapping straight onto `references/threat-modeling-and-api-design.md` and the agentic-tool rules. **ISO/IEC 42001:2023** is the certifiable **AI management-system (AIMS)** standard — the ISO counterpart to running SSDF/SOC 2 as a system, often run *with* the AI RMF inside it. *All three revise and the GenAI guidance is young — verify the current publications against NIST and ISO before citing a document number or a named risk class.* Keep it a pointer: invoke these when an AI feature needs a governance reference, not as a gate on every change.
+
 ---
 
 ## Well-Architected — the cloud-architecture pillars (mostly covered; name the framework + the one hole)
@@ -184,6 +188,12 @@ You always do **Security/CC**; add the others only where you make the correspond
 - **`pg_dump`/PITR + GitHub remotes + Time Machine** → Availability (recovery capability) + CSF Recover.
 
 When the SaaS approaches a real SOC 2 Type II, the engineering task is mostly **making this evidence exportable and timestamped over the audit window** — not inventing new controls. Bias every new automation toward leaving an auditable trail (logged, committed, signed) by default.
+
+---
+
+## PCI DSS — scope is the whole game (keep card data off your servers)
+
+If the product takes card payments, the one decision that dominates your PCI DSS burden is **whether raw card data (the PAN) ever touches your servers.** A **hosted card form** — a vendor-hosted checkout page or vendor-hosted embedded fields that post the PAN **directly to the processor** — keeps cardholder data out of your environment entirely, which qualifies you for the **shortest self-assessment (SAQ A)** and shrinks scope to a handful of requirements; the anti-pattern is routing raw PAN through your own API or storing it, which drags you into the **full controls set (SAQ D)** across all 12 PCI DSS requirements. So: **never proxy or persist the PAN** — embed the processor's hosted fields, take back only a token, and treat the token (not the card) as what your code ever sees. *PCI DSS revises: v4.0.1 was published June 2024, and the future-dated v4.x requirements became mandatory 2025-03-31. The new payment-page script controls (6.4.3 script authorization/inventory, 11.6.1 tamper detection) apply to SAQ A-EP / SAQ D scope — and the 2025 SAQ A revision **removed** them for SAQ A merchants, who now only attest the page isn't susceptible to script attacks. Verify your exact SAQ eligibility and the current requirement text against the PCI SSC and your processor before claiming a level.* This is distinct from **HIPAA and FedRAMP, which this skill declares out of scope** (as it does for HIPAA in `data-protection.md`): PCI is *in scope the moment you touch payments*, and the controls that keep its scope small are the same ones the skill already enforces — secrets in a manager, TLS in transit, no sensitive data in logs.
 
 ---
 

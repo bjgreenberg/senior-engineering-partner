@@ -88,3 +88,18 @@ Tenants are paying customers whose data must never cross to another tenant — a
 - Periodic check that no evidence bucket is public (respecting the `public-assets` exception elsewhere) and that signed-URL lifetimes are short (cross-ref `gcp.md` account-wide security testing).
 - Confirm KMS key-version rotation works and that re-encryption on rotation is exercised.
 - Map all of the above to SOC 2 evidence (access control, encryption, audit, change management) — see `compliance.md`.
+
+---
+
+## 4. Name the framework — OWASP Top 10 for LLM Applications (2025)
+
+The three surfaces above already *implement* the substance; this section **names the mapping** so a procurement/audit ask ("are you aligned to the OWASP LLM Top 10?") has a one-line answer per control — the same "the value is naming the mapping" move as `compliance.md`. *The 2025 edition was published Nov 2024; verify the current codes/titles against the OWASP GenAI Security Project's live LLM Top 10 before quoting a specific `LLMxx` to anyone external — the controls are durable, the labels drift.*
+
+- **`LLM01:2025` Prompt Injection** → §2 "document content is data, never instructions": untrusted text stays delimited *content*, never concatenated into the instruction portion; the injection corpus proves the verdict doesn't flip.
+- **`LLM02:2025` Sensitive Information Disclosure** → §3 tenant boundary (RLS, per-tenant key, envelope-encrypted secrets) **and** §2's "never log the full prompt/response" — no tenant PII to logs, no cross-tenant read.
+- **`LLM03:2025` Supply Chain** → §1's "keep parsing libraries patched / dependency-scan" plus model-and-weights provenance: pin and verify the model client/SDK, prefer `safetensors` over pickle-backed checkpoints, and gate `requirements.txt` (cross-ref `compliance.md` `A03:2025`).
+- **`LLM05:2025` Improper Output Handling** → §2 "validate the model's output; never trust it blind": schema-validate the envelope, structural/required-section checks, and **allowlist actionable content** (URLs, recipients, paths, commands) before any artifact is persisted or acted on.
+- **`LLM06:2025` Excessive Agency** → the agentic least-privilege rule: no blind auto-accept of model-proposed actions, scope each tool/permission to the job, and keep the model's authority bounded (the per-tenant key it runs under is one such limit). Read `local-and-agentic-ai-tools.md` for the agentic least-privilege checklist.
+- **`LLM10:2025` Unbounded Consumption** → §2 "cost is a security property": cap `max_tokens`, bound retries/backoff honoring `retry-after`, set request timeouts, and meter per-tenant tokens — an unbounded retry loop on `overloaded` is a billing-DoS.
+
+Not separately surfaced here: `LLM04` (Data and Model Poisoning) and `LLM07`–`LLM09` (System Prompt Leakage, Vector and Embedding Weaknesses, Misinformation) bite hardest when you fine-tune, self-host weights, or run a RAG/vector store — out of scope for a stateless analyze-this-document call, but revisit the moment you add retrieval or training.

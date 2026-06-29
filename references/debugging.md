@@ -34,6 +34,10 @@ You cannot fix what you cannot reproduce, and you cannot prove a fix against a b
 
 ### 4. Fix the root cause — and prove it
 
+**Descend the iceberg: event → pattern → structure.** The symptom is the *event*; ask what *pattern* recurs and what *structure* (a default, a missing constraint, an unguarded resolver) produces it. The highest-leverage fix changes the structure, not the visible event — a structural fix retires a whole class of events; a symptom patch buys one quiet recurrence.
+
+**Match the method to the bug's nature** (Cynefin): a clear/complicated bug — known mechanism, reproducible — yields to *analyze and bisect* (§3); a novel or irreproducible one is *probe-sense-respond* — run small safe experiments to surface the pattern before theorizing; an active incident is *act-to-stabilize-first* — mitigate (roll back / flip the flag — `observability-and-incident-response.md`) before you root-cause. *Read [the Cynefin framework](https://en.wikipedia.org/wiki/Cynefin_framework) for the full domains.*
+
 - **Fix the cause, not the symptom.** A null check that hides a value that should never have been null is a symptom patch — it converts a loud crash into a silent wrong-result, which is worse (SKILL.md *never fail silently*). Ask "why did this value get here?" until you reach the actual origin.
 - **Regression test, red first.** Write (or promote the phase-1 repro into) a test that **fails before the fix and passes after** — seen failing red, exactly as in iron-law TDD (`engineering-workflow.md` §3). A bugfix without a failing-first test is the *per-change-class merge contract* violation in `testing.md`: nothing stops the bug returning.
 - **Confirm against the original repro,** then sweep for siblings — the same root cause often manifests in more than one place (the same unguarded resolver, the same missing `WITH CHECK`). Fix them together.
@@ -48,3 +52,31 @@ You cannot fix what you cannot reproduce, and you cannot prove a fix against a b
 - **Symptom suppression** — a `try/except: pass`, a broad null-guard, a retry, a bumped timeout that makes the symptom disappear without explaining it. The bug is still there, now quieter.
 - **Trusting the remembered error** over the one in front of you — re-run and read the real output.
 - **Declaring victory without a red-first regression test** — if you can't make it fail on demand, you can't prove you fixed it, and you can't stop it returning.
+
+---
+
+## Naming the structure (the anti-patterns above, as systems archetypes)
+
+The tells above are recurring *system archetypes* (Senge, *The Fifth Discipline*). Naming the one you're in tells you the fix is structural, not local:
+
+| Archetype | The anti-pattern it names | Where in this skill |
+|---|---|---|
+| **Shifting the Burden** | retry-to-green / quarantine-not-fix — the symptomatic relief that atrophies the real fix | §1 flaky policy; `testing.md` zero-tolerance |
+| **Fixes that Fail** | the symptom null-check that converts a loud crash into a silent wrong-result | §4 *fix the cause, not the symptom* |
+| **Limits to Growth** | a scaling ceiling — adding load stops helping past a constraint | `scalability-and-system-design.md` §3 |
+| **Tragedy of the Commons** | a shared pool / noisy-neighbour exhausting a common resource | bulkhead — `resilience-engineering.md` §2 |
+| **Eroding Goals** | flaky/debt tolerance creep — the bar quietly lowered to keep merging | §1; `engineering-workflow.md` *don't relax the floor* |
+
+*Source: Senge, [system archetypes](https://en.wikipedia.org/wiki/System_archetype) — verify the canonical names against the source before citing in prose.*
+
+---
+
+## Profile before you optimize
+
+Performance debugging is the same method as correctness debugging — measure, don't guess. The guess-and-check tell here is **optimizing on a hunch**: rewriting the loop you *assume* is slow, seeing no change, and having burned effort on code that wasn't the bottleneck. **Make it correct, then make it fast** — never trade a passing test for speed; a fast wrong answer is still wrong (SKILL.md *never fail silently*).
+
+- **Measure the hot path first.** Profile before touching code: `python -m cProfile -s cumulative myscript.py` (deterministic, function-level, in-process) or sample a *running* process with `py-spy top --pid <pid>` / `py-spy record -o profile.svg --pid <pid>` (no code change, works on prod) — *verify invocation against current docs*. The bottleneck is reliably *not* where you'd have guessed.
+- **Read the flame graph.** Width = total time spent in a frame (self + callees); a wide bar is where the time goes. Hunt the widest box, not the deepest stack — depth is call nesting, not cost.
+- **Memory growth → `tracemalloc`.** `start()`, then `take_snapshot()` before and after the suspect work and `snapshot2.compare_to(snapshot1, 'lineno')` — the top `size_diff` lines are where allocation accumulates. This is the leak-hunt analogue of bisecting the search space.
+- **DB hot path → `EXPLAIN ANALYZE`.** Read *actual* vs. estimated rows and the chosen plan before adding an index or rewriting the query (`databases.md` §indexes-by-EXPLAIN-ANALYZE; the queue/latency-budget framing is in `scalability-and-system-design.md`).
+- **Baseline → target → re-measure.** Write down the current number and the goal (p95 latency or throughput) *before* changing code, then re-run the same measurement after to prove the win. An optimization you can't show in the profile is a guess — back it out.
