@@ -57,6 +57,18 @@ Every row above terminates in a **security test** (cross-ref `testing.md`, `secu
 
 A clean, explicit contract removes whole classes of threat (ambiguous types, silent breakage, double-charges). Design these in from the first endpoint.
 
+### OWASP API Security Top 10 (2023) — the map (the *API* list, not the web list)
+
+This section's controls already implement the API Top 10; name them by the **API** codes, not the web ones. The API list is its own taxonomy — **API1:2023 BOLA ≠ web `A01:2021 Broken Access Control`.** Where `python-web-apis.md` tags the client-supplied-tenant-id hole `OWASP A01`, that's the broad web category; the precise, make-or-break API code is **API1:2023**. Verify codes against the live project — *OWASP API Security Top 10 2023*, `owasp.org/API-Security/editions/2023/`.
+
+| Control in this stack | API Top 10 (2023) |
+|---|---|
+| Tenant id from the **verified token, NEVER the client** → `FORCE` RLS denies cross-tenant rows (§1, `python-web-apis.md`) | **API1:2023 Broken Object Level Authorization** (BOLA/IDOR) — *the* one; cross-tenant read is exactly this |
+| The verify → resolve → role-drop auth pipeline (`require_token`/`require_session`) | **API2:2023 Broken Authentication** (token verify, fail-closed dev mode) + **API5:2023 Broken Function Level Authorization** (the `Depends` gate per route) |
+| Capped `max_tokens`, bounded backoff, `429`+`Retry-After`, body-size cap, bombs bounded | **API4:2023 Unrestricted Resource Consumption** (the billing-DoS row in §1) |
+| Pydantic reject-unknown-fields / no auto-bind of client input to model fields | **API3:2023 Broken Object Property Level Authorization** — mass assignment **and** excessive data exposure merged into one 2023 code (no separate "API6 Mass Assignment" as in 2019) |
+| `/docs` off in prod, CORS allowlist, generic error contract (§2) | **API8:2023 Security Misconfiguration** |
+
 ### Versioning & deprecation
 
 - **Version the API from day one; never break a published contract.** Pick one scheme and hold it: a URL prefix (`/v1/...`) or a version header — URL prefix is the simpler, more cacheable default for this stack. Do not mix schemes.

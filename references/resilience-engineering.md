@@ -6,6 +6,8 @@ Companion reference for the senior-engineering-partner skill.
 
 The governing rule: **a failure in one dependency must not cascade into a total outage.** A senior engineer assumes every network call, every downstream service, and every external provider *will* fail, and designs the failure to be partial, fast, and visible. This is the Netflix/Hystrix lesson — show fallback recommendations rather than freeze the whole app. Cross-ref `threat-modeling-and-api-design.md` (idempotency keys, retries, the error-shape boundary — the API-design slice of this), `observability-and-incident-response.md` (you can't degrade gracefully if you can't *see* the failure; alert on SLO burn), `python-web-apis.md` (where these land in FastAPI), `databases.md` (pool/statement timeouts).
 
+**Resilience is sustaining function under surprise, not just preventing failure (Safety-II).** The SRE controls below are the *prevent/contain* half; the other half is four cornerstones (Hollnagel/Woods): **anticipate** (name the next failure before it lands), **monitor** (watch the system and its environment — the SLO/readiness signals here), **respond** (the breakers, fallbacks, and kill-switches), and **learn** (from what goes *right* as well as wrong — the blameless postmortem). A system strong on respond but weak on anticipate/learn passes today's outage and repeats it. *Read [the four cornerstones of resilience](https://www.resilience-engineering-association.org/resources/where-do-i-start/) — verify the canonical wording against Hollnagel's source before citing.*
+
 ---
 
 ## 1. The cheap floor — timeouts, retries, idempotency, fail-clear (do these always)

@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-06-28 11:13 PM CDT
+Last updated: 2026-06-29 08:07 AM CDT
 
 A custom Claude Code skill: a strict **code reviewer, pair programmer, debugger, and mentor** for
 Python, Bash, Google Apps Script, and JavaScript. It encodes a security-first,
@@ -158,6 +158,8 @@ version-specific commands.
 | | `foss-adoption.md` | Vet FOSS before adopting (license/Scorecard/CVEs) + pin/lock/contract-test |
 | | `multi-agent-coordination.md` | The concurrency override when >1 writer shares a repo |
 | | `python-typing-and-packaging.md` | The TypedDict worked example + the single-file→package target layout |
+| | `google-apps-script.md` | `clasp` + git over the editor, minimal `oauthScopes`, `PropertiesService` secrets/limits, `LockService`, trigger quotas + the 6-min wall, Advanced Services vs `UrlFetchApp`, `console`→Cloud Logging, pure-logic isolation for testing |
+| | `javascript-and-typescript.md` | TS strict mode (the `mypy --strict` analog) + the flags `strict` misses, runtime-validated typed boundaries (the Pydantic analog), Node `SIGTERM`/no-floating-promises patterns |
 | **UI, docs & AI tooling** | `ui-design-and-accessibility.md` | Responsive + light/dark + WCAG 2.2 AA + Claude Design handoff |
 | | `diagrams-and-visual-docs.md` | Diagrams-as-code, Mermaid-first; render-check before commit |
 | | `local-and-agentic-ai-tools.md` | Agentic assistants + self-hosted LLMs (Ollama/Open WebUI) |

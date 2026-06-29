@@ -6,6 +6,8 @@ Companion reference for the senior-engineering-partner skill.
 
 Designing a *system*, not just a script: this is the layer SKILL.md's coding standards don't cover — how the thing behaves as load and instance count grow. It pairs with `resilience-engineering.md` (how it degrades when a dependency fails) and `observability-and-incident-response.md` (how you see the ceiling coming). The governing rule: **design for horizontal scale and bounded work from the start — scale-out is cheap only if the code is stateless and slow work is off the request path; retrofitting either under load is a rewrite.** Worked example: the example SaaS is FastAPI on Cloud Run (autoscales by adding instances) → a Cloud Run Job does the heavy extraction → Postgres with a bounded pool.
 
+**Name the loop — the shared design *and* debug lens.** Almost every behaviour here is a feedback loop, and naming which kind you're in is the highest-leverage move. **Balancing loops** stabilize toward a goal and self-correct — autoscaling, backpressure/load-shed, an SLO alert that pulls a sick instance, the rigor ladder itself; you *want* these, and a missing one is why a system has no governor. **Reinforcing loops** compound and self-amplify — a retry storm (failures → more retries → more load → more failures), a cache stampede, debt → slower change → more debt; left alone they run away. The question at every design and `DEBUG:` step: **which loop am I in, and is it self-correcting or self-amplifying?** A self-amplifying loop needs a balancing brake (a cap, a breaker, a flag — `resilience-engineering.md`), not a bigger machine.
+
 ---
 
 ## 1. Statelessness — the precondition for horizontal scale
