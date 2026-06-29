@@ -383,6 +383,7 @@ Content additions (from the evaluation's scope/security-framework findings):
 - **Named the framework mappings** the skill already implements: **OWASP LLM Top 10 (2025)** in `secure-data-processing.md` and **OWASP API Security Top 10 (2023)** (API1 BOLA ≠ web A01) in `threat-modeling-and-api-design.md`.
 - **Profile-before-you-optimize** discipline (`debugging.md`); **legacy-refactor + tech-debt register** (`engineering-workflow.md`); **systems-theory naming** — feedback loops, Senge archetypes, iceberg/Cynefin, Conway's Law, Safety-II — across the relevant references.
 - **Compliance one-liners**: PCI-DSS scope posture (`compliance.md`), NIST AI RMF / ISO 42001 pointers, and an explicit i18n non-goal (`ui-design-and-accessibility.md`).
+- **Repo/community:** README "What it governs" coverage section, a `MAINTAINERS.md`, and CODEOWNERS updated for a second maintainer (two-tier leakage model + admin-bypass review flow documented).
 
 #### v1.0.0 — 2026-06-25 — Initial public release
 - First public, sanitized release: a **stack-agnostic universal core** (`SKILL.md`, always

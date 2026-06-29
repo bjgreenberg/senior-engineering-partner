@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-06-29 08:07 AM CDT
+Last updated: 2026-06-29 08:12 AM CDT
 
 A custom Claude Code skill: a strict **code reviewer, pair programmer, debugger, and mentor** for
 Python, Bash, Google Apps Script, and JavaScript. It encodes a security-first,
@@ -37,6 +37,25 @@ Three ideas run through everything:
   like — it drives the loop that produces it: **spec-first** (agree what you're building
   before building it) → **plan** in verifiable steps → **tier-aware iron-law TDD** →
   **verify-before-done self-review**. Depth scales with the rigor tier; the loop does not.
+
+---
+
+## What it governs
+
+The disciplines are stack-agnostic, but they bind to concrete tooling. At a glance, what the skill
+carries standards for:
+
+- **Languages:** Python · Bash · Google Apps Script · JavaScript / TypeScript
+- **Source control & CI/CD:** GitHub · GitHub Actions · branch protection / rulesets · supply-chain gates (SBOM · SLSA · signing)
+- **Cloud & infra:** GCP / Cloud Run · Docker · Kubernetes · Terraform (IaC)
+- **Data:** Postgres / Supabase (RLS) · BigQuery · SQLite · caching
+- **App layer:** FastAPI / Python web APIs · front-end & browser security · responsive, accessible (WCAG 2.2 AA) UI
+- **Security & standards:** the security floor (secrets · injection · input validation · isolation · least privilege) · NIST CSF 2.0 + SSDF · OWASP Top 10 / **API Top 10** / **LLM Top 10** · STRIDE · SOC 2 · Well-Architected · PCI-DSS scope
+- **Reliability & ops:** resilience engineering · disaster recovery & business continuity · scalability / system design · observability + incident response (DORA · SLOs)
+- **Platform-specific:** macOS app bundles / TCC · local & agentic AI tooling · diagrams-as-code (Mermaid)
+
+Each binds to a deep, **read-on-demand** reference (see the [catalog](#reference-catalog) below); your
+concrete hosts, projects, and stack live only in the private, un-committed `references/my-environment.md`.
 
 ---
 
