@@ -1,0 +1,40 @@
+# leakage-denylist.local.template — copy to references/leakage-denylist.local (which is
+# .gitignore'd) and replace the examples with YOUR private identifiers.
+#
+#   cp references/leakage-denylist.local.template references/leakage-denylist.local
+#
+# scripts/leakage-guard.sh sources the .local file (if present) and ORs each line into its
+# denylist as a POSIX extended-regex (ERE) fragment, case-insensitively. This is Tier 2 of the
+# guard: your LITERAL fingerprints (hostnames, employer, repo/project names, private IPs) stay in
+# this UN-COMMITTED file, so the public repo never has to publish them in order to catch a leak.
+# (The committed guard ships only generic Tier-1 patterns — a CGNAT IP range and [[wikilinks]] —
+# that name nothing personal. CI runs Tier 1 only; your local pre-PR run runs Tier 1 + Tier 2.)
+#
+# Format: one ERE fragment per line; lines starting with '#' are comments; blank lines are ignored.
+# Escape regex metacharacters (a literal dot is \. ). Use \b...\b word boundaries for short tokens
+# that would otherwise match inside ordinary words.
+#
+# Replace everything below with your own, then delete these examples:
+
+# Hosts / machines
+# my-laptop-hostname
+# my-server-hostname
+
+# Employer / org
+# \bAcmeCorp\b
+# acmecorp-github-org
+
+# Private repos / projects / cloud projects
+# my-private-app
+# myproject-(dev|staging|prod|tfstate)
+
+# Vendor / SaaS stack (whatever would fingerprint you or your employer)
+# \bVendorA\b
+# \bVendorB\b
+
+# Private / VPN IPs (escape the dots)
+# 10\.0\.0\.5
+# 192\.168\.1\.50
+
+# Personal email prefix (attribution should use your website/handle, not an address)
+# me@

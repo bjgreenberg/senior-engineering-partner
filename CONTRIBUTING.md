@@ -47,7 +47,11 @@ regular collaborators use a branch on the repo. Either way:
 6. **Keep the universal core stack-agnostic.** `SKILL.md` and the references must not contain
    host, employer, or personal identifiers — those belong in a contributor's own
    `references/my-environment.md` (which is gitignored and never committed). The **`leakage-guard`**
-   check enforces this; don't add anything that trips it.
+   check enforces this; don't add anything that trips it. Your own *literal* identifiers go in an
+   un-committed `references/leakage-denylist.local` (copy it from the `.template`) — that file guards
+   the tree locally without ever being published. When a co-maintainer joins, add their **public**
+   handle to CODEOWNERS/attribution (don't denylist it), but add **their** personal hosts / private-repo
+   names / email to their own local denylist.
 7. **If you encode a discipline, guard it with an eval.** New or changed rules should add or extend
    a scenario in `evals/` — the project's "changelog is the spec, evals are the tests" model.
 8. **Run the gates locally** before opening the PR: `bash scripts/leakage-guard.sh` and

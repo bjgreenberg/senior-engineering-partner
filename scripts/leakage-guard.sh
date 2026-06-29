@@ -4,12 +4,23 @@
 # public skill. The universal core must stay universal; anything specific belongs in your
 # (un-committed) references/my-environment.md.
 #
-# Run locally before a PR and as a required CI check. Exits non-zero (printing every hit) if
-# a denylisted identifier appears anywhere in the tracked tree.
+# TWO-TIER denylist, so the PUBLIC repo never has to publish your personal identifiers in
+# order to block them:
+#   Tier 1 — GENERIC class-patterns below (a CGNAT/Tailscale IP range, [[wikilinks]]). These
+#            name nothing personal, so they ship in this public file and run in CI.
+#   Tier 2 — your LITERAL identifiers (hostnames, employer, repo/project names, private IPs)
+#            live in references/leakage-denylist.local — an UN-COMMITTED file created from
+#            leakage-denylist.local.template and sourced here if present. So your fingerprints
+#            guard the tree LOCALLY without ever being written into the public repo or its
+#            history. (CI, which has no .local file, enforces only the generic Tier-1 patterns;
+#            the local pre-PR run is the primary gate — see CONTRIBUTING.md.)
 #
-# Allowed by design: author attribution ("Brian Greenberg" / the contact email) in README.md
-# and SKILL.md's metadata table — these are intentional and matched out below. The private
-# references/my-environment.md is .gitignore'd and never scanned.
+# Run locally before a PR (Tier 1 + Tier 2) and as a CI check (Tier 1 only). Exits non-zero
+# (printing every hit) if a denylisted identifier appears anywhere in the tracked tree.
+#
+# Allowed by design: author attribution ("Brian Greenberg" / the website URL) in README.md and
+# SKILL.md's metadata table — matched out below. references/my-environment.md and
+# references/leakage-denylist.local are never scanned (the latter has a non-scanned extension).
 #
 # Usage:  scripts/leakage-guard.sh
 set -euo pipefail
@@ -17,20 +28,22 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
-# Denylist of identifiers that must NEVER appear in the public skill (ERE, case-insensitive).
-# Grouped: hosts · employer · vendor stack · products/repos · cloud projects · secret-mgr
-# account · machine-fleet tooling · multi-machine phrasing · Obsidian-style [[wikilinks]].
-denylist='socrates|Brians-MBP|brians-macbook|aristotle'
-denylist+='|\bRHR\b|rhrinternational'
-denylist+='|\bOkta\b|\bJamf\b|\bIntune\b|HubSpot|NetSuite|Celigo|Seismic|KnowBe4|Alteryx|Monday\.com|Looker'
-denylist+='|forensics-analyzer|forensics-matters|vendor-logos|vendor-dashboard|\bnetqlty\b|mdmtools|journal-ai|vault-readme|mac-power-monitor|bjg-brand|developer-handbook|deepfake'
-denylist+='|forensics-dev|forensics-prod|forensics-tfstate'
-denylist+='|my\.1password'
-denylist+='|\bchezmoi\b|fleet-pkg|dot_Brewfile'
-denylist+='|both Macs|two Macs|two-Mac'
-denylist+='|forensic|phishing|chain.of.custody|invoice fraud'   # product-domain fingerprints
-denylist+='|brian@'   # personal email — attribution uses the website URL, not an address
+# --- Tier 1: GENERIC class-patterns (safe to ship; reveal nothing personal). ERE, case-insensitive.
+denylist='100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.[0-9]{1,3}\.[0-9]{1,3}'  # CGNAT/Tailscale 100.64.0.0/10
 denylist+='|\[\[[A-Za-z]'   # [[wikilink]] — NOT a Bash [[ test (which has a space after [[)
+
+# --- Tier 2: your private LITERAL identifiers, sourced from an un-committed file (if present).
+#     One POSIX-ERE fragment per line; '#' lines and blanks are ignored.
+local_list="references/leakage-denylist.local"
+if [[ -f "$local_list" ]]; then
+  while IFS= read -r frag; do
+    frag="${frag%$'\r'}"                                 # strip a trailing CR
+    [[ "$frag" =~ ^[[:space:]]*(#.*)?$ ]] && continue    # skip blank / comment lines
+    frag="${frag#"${frag%%[![:space:]]*}"}"              # ltrim
+    frag="${frag%"${frag##*[![:space:]]}"}"              # rtrim
+    denylist+="|${frag}"
+  done < "$local_list"
+fi
 
 # Files to scan: tracked Markdown/JSON/shell, excluding this script and the private profile.
 mapfile -t files < <(
@@ -57,7 +70,8 @@ for f in "${files[@]}"; do
 done
 
 if [[ "$hits" -ne 0 ]]; then
-  echo "FAIL: ${hits} leak(s). Move environment-specific detail into references/my-environment.md (un-committed)." >&2
+  echo "FAIL: ${hits} leak(s). Move environment-specific detail into references/my-environment.md (un-committed)" >&2
+  echo "      or add the identifier to references/leakage-denylist.local — never into a tracked file." >&2
   exit 1
 fi
 echo "PASS: no environment-specific identifiers in the public skill."
