@@ -26,3 +26,14 @@ Self-review (vs. the agreed spec):
 
 A finding is not a failure — it's the gate working. Fix it (or, if out of scope, flag it; never silently absorb
 unrelated changes), re-run the relevant checks, and re-state the outcome.
+
+## High-stakes diffs — escalate (Tier 2 / security-, isolation-, money-, migration-sensitive)
+
+The checklist above is the floor. For a high-stakes change, don't stop at one confirmatory read — run **several
+*independent* lenses prompted to *refute*** (correctness, security, tenant-isolation, test-quality, docs-honesty),
+then **re-review whatever folding the findings introduced** (it's a loop — the fold adds new, un-reviewed code and
+can reintroduce an overclaim). This catches a **green-but-insufficient** change: one that passes every gate and reads
+as correct yet doesn't meet its *scoped* goal, or whose docs claim more than the code delivers. Tool-agnostic —
+parallel review agents, sequential `REVIEW:` passes (a different lens each), or a `/code-review` skill; **record the
+verdict and the must-fixes folded** in the PR body. Skip it for a Tier-0 spike or a trivial diff — that's
+review-theater. Full detail: `references/engineering-workflow.md` §4a.
