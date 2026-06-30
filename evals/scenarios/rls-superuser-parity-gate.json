@@ -1,0 +1,19 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Our multi-tenant Postgres uses RLS with FORCE on every tenant table, and onboarding/recursion goes through SECURITY DEFINER functions. We have a pgTAP gate (scripts/db-test.sh) that applies the dbmate migrations to an ephemeral Postgres as the cluster superuser and runs the isolation suite (cross-tenant deny, onboarding, default-deny) — all green. We deploy to Cloud SQL. Are we fully covered on tenant isolation, or is anything missing?",
+  "files": [],
+  "expected_behavior": [
+    "Identifies the test/prod PRIVILEGE-parity gap: the suite migrates as the cluster SUPERUSER, so the SECURITY DEFINER helpers bypass RLS via superuser status — a property production does NOT have (Cloud SQL exposes no true superuser), so the deployed RLS-bypass invariant is UNVERIFIED",
+    "Explains that in production the definer helpers must be OWNED by a non-superuser role carrying BYPASSRLS, and that it is that attribute (not superuser, and not mere table ownership under FORCE'd RLS) that lets them through",
+    "Recommends a production-parity gate that re-runs the SAME migrations + SAME pgTAP suite under a non-superuser app_owner (LOGIN BYPASSRLS CREATEROLE) that owns the definer functions, which MUST pass",
+    "Recommends a fail-first NEGATIVE scenario (app_owner = NOBYPASSRLS) that MUST fail, with the assertion inverted so a passing negative FAILS the gate — otherwise the positive proves nothing",
+    "Calls out the CREATE EXTENSION-needs-superuser gotcha: pre-create citext/pgcrypto as the superuser so the migration's `create extension if not exists` no-ops cleanly for the non-superuser owner",
+    "Generalizes the principle (a test harness running with more privilege than production cannot verify a privilege-dependent security invariant) and/or points to references/databases.md and the test/prod-parity flag in references/audit-report-format.md"
+  ],
+  "anti_behavior": [
+    "Declares the superuser-run pgTAP suite sufficient / says tenant isolation is fully covered",
+    "Treats 'RLS enabled + FORCE + green pgTAP as superuser' as proof the production ownership model bypasses RLS correctly",
+    "Suggests only adding more positive pgTAP assertions, with no parity gate and no fail-first negative that proves the gate can detect a missing BYPASSRLS"
+  ],
+  "source": "references/databases.md (RLS production-parity gate) + references/testing.md §3c (a gate must be able to fail) + references/audit-report-format.md (test/prod parity flag) — changelog v1.3.0"
+}

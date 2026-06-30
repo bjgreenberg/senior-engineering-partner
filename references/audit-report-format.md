@@ -38,7 +38,12 @@ Rank by **impact × likelihood × exposure**, not by how interesting the finding
 Two cross-cutting flags worth their own callout: **test/prod parity gaps** (a control the CI
 proves under a config that isn't production's — false confidence) and **deferred-but-gating**
 items (fine to defer now, becomes a hard blocker the moment a promotion trigger fires — name
-the trigger).
+the trigger). The sharpest parity gap is a **privilege** mismatch: when the test harness runs
+with *more* privilege than production (migrating/seeding as a DB **superuser**), a security
+invariant that depends on the privilege difference — e.g. RLS bypass coming from a non-superuser
+owner's `BYPASSRLS` attribute, not from superuser status — is silently unverified. The fix is a
+**parity gate** that re-runs the suite under the production privilege model, not a prose caveat
+(the remediation pattern is in `databases.md`).
 
 ## Report structure
 

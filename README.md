@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-06-29 08:12 AM CDT
+Last updated: 2026-06-29 07:21 PM CDT
 
 A custom Claude Code skill: a strict **code reviewer, pair programmer, debugger, and mentor** for
 Python, Bash, Google Apps Script, and JavaScript. It encodes a security-first,
@@ -14,7 +14,7 @@ any Claude Code session.
 > standards live in [`references/`](references/).
 
 - **Author:** Brian Greenberg · **Web:** https://briangreenberg.net
-- **Version:** see the metadata table at the bottom of [`SKILL.md`](SKILL.md) (currently v1.1.0)
+- **Version:** see the metadata table at the bottom of [`SKILL.md`](SKILL.md) (currently v1.3.0)
 - **Invoke:** `/senior-engineering-partner` in Claude Code, optionally prefixed with a
   mode trigger word (see [Modes](#modes--triggers)).
 

@@ -357,7 +357,7 @@ The moment a second writer — agent or human — is in the tree, the solo-speed
 | **License** | Apache-2.0 |
 | **Created** | 2026-05-18 |
 | **Last updated** | 2026-06-29 |
-| **Version** | 1.2.0 |
+| **Version** | 1.3.0 |
 
 ### Changelog
 
@@ -366,6 +366,14 @@ revisions before its public release. The history below is the **public** changel
 internal-version specifics (private project names, hosts, and work history) are intentionally
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
+
+#### v1.3.0 — 2026-06-29 — Dogfooding: test/prod privilege-parity + gate-construction lessons
+Additions from building an **RLS production-parity gate** for the multi-tenant codebase — lessons that only surface when you write a security gate end-to-end, including a blind spot in the skill's *own* RLS-testing guidance:
+- **Test/prod privilege parity (`databases.md`, the headline).** The skill mandated pgTAP RLS testing but its documented pattern *seeds/migrates as the superuser* — which silently can't verify the production invariant, because a superuser bypasses RLS unconditionally while production (Cloud SQL/RDS, no true superuser) relies on a **non-superuser owner's `BYPASSRLS`** attribute. Generalized: *a test harness running with more privilege than production cannot verify a security invariant that depends on the privilege difference.* Fix = a **production-parity gate** that re-runs the suite under the prod privilege model (non-superuser `BYPASSRLS` owner), with the `CREATE EXTENSION`-needs-superuser pre-create gotcha called out. Cross-referenced from `testing.md` §2 and the `audit-report-format.md` test/prod-parity flag (now with the privilege sub-case + remediation).
+- **Gate-construction principles (`testing.md` §3c).** Three rules that generalize "red-first" from a single test to a whole gate: **(1)** a gate must be able to *fail* — build a fail-first negative and invert the assertion so a passing negative fails the gate (a green that can't go red proves nothing); **(2)** a gate must **assert** its preconditions (role attributes, object ownership, versions), not just print them, or a refactor passes it for the wrong reason; **(3)** trust the tool's own *verdict* signal, not a bare non-zero exit, so an infra failure can't masquerade as the proof you wanted.
+- **`docker compose run` recreates a `depends_on` service — CI-only (`containers-and-orchestration.md`).** An ephemeral gate that bootstraps a dependency out of band (`up -d db` → seed → `compose run migrator`) can have that dependency **recreated** by `compose run` on the CI runner (not on local Docker Desktop/OrbStack — a works-on-my-machine trap), wiping the bootstrap. Use **`--no-deps`** when you own the dependency's lifecycle.
+- **Suspect the bytes when a symbol is unimpeachable (`debugging.md`).** A bash `unbound variable` on a variable you clearly set can be a non-ASCII character (smart quote, em-dash, ellipsis) adjacent to `$var` whose leading UTF-8 byte folds into the name; keep shell scripts ASCII, and `cat -v`/`hexdump` reveals it.
+- **New eval** `evals/scenarios/rls-superuser-parity-gate.json` encoding the headline lesson so it can't silently regress.
 
 #### v1.2.0 — 2026-06-29 — Dogfooding: `AUDIT:` mode + lessons from a real codebase audit
 Additions from applying the skill to a full senior audit of a real multi-tenant codebase — gaps the prior evaluation didn't surface because they only appear when the skill drives an actual end-to-end audit-and-remediate workstream:

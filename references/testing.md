@@ -48,7 +48,7 @@ A cross-tenant leak in this product is a breach, not a bug (`secure-data-process
   -- NEGATIVE (the load-bearing assert): A cannot see B's row
   SELECT is( (SELECT count(*) FROM documents WHERE id = '<b-row>'), 0::bigint, 'A denied B row' );
   ```
-  The full seed→`SET LOCAL ROLE`→set-GUCs→assert→`ROLLBACK` pattern, role allowlist, and `pg_prove` invocation live in `databases.md` — do not duplicate it, read it.
+  The full seed→`SET LOCAL ROLE`→set-GUCs→assert→`ROLLBACK` pattern, role allowlist, and `pg_prove` invocation live in `databases.md` — do not duplicate it, read it. **One caveat that suite alone can't cover:** seeding/migrating *as the superuser* makes the `SECURITY DEFINER` helpers bypass RLS via superuser status — which production doesn't have — so add the **production-parity gate** (re-run the suite under a non-superuser `BYPASSRLS` owner, with a fail-first `NOBYPASSRLS` negative) from `databases.md`.
 - **HTTP layer.** Mint a tenant-A token, call the endpoint for a tenant-B resource id, assert **404/403, not 200-with-empty** (a 200 with `[]` can still hide a leak in a sibling field). Then assert A's own id returns 200. The token→session-GUC→RLS pipeline is in `python-web-apis.md`.
 - **Why both.** pgTAP proves the policy is correct in the database (the legal boundary). HTTP proves the request actually *enters* an RLS-scoped transaction with the right GUCs — an endpoint that forgets the `Depends()` passes pgTAP and fails HTTP. You need both signals.
 - **Tenant id is never client-supplied.** A test that takes the tenant id from the request body is testing nothing — assert that a forged/foreign `company_id` in the payload is ignored in favor of the token-derived identity.
@@ -77,6 +77,13 @@ Reviewers and CI enforce: **a change of class X does not merge without test Y.**
 
 - **The regression-test rule is literal:** write the test, confirm it fails against the unfixed code, *then* fix. A regression test that was never seen to fail proves nothing about the bug.
 - These are checked in review (CODEOWNERS-gated on sensitive paths — `github-teams.md`) and, where mechanizable, in CI. A human reviews every agent-authored PR before merge — no blind self-merge of test-bearing changes.
+
+### 3c. A gate must be able to fail — and assert its own preconditions
+The red-first rule (3b) is about individual tests; it generalizes to **whole gates**. A gate that *cannot go red* is decorative — it gives false confidence precisely when you most rely on it.
+
+- **Prove the gate can fail (the inversion).** When a gate asserts a security property (tenant isolation under the prod privilege model, a parser refusing a bomb, a signature check), build a **negative scenario** that *removes* the property and confirm the gate **fails** on it — and wire the assertion so a *passing* negative **fails the gate**. A positive run that has never been shown to go red proves nothing about what it claims; the negative is what makes the positive *mean* something (the `databases.md` RLS production-parity gate is the worked example: a `NOBYPASSRLS` negative that must fail). Write the negative *fail-first*, same as a regression test.
+- **Assert preconditions, don't print them.** A gate that *displays* the facts it depends on — a role's attributes, an object's owner, a tool version, the count of things it's checking — but never *asserts* them will sail green after a refactor silently invalidates one of them (e.g. a `SECURITY DEFINER` function that gets re-owned, so the suite passes for the wrong reason). Turn each load-bearing fact into a hard check that aborts the gate when it's wrong (a `DO $$ … RAISE EXCEPTION` / an `exit 1`), *before* the expensive assertions run. A printed precondition is documentation; an asserted one is a gate.
+- **Trust the verdict, not just the exit code.** A non-zero exit can mean "the suite ran and failed" *or* "the harness never ran" (no test files, a parse error, a recreated container). If those must be distinguished — as in a negative scenario *required* to fail — assert on the tool's own verdict signal (e.g. `pg_prove`'s `Result: FAIL` line), not a bare non-zero exit, so an infrastructure failure can't masquerade as the proof you wanted.
 
 ---
 

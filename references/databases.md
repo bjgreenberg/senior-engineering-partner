@@ -346,6 +346,34 @@ database itself** — the layer that actually enforces it. The house gate
   app_api` + set the identity GUCs (`set_config(..., true)`) so RLS is now enforced for
   the assertions → assert with pgTAP functions (`results_eq`, `throws_ok`, `is`) → a
   trailing `ROLLBACK` discards all seed + role/GUC state, so files are independent.
+- **A superuser-run suite cannot verify the production RLS-bypass invariant — add a
+  parity gate.** The seed-as-superuser convenience above hides a trap. When the gate
+  applies the migrations *as the superuser*, the `SECURITY DEFINER` helpers are **owned by
+  the superuser**, so they bypass RLS via **superuser status** — a property that **does not
+  exist in production**. Managed Postgres (Cloud SQL, RDS) exposes no true superuser; there
+  the helpers must be owned by a **non-superuser role carrying `BYPASSRLS`**, and it is
+  *that attribute* — not superuser — that lets them through `FORCE`'d RLS. So the suite
+  proves the *policies* are correct but **never proves the deployed ownership model bypasses
+  RLS as required**: an owner role provisioned without `BYPASSRLS` passes every test, then —
+  the first time it runs against real tenants — breaks onboarding and the recursion-avoiding
+  definer helpers (they hit default-deny and error). This is the general hazard —
+  **a test harness running with more privilege than production cannot verify a security
+  invariant that depends on the privilege difference** (the superuser *masks* it). Close it
+  with a **production-parity gate**: a second CI job that re-runs the *same* migrations + the
+  *same* pgTAP suite under the prod model — the superuser pre-creates the extensions and a
+  non-superuser `app_owner` (`LOGIN BYPASSRLS CREATEROLE`), then `dbmate` runs the migrations
+  **as `app_owner`** so every definer helper is *owned by it*; the suite **must PASS**. Pair
+  it with a **fail-first negative** (identical, but `app_owner` is `NOBYPASSRLS`) that **must
+  FAIL**, and **invert** the assertion so a *passing* negative fails the gate — otherwise the
+  positive proves nothing (a green that can't go red is not a test; see `testing.md` §3).
+  Have the gate **assert its own preconditions** (`app_owner` is not a superuser, its
+  `rolbypassrls` matches the scenario, and *every* `SECURITY DEFINER` helper is owned by it
+  via `pg_proc.proowner`) rather than just print them, so a future mis-ownership refactor
+  fails here instead of passing for the wrong reason. **Gotcha:** `CREATE EXTENSION` needs
+  superuser, so pre-create `citext`/`pgcrypto` as the superuser first and confirm the
+  migration's `create extension if not exists` no-ops cleanly for the non-superuser owner
+  (a `NOTICE`, not a permission error). Mirror the eventual managed-DB runbook: the admin
+  pre-creates the extensions + the `BYPASSRLS` owner; migrations run **as that owner**.
 - **The suite is the executable spec for the tenant boundary.** The house suite covers
   two-tenant **isolation**, **matter/visibility ACL**, **append-only** (UPDATE/DELETE
   rejected), **key-secrecy** (one tenant can't read another's encrypted key material),
