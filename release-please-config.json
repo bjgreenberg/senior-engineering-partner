@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "package-name": "senior-engineering-partner",
+      "include-component-in-tag": false,
+      "changelog-path": "CHANGELOG.md",
+      "skip-github-release": true,
+      "extra-files": [
+        "SKILL.md"
+      ]
+    }
+  }
+}

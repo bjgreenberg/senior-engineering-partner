@@ -1,0 +1,34 @@
+name: release-please
+
+# Automates the *preparation* of a release: release-please reads the Conventional
+# Commits on `main`, opens (and keeps updated) a "release PR" that bumps the `Version`
+# field in SKILL.md and prepends the new section to CHANGELOG.md.
+#
+# It deliberately does NOT cut the GitHub Release or push the git tag itself
+# (`skip-github-release: true` in release-please-config.json). The repo's `tag-protection`
+# ruleset requires SIGNED tags, and a bot tagging via the API produces an *unsigned* tag,
+# which the ruleset would reject. So a maintainer cuts the signed tag + GitHub Release by
+# hand once the release PR merges — see MAINTAINERS.md ("Cutting a release"). release-please
+# then reads that signed `vX.Y.Z` tag as the release marker on its next run.
+#
+# Note: PRs that release-please opens are authored by GITHUB_TOKEN, so they do not trigger
+# the `leakage-guard` / `docs-render` workflows (GitHub suppresses workflow runs on
+# GITHUB_TOKEN events to prevent recursion). A maintainer reviews and admin-merges the
+# release PR — its diff is a generated version + changelog bump only.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.4.1
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

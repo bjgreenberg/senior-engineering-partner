@@ -40,10 +40,15 @@ regular collaborators use a branch on the repo. Either way:
    permanent history entry* — write it like one.
 5. **Update the docs in the same PR.** If you change behavior, update *every* representation of it
    — the README, the relevant `references/*.md`, and any diagram or numbered step-list the change
-   touches (a stale diagram is a *wrong* diagram). If you change a **discipline**, also bump the
-   **`Version`** field and add the matching **`#### vX.Y` entry** under the `### Changelog` heading
-   in `SKILL.md`'s metadata table — that embedded section *is* this skill's changelog (there is no
-   separate `CHANGELOG.md`). This is the skill's own same-commit-docs rule, applied to itself.
+   touches (a stale diagram is a *wrong* diagram). You do **not** hand-bump the `Version` field or
+   write the changelog entry yourself —
+   [release-please](https://github.com/googleapis/release-please) does that from your
+   Conventional-Commit PR title: it opens a release PR that bumps the `Version` in `SKILL.md`'s
+   metadata table and prepends the entry to [`CHANGELOG.md`](CHANGELOG.md), which a maintainer then
+   enriches with the curated "what + why" narrative before cutting the signed release (see
+   [`MAINTAINERS.md`](MAINTAINERS.md)). So when you change a **discipline**, write a clean
+   `feat:`/`fix:` title and describe the *why* in the PR body — that becomes the changelog line.
+   This is the skill's own same-commit-docs rule, applied to itself.
 6. **Keep the universal core stack-agnostic.** `SKILL.md` and the references must not contain
    host, employer, or personal identifiers — those belong in a contributor's own
    `references/my-environment.md` (which is gitignored and never committed). The **`leakage-guard`**
