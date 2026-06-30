@@ -357,7 +357,7 @@ The moment a second writer — agent or human — is in the tree, the solo-speed
 | **License** | Apache-2.0 |
 | **Created** | 2026-05-18 |
 | **Last updated** | 2026-06-29 |
-| **Version** | 1.3.0 |
+| **Version** | 1.3.1 |
 
 ### Changelog
 
@@ -366,6 +366,11 @@ revisions before its public release. The history below is the **public** changel
 internal-version specifics (private project names, hosts, and work history) are intentionally
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
+
+#### v1.3.1 — 2026-06-29 — Fix-at-source discipline + a portability correction
+Small follow-on, itself an instance of the discipline it adds — issues caught while shipping v1.3.0, fixed at the source instead of deferred:
+- **"Fix it at the source the moment you trip over it" (`engineering-workflow.md` §5).** Names the default that pairs with the existing defer-register: when work surfaces a *different* small fixable problem (a latent bug, a stale comment, a guard false-positive), fix it **now at its root** while the context is loaded, rather than papering over it locally or filing it for a "later" that compounds — the proactive twin of `debugging.md`'s fix-the-cause-not-the-symptom. Guardrails: keep it in its own commit; in a shared tree, flag a problem belonging to *another's* in-flight work to its owner rather than absorbing it (`multi-agent-coordination.md`). Deferral (with a tracked trigger) is the exception, for what genuinely can't be fixed in-flight.
+- **Portability correction (`debugging.md`).** The v1.3.0 non-ASCII-byte tell suggested `grep -nP` unqualified; `-P` is GNU/ripgrep-only (not stock macOS/BSD grep), so it's now labelled as such with `cat -v`/`hexdump -C` as the portable primaries — honoring the skill's own "don't suggest a flag that may not exist" rule.
 
 #### v1.3.0 — 2026-06-29 — Dogfooding: test/prod privilege-parity + gate-construction lessons
 Additions from building an **RLS production-parity gate** for the multi-tenant codebase — lessons that only surface when you write a security gate end-to-end, including a blind spot in the skill's *own* RLS-testing guidance:

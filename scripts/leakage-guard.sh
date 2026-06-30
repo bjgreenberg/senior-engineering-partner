@@ -57,12 +57,12 @@ done < <(
     | grep -vE '^(\./)?(scripts/leakage-guard\.sh|references/my-environment\.md)$' | sort -u
 )
 
-# Allowlist: lines that legitimately contain a denylisted-looking token — author
-# attribution, plus generic technical terms whose substrings can trip a denylist pattern
-# (e.g. the standard Postgres extension `pgcrypto` contains the letters "gcrypt"). These are
-# stripped from the line before the denylist test, so a real fingerprint on the same line is
-# still caught.
-allow='Brian Greenberg|briangreenberg\.net|pgcrypto'
+# Allowlist: lines that legitimately contain a denylisted-looking token (author attribution).
+# Stripped from the line before the denylist test, so a real fingerprint on the same line is
+# still caught. NB: use this only for *unavoidable* collisions. If a denylist PATTERN is
+# over-broad — a bare substring that also matches inside a longer, legitimate word — fix the
+# pattern at its source (anchor / word-boundary it) instead of accreting allowlist entries.
+allow='Brian Greenberg|briangreenberg\.net'
 
 hits=0
 for f in "${files[@]}"; do
