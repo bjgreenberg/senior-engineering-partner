@@ -39,6 +39,13 @@ The governing rule: **a failure in one dependency must not cascade into a total 
 
 ---
 
+## 5. Scheduled work must catch up after downtime
+- **A wall-clock scheduler does not replay runs missed while the host was off/asleep.** `cron`, launchd `StartCalendarInterval`, and systemd calendar timers fire at a *clock time*; if the machine is down or suspended at that instant, the run is **silently skipped, not deferred** — it simply doesn't happen until the next scheduled time (on a laptop that sleeps overnight, a 7 AM job can be missed every single day). Don't assume "it'll just run when the machine wakes" — most wall-clock schedulers don't. (The catch-up exceptions: `anacron`, and systemd timers with `Persistent=true` — prefer them where the platform offers them.)
+- **For a job that must run even across downtime, pair the wall-clock trigger with an elapsed-time/catch-up trigger + an idempotent due-gate.** Add a periodic elapsed-time trigger (launchd `StartInterval`, a systemd `OnUnitActiveSec` timer, or a frequent cron that self-throttles) that *does* fire on the next wake, and guard the real work with a **due-gate**: run only when a scheduled window is actually outstanding (e.g. "last success is older than the most recent scheduled occurrence"), else exit immediately. The gate turns the extra triggers into free no-ops and makes the job **idempotent** — the same property §1 demands of retries — so the on-time trigger and the catch-up trigger can't double-run it.
+- **Keep the catch-up gate consistent with whatever monitors the job.** If a dead-man's-switch / heartbeat watches the job (`references/logging-and-monitoring.md`), compute "is a run outstanding?" the *same way* in the gate and in the monitor (same schedule math, same last-success signal) so they can never disagree — and make a no-op catch-up run write **nothing** to the watched artifact, or it resets the very heartbeat the monitor reads. Verify your scheduler's missed-run semantics (they differ across cron/anacron/launchd/systemd) before relying on either skip or catch-up behavior.
+
+---
+
 ## Checklist
 - [ ] Every outbound call (HTTP, DB, model) has connect + read/statement timeouts.
 - [ ] Retries are backoff+jitter+capped and only on idempotent ops (non-idempotent writes carry an idempotency key).
@@ -47,6 +54,7 @@ The governing rule: **a failure in one dependency must not cascade into a total 
 - [ ] Each dependency has a *designed* degraded mode; the core path survives a non-core failure; fallbacks stay tenant-scoped and labeled.
 - [ ] Risky surfaces sit behind a flag/kill-switch flippable without a deploy; rollback is the first mitigation.
 - [ ] The failure paths are actually tested (fault injection / game-day), not assumed.
+- [ ] Scheduled/periodic jobs that must survive downtime have a catch-up trigger + idempotent due-gate (wall-clock schedulers silently skip missed runs), and the gate matches whatever heartbeat monitors the job.
 
 ### Cross-references
 - Idempotency keys, retry/backoff at the API edge, RFC 7807 errors — `references/threat-modeling-and-api-design.md`.

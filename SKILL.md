@@ -221,6 +221,7 @@ Development must never interfere with production systems, and an unvetted toolch
 
 - **Never develop against production.** Separate credentials, cloud projects, databases, and buckets per environment (dev / stage / prod). Dev code never holds a production secret; production data never lands on a dev box.
 - **Isolate every project on the host.** A Python `venv` (or `uv`) per project — never `sudo pip` into the system interpreter (the same blast-radius logic as "never grant FDA to `/usr/bin/python3`"). Node via a per-project `node_modules` + pinned toolchain. Use a container / `.devcontainer` for anything pulling an unvetted toolchain or a pile of transitive deps, so the blast radius is a container, not `$HOME` with its 1Password agent socket and SSH keys.
+- **Keep git repos out of a file-sync tree.** A file-sync engine (iCloud Drive incl. the macOS "Desktop & Documents" option, Dropbox, OneDrive) replicating a live `.git` *corrupts* it — concurrent two-machine `.git` writes, half-synced pack/ref/lock files, online-only eviction of `.git` objects, conflict copies. Keep working clones in a **non-synced** path and move them between machines with **git's own push/pull**, not the file-syncer (distinct from "sync ≠ backup"; full detail + the symlink-out workaround in `references/dev-environment-isolation.md`).
 - **Sandbox untrusted code and tools.** Run unknown FOSS, agent-suggested installs, or `curl … | bash` snippets in a container or throwaway VM first — never pipe an unverified script straight onto your main machine.
 - **Prefer ephemeral & reproducible.** Throwaway test databases, docker-compose for local services, scale-to-zero for cheap cloud dev.
 
@@ -285,7 +286,7 @@ Every deliverable must be built for reuse and composability:
 ---
 
 # DOCUMENTATION (AUTOMATED)
-**Always update the documentation for everything you change — in the same commit.** This is non-negotiable, and "documentation" is not just prose: it means *every* representation of the thing you touched — README prose, **diagrams (architecture / flow / sequence / state / ERD)**, process/step lists, endpoint/API tables, config & env-var tables, the CHANGELOG, and ADRs. When you change behavior, actively hunt down **every** doc that describes the old behavior and bring it current; a diagram or step-list still showing the old flow is a stale, misleading deliverable — not a smaller miss than wrong code. (The classic failure: updating a feature's prose but leaving its flow diagram or its numbered process list describing the superseded behavior.) Treat docs as part of the change's Definition of Done, never a follow-up. Produce them automatically alongside every deliverable.
+**Always update the documentation for everything you change — in the same commit.** This is non-negotiable, and "documentation" is not just prose: it means *every* representation of the thing you touched — README prose, **diagrams (architecture / flow / sequence / state / ERD)**, process/step lists, endpoint/API tables, config & env-var tables, **environment/host/infrastructure profiles and directory-layout indexes**, the CHANGELOG, and ADRs. When you change behavior, actively hunt down **every** doc that describes the old behavior and bring it current; a diagram or step-list still showing the old flow is a stale, misleading deliverable — not a smaller miss than wrong code. (The classic failure: updating a feature's prose but leaving its flow diagram or its numbered process list describing the superseded behavior.) **A doc you *read* to understand what you're about to change is, by that fact, one you must update when you change it** — and this includes the **environment/infrastructure profiles and directory-layout indexes that describe *how things are wired*** (re-home a repo, change a sync model, or move a directory, and the doc that described the old wiring is now wrong), not just code-level docs. Treat docs as part of the change's Definition of Done, never a follow-up. Produce them automatically alongside every deliverable.
 
 - **Inline comments:** Explain the *why*, not the *what*. Non-obvious logic must be commented.
 - **Docstrings:** Every function and class in Python and JS gets a docstring/JSDoc block — purpose, parameters, return values, exceptions raised.
@@ -357,7 +358,7 @@ The moment a second writer — agent or human — is in the tree, the solo-speed
 | **License** | Apache-2.0 |
 | **Created** | 2026-05-18 |
 | **Last updated** | 2026-06-29 |
-| **Version** | 1.3.1 |
+| **Version** | 1.4.0 |
 
 ### Changelog
 
@@ -366,6 +367,12 @@ revisions before its public release. The history below is the **public** changel
 internal-version specifics (private project names, hosts, and work history) are intentionally
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
+
+#### v1.4.0 — 2026-06-29 — Dogfooding: file-sync repo corruption, scheduled-job catch-up, infra-doc discipline
+Three generalizable lessons that surfaced running the skill against a real multi-machine fleet migration:
+- **`dev-environment-isolation.md` (new §2 subsection) + ENVIRONMENT ISOLATION floor — never host a live `.git` in a file-sync tree.** A file-syncer (iCloud "Desktop & Documents", Dropbox, OneDrive) replicating a live repo *corrupts* it — concurrent `.git` writes, half-synced pack/ref/lock files, online-only eviction of `.git` objects, conflict copies — a **distinct** failure from "sync ≠ backup" (which is about a sync propagating a bad change). Fix: repos in a non-synced path, synced via git push/pull; if a sync tree must contain one, relocate it out and leave a symlink (verify the sync tool's symlink behavior with a scratch test first).
+- **`resilience-engineering.md` (new §5) — scheduled work must catch up after downtime.** Wall-clock schedulers (`cron`, launchd `StartCalendarInterval`, systemd calendar timers) silently **skip** runs missed while the host was off/asleep, not defer them. Pair the wall-clock trigger with an elapsed-time catch-up trigger + an **idempotent due-gate**, and compute "is a run outstanding?" the same way in the gate and in whatever heartbeat monitors the job (a no-op catch-up run must write nothing, so it can't reset the monitor's signal).
+- **SKILL.md DOCUMENTATION — "every representation" now names infra/environment/layout docs.** A doc you *read* to understand a change is one you must update — including the environment/host profiles and directory-layout indexes that describe *how things are wired*, not just code-level docs.
 
 #### v1.3.1 — 2026-06-29 — Fix-at-source discipline + a portability correction
 Small follow-on, itself an instance of the discipline it adds — issues caught while shipping v1.3.0, fixed at the source instead of deferred:
