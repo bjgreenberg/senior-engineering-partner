@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-06-29 08:16 PM CDT
+Last updated: 2026-06-29 09:22 PM CDT
 
 A custom Claude Code skill: a strict **code reviewer, pair programmer, debugger, and mentor** for
 Python, Bash, Google Apps Script, and JavaScript. It encodes a security-first,
@@ -14,7 +14,9 @@ any Claude Code session.
 > standards live in [`references/`](references/).
 
 - **Author:** Brian Greenberg · **Web:** https://briangreenberg.net
-- **Version:** see the metadata table at the bottom of [`SKILL.md`](SKILL.md) (currently v1.3.1)
+- **Version:** see the metadata table at the bottom of [`SKILL.md`](SKILL.md), the
+  [`CHANGELOG.md`](CHANGELOG.md), and the
+  [Releases](https://github.com/bjgreenberg/senior-engineering-partner/releases) page
 - **Invoke:** `/senior-engineering-partner` in Claude Code, optionally prefixed with a
   mode trigger word (see [Modes](#modes--triggers)).
 
@@ -238,9 +240,14 @@ environment-specific claim**, so the more complete it is, the more grounded the 
 
 ## Maintaining / contributing
 
-- **Version + changelog:** every deliberate change bumps the `Version` in `SKILL.md`'s
-  metadata table and adds a `#### vX.Y` changelog entry there (the skill's own documentation
-  discipline applied to itself).
+- **Versioning + releases are automated** with
+  [release-please](https://github.com/googleapis/release-please): it reads the Conventional
+  Commits on `main`, opens a release PR that bumps the `Version` in `SKILL.md`'s metadata table
+  and prepends the entry to [`CHANGELOG.md`](CHANGELOG.md). A maintainer enriches that entry's
+  narrative, then cuts the **signed** tag + GitHub Release — the repo's `tag-protection` ruleset
+  requires signed tags, so that final step is a deliberate manual one (see
+  [`MAINTAINERS.md`](MAINTAINERS.md) → *Cutting a release*). The skill's own documentation
+  discipline, applied to itself.
 - **Diagrams are render-checked before commit:** a Mermaid block that fails to render is a
   broken deliverable. Validate with GitHub/VS Code preview, mermaid.live, or
   `@mermaid-js/mermaid-cli` (`mmdc`) — see
