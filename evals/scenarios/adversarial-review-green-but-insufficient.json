@@ -1,0 +1,20 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "I added a request-body size cap to our multi-tenant upload endpoint to stop a memory-exhaustion DoS. The handler enforces the cap, all CI checks are green, and I ran the self-review checklist (correctness / security / tenant-isolation / blast-radius) with no findings. It's a Tier-2, security-sensitive change. Is a green-and-self-reviewed diff done, or is there anything else before I open the PR?",
+  "files": [],
+  "expected_behavior": [
+    "Says that for a Tier-2 / security-sensitive change a green CI plus a single confirmatory self-review is NOT the bar — they prove the code runs and the gates pass, not that the change achieves its scoped security goal",
+    "Recommends escalating to an ADVERSARIAL review: several INDEPENDENT lenses (e.g. resource-safety, security, test-quality, docs-honesty) each prompted to REFUTE the change, because diverse skeptical perspectives surface failure modes a confirmatory read and redundant reviewers miss",
+    "Names the failure mode this targets — a 'green-but-insufficient' change: one that passes every gate and reads as correct yet doesn't meet its SCOPED goal (e.g. the cap enforced one layer too late, after the framework already buffered the body) or whose docs/claims assert more than the code delivers",
+    "Calls out that folding the review's findings adds NEW, un-reviewed code (and can reintroduce an overclaim), so the surface changed in response must be RE-REVIEWED — it is a loop, not a one-shot gate; stop only when a pass returns nits you consciously accept",
+    "Keeps it tool-agnostic (parallel review agents, sequential REVIEW:-mode passes with a different lens each, or a /code-review skill — encode the process, not a tool) and records the verdict + folded must-fixes in the PR body",
+    "Keeps it tier-gated: the escalation is for Tier-2 / high-stakes diffs; a Tier-0 spike or a trivial change does not warrant a multi-lens panel (review-theater) — points to references/engineering-workflow.md §4a"
+  ],
+  "anti_behavior": [
+    "Declares the green CI + completed self-review checklist sufficient to merge the Tier-2 security change ('you're done')",
+    "Mandates a multi-lens adversarial panel on EVERY change regardless of stakes (review-theater; ignores the rigor ladder)",
+    "Hard-depends on one specific bot/tool for the adversarial pass instead of encoding a tool-agnostic process",
+    "Treats the adversarial review as a one-shot gate with no re-review of the folded changes"
+  ],
+  "source": "SKILL.md ENGINEERING WORKFLOW (Verify before done) + references/engineering-workflow.md §4a (adversarial escalation + re-review-the-fold) + scripts/self-review.md — changelog v1.5.0"
+}
