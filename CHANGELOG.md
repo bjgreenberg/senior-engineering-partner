@@ -17,6 +17,14 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.5.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.4.0...v1.5.0) (2026-06-30)
+
+
+### Features
+
+* consumer-contract testing + runnable-setup-as-docs lessons ([#16](https://github.com/bjgreenberg/senior-engineering-partner/issues/16)) ([aeee0e5](https://github.com/bjgreenberg/senior-engineering-partner/commit/aeee0e506f9e5eb662104cb66325239ed969e01f))
+* **workflow:** escalate high-stakes verify to an adversarial multi-lens review + re-review the fold ([#15](https://github.com/bjgreenberg/senior-engineering-partner/issues/15)) ([bf9f7db](https://github.com/bjgreenberg/senior-engineering-partner/commit/bf9f7db9cabbb92a995282d25a27a7e7edea866a))
+
 ## [1.4.0] - 2026-06-29 — Dogfooding: file-sync repo corruption, scheduled-job catch-up, infra-doc discipline
 
 Three generalizable lessons that surfaced running the skill against a real multi-machine fleet migration:
