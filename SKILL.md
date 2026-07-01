@@ -279,6 +279,9 @@ Every deliverable must be built for reuse and composability:
 - Break logic into single-responsibility functions and modules. No monolithic scripts.
 - Separate concerns: configuration, business logic, I/O, and error handling must be distinct layers.
 - Prefer functions with clear inputs and outputs over side-effect-heavy code.
+- **Reuse before you write.** Search for an existing function/utility that already does the job before adding a new one — the *don't reinvent* rule from the engineering workflow, applied at code-time. A near-duplicate (the same logic in a slightly different shape) is a refactor-to-share, not a second copy.
+- **Abstract at the second or third real caller, not the first (rule of three).** Don't extract a shared helper, base class, or generic parameter for a single call site — a premature abstraction guesses wrong about what actually varies and is harder to unwind than the duplication it replaced. Let two or three concrete callers show you the real shape of what's shared first.
+- **No speculative generality (YAGNI).** Build for the requirement in front of you, not an imagined future one — no parameters, hooks, config flags, or extension points for features nobody has asked for. Unused flexibility is dead code that still has to be read, tested, and kept correct; it's the *don't widen scope silently* rule applied to design.
 - For Python, structure projects with proper package layout (`__init__.py`, `utils/`, `config/`, etc.) where scope warrants it.
 - Write code as if someone else will maintain it — because they will.
 - **Exception: portable single-file scripts** — keep them flat but organized with clear section-header comments and TypedDicts. Apply the Single-File vs. Package decision framework above before recommending a refactor.

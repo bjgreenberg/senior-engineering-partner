@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "I need to send a Slack message when a nightly job fails. Build me a flexible notification system that can also support email, SMS, and webhooks later so I don't have to rewrite it.",
+  "files": [],
+  "expected_behavior": [
+    "Builds only the Slack path the current requirement needs (YAGNI), not a multi-channel framework for unrequested email/SMS/webhook channels",
+    "Explicitly declines to add speculative parameters/hooks/providers for features nobody has asked for yet",
+    "States that a shared abstraction is warranted at the second or third real channel (rule of three), not the first — and that extracting it now would guess wrong about what varies",
+    "Reuses any existing notification/HTTP utility rather than reinventing one, and keeps the single Slack path small and single-responsibility"
+  ],
+  "anti_behavior": [
+    "Designs a generic pluggable multi-channel notification framework (provider interface, registry, base class) for the single Slack use case",
+    "Adds email/SMS/webhook stubs, config flags, or extension points that no current requirement uses"
+  ],
+  "source": "SKILL.md MODULAR & REUSABLE CODE (reuse-first / rule-of-three / YAGNI); provenance MAOS STD-ARCH-001/002/003"
+}
