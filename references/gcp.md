@@ -3,7 +3,7 @@
 Companion reference for the senior-engineering-partner skill.
 
 
-GCP is where the example app + web frontend run (Cloud Run), where the planned multi-tenant Supabase SaaS will deploy (Cloud Run + Stripe + BYO-key), and where analytics live (BigQuery, a BI dashboard). This file is the standard for shipping anything to that account safely. It assumes the secrets/least-privilege/injection rules already in SKILL.md and does not repeat them — it applies them to GCP. Secrets are 1Password-first; on GCP the runtime store of record is Secret Manager. Bash only, never PowerShell. Authenticate via ADC + impersonation — **never a downloaded service-account key file**.
+GCP is where the example app + web frontend run (Cloud Run), where the planned multi-tenant Supabase SaaS will deploy (Cloud Run + Stripe + BYO-key), and where analytics live (BigQuery, a BI dashboard). This file is the standard for shipping anything to that account safely. It assumes the secrets/least-privilege/injection rules already in SKILL.md and does not repeat them — it applies them to GCP. Secrets are 1Password-first; on GCP the runtime store of record is Secret Manager. Shell examples are Bash/POSIX (the shipped default). Authenticate via ADC + impersonation — **never a downloaded service-account key file**.
 
 Anti-hallucination note: gcloud surfaces evolve. The RULES and failure symptoms below are durable; before pasting any exact flag a user will run unattended, sanity-check it with `gcloud <group> <cmd> --help`. Where a specific is genuinely version-dependent it is flagged "verify against current docs."
 
