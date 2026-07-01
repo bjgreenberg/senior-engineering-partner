@@ -25,7 +25,7 @@ ROOT="${1:-.}"
 cd "$ROOT"
 
 if ! command -v pip-audit >/dev/null 2>&1; then
-  echo "audit.sh: pip-audit not found. Install it (e.g. 'pipx install pip-audit') and re-run." >&2
+  echo "audit.sh: pip-audit not found. Install it (e.g. 'pipx install pip-audit' or 'python3 -m pip install pip-audit') and re-run." >&2
   exit 127
 fi
 

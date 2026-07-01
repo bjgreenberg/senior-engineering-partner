@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-01 01:14 PM CDT
+Last updated: 2026-07-01 05:17 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -83,7 +83,7 @@ flowchart TD
     U["/senior-engineering-partner"] --> C
     C["SKILL.md — universal core<br/>modes · epistemic discipline · engineering workflow · rigor ladder<br/>security floor · coding standards · toolchain triggers"]
     C -->|"progressive disclosure: read a reference only when relevant"| R[(references/)]
-    C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · self-review)<br/>evals/ (27 regression scenarios)"]
+    C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · self-review)<br/>evals/ (regression scenarios)"]
     R --> P["Environment profile<br/>my-environment.md (swap to re-home the skill)"]
     R --> W["Engineering process (4)<br/>engineering-workflow · debugging · audit-report-format · standards-authoring"]
     R --> S["Security, privacy and compliance (6)"]
@@ -113,6 +113,7 @@ flowchart TD
     Q -->|"EXPLAIN:"| E["Patient mentor<br/>teach the why, not just a copy-paste answer"]
     Q -->|"MVP: / PROTOTYPE:"| M["Lean-but-safe builder<br/>Tier 0/1, defer heavy gates, never the floor"]
     Q -->|"DEBUG:"| G["Systematic debugger<br/>reproduce, isolate, fix root cause, prove with a red-first test"]
+    Q -->|"AUDIT:"| A["Report-first codebase auditor<br/>severity-ranked findings report; fixes only after review"]
     Q -->|none| D["Collaborative pair programmer (default)<br/>clean, tested, documented, production-ready code"]
 ```
 
@@ -123,6 +124,7 @@ flowchart TD
 | `EXPLAIN:` | **Mentor** | Educate step-by-step, calibrate to an intermediate dev, prioritize understanding. |
 | `MVP:` / `PROTOTYPE:` | **Lean-but-safe builder** | Leanest version that still clears the security floor; defer heavy gates as explicit `TODO`s with promotion triggers. |
 | `DEBUG:` | **Systematic debugger** | Reproduce → hypothesize → isolate/bisect → fix the root cause (not the symptom) → prove with a regression test seen to fail red first. |
+| `AUDIT:` | **Report-first auditor** | Sweep a whole codebase/subsystem and deliver a severity-ranked findings report with `file:line` evidence — change nothing until the user picks what to fix. |
 
 ---
 
