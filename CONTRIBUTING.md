@@ -70,6 +70,29 @@ regular collaborators use a branch on the repo. Either way:
 Keep PRs **small and single-purpose** — one change per PR. A reviewer can hold the whole diff in
 their head, and CI catches problems early.
 
+## Authoring a discipline (how to word a rule)
+
+When you add or sharpen a rule in `SKILL.md` or a reference, word it so it can be *checked*, not
+just admired. Three tests — the skill's own falsifiability standard (`references/audit-report-format.md`),
+applied to itself:
+
+1. **Binary imperative, not a preference.** "Never store a bearer token in `localStorage`" /
+   "Every outbound call gets a timeout" — not "prefer secure storage" or "consider adding timeouts."
+   Soft words (*prefer, consider, reasonable, where appropriate*) turn a rule into a vibe a reviewer
+   can't enforce. If a point genuinely *is* a judgment call, say so plainly rather than dressing it as
+   a gate.
+2. **Diff-checkable — name the observable.** State the thing a reviewer (or a grep, a test, a CI gate)
+   can look at and see pass or fail: the file/line, the pattern, the assertion. A rule you can't point
+   at in a diff is aspiration, not standard.
+3. **Timeless, not a status report.** Write the durable invariant, not the current state. "Specs state
+   intent in the present/invariant voice" — strip *currently, legacy, not-yet, tracked, TODO* framing;
+   those describe a moment, and a rule outlives the moment. (Transient state belongs in an issue or the
+   CHANGELOG, not a discipline.)
+
+A load-bearing rule also earns an **eval** (workflow step 7) — the executable form of the same
+falsifiability: if you can't write a scenario that fails without the rule and passes with it, the rule
+may not be checkable enough yet.
+
 ## How your PR gets reviewed and merged
 
 - **A maintainer reviews every contributor PR before it merges** — read like a code review, with
