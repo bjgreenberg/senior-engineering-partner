@@ -19,10 +19,19 @@ in your own `references/my-environment.md`.
 
 ## [1.7.1](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.7.0...v1.7.1) (2026-07-01)
 
+External-review follow-ups. An AI-assisted public review flagged the skill; three points held up
+under verification and are folded in here. The headline is a real — if cosmetic — bug: the
+frontmatter wasn't strict-valid YAML, so GitHub rendered a parse error (Claude Code's lenient loader
+always parsed it, so discovery never broke). Plus two reusability refactors.
 
 ### Bug Fixes
 
-* **skill:** quote the frontmatter description for strict-YAML validity ([#37](https://github.com/bjgreenberg/senior-engineering-partner/issues/37)) ([93757ab](https://github.com/bjgreenberg/senior-engineering-partner/commit/93757ab5dddc49ec35299133e9bc4b0c0ce50341))
+* **Frontmatter is now strict-valid YAML** ([#37](https://github.com/bjgreenberg/senior-engineering-partner/issues/37), [93757ab](https://github.com/bjgreenberg/senior-engineering-partner/commit/93757ab5dddc49ec35299133e9bc4b0c0ce50341)). The unquoted `description` contained `: ` (colon-space) from the mode triggers (`REVIEW:`, `MVP:`, `DEBUG:`), which strict YAML reads as a nested mapping — Ruby Psych failed. Quoting the value fixes it for every parser; the reviewer's "multi-line" diagnosis was wrong, but the defect was real.
+
+### Changed
+
+* **The hard shell preference moved to the profile** ([#39](https://github.com/bjgreenberg/senior-engineering-partner/issues/39)). "Bash only / never PowerShell" was an absolute baked into the universal core — a forker on Windows would inherit it. The core now reads "a POSIX shell (Bash is the shipped default; your profile sets the shell)"; the hard preference lives in `references/my-environment.md`. No behavior change for anyone whose profile already sets it.
+* **Deduplicated the always-loaded core against its references** ([#40](https://github.com/bjgreenberg/senior-engineering-partner/issues/40)). The diagram taxonomy and the single-file-testing detail were inlined in `SKILL.md` *and* fully present in their references; the core now keeps the always-on rules + pointer and defers the detail — the skill's own no-duplication rule applied to itself. The security section stays inlined (its content isn't duplicated).
 
 ## [1.7.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.6.0...v1.7.0) (2026-07-01)
 
