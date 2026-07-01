@@ -40,6 +40,13 @@ The `cask "google-cloud-sdk"` line is how `gcloud`/`bq`/`gsutil` land on every m
 
 A formula can be **superseded over time** — a project drops its Homebrew-core formula for a vendor cask or tap. When `brew bundle` starts failing on a once-good entry, or `brew` warns a formula is deprecated/disabled, migrate it rather than leaving a line that fails every `brew bundle install`: update the entry type in the source Brewfile, tombstone the old name (so a synced union capture can't resurrect it), and add the replacement.
 
+### Stay current, not just pinned — `brew outdated` on a cadence
+
+`brew bundle` makes the machine *reproducible*; it does not keep it *current*. This is the Homebrew face of the SKILL.md **DEPENDENCY MANAGEMENT** *stay-current-don't-just-stay-pinned* rule: a formula frozen for years drifts toward deprecation (the superseded-formula case above) and misses upstream fixes.
+
+- **Check currency report-first, upgrade deliberately.** Run `brew outdated` (and `mas outdated` — report-only, see the mas section) periodically to *see* what has drifted, then move the ones you've decided to move with a targeted `brew upgrade <formula>`, re-`dump` the Brewfile, and commit the changed entries as code. Keep the check report-first and the upgrade a reviewed change.
+- **Never a blind fleet-wide `brew upgrade`.** In an install-only synced-Brewfile setup an unscoped `brew upgrade` on one machine desynchronizes the union and thrashes the next sync — the same hazard as `brew bundle cleanup` above. Upgrade named formulae on purpose, review the diff, then propagate via the committed source, not by racing each machine forward independently.
+
 ### Vet third-party taps — a tap runs arbitrary install code
 
 **Adding a tap or installing from one executes formula Ruby on your machine with your privileges.** A formula's `install` block can run any command. Treat an untrusted tap exactly like piping a stranger's script into your shell.

@@ -1,0 +1,18 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "We pin every dependency, commit our lockfiles, and Dependabot keeps our security alerts at zero. So dependency management is handled — we don't need to touch versions unless a CVE forces us to, right?",
+  "files": [],
+  "expected_behavior": [
+    "Pushes back: pinning + locking guarantees reproducibility, not that the pinned version stays good — an unbumped pin rots (drifts toward end-of-life, misses non-security bug/perf fixes, compounds into a painful multi-major upgrade later)",
+    "Names the reproducibility-vs-freshness tension explicitly and prescribes a proactive currency check on a cadence, separate from the security audit (pip list --outdated / npm outdated / brew outdated / mas outdated report-only / Dependabot or Renovate version-updates for Actions pins and base-image digests)",
+    "Distinguishes the two lanes: a security bump is urgent (alert-to-zero) while a freshness bump is scheduled, batched, and deliberate",
+    "Keeps the freshness upgrade safe: reviewed as code, run through the thin contract test so a breaking upgrade fails red, and held behind a release-age cooldown (Renovate minimumReleaseAge) so a freshly-published malicious version can't reach you immediately",
+    "Flags that a runtime/library/app past end-of-support is a security-floor issue, not just hygiene"
+  ],
+  "anti_behavior": [
+    "Agrees that pinning + zero security alerts is sufficient and version currency can be ignored until a CVE forces an upgrade",
+    "Recommends blindly auto-merging update PRs or chasing latest with no cooldown or contract test",
+    "Recommends running mas upgrade in automation"
+  ],
+  "source": "DEPENDENCY MANAGEMENT — stay-current-don't-just-stay-pinned (freshness vs. reproducibility)"
+}
