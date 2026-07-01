@@ -19,18 +19,21 @@ in your own `references/my-environment.md`.
 
 ## [1.7.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.6.0...v1.7.0) (2026-07-01)
 
+A dogfooding release: the repo adopts the supply-chain + documentation disciplines the skill
+teaches, then folds the lessons back in as new rules. It now runs **OpenSSF Scorecard** on
+*itself* — the skill already told you to check a *dependency's* Scorecard; now it checks its own,
+scoring **7/10** after a least-privilege fix — carries an honest, live badge row, and gained a
+**required-badges** standard in `SKILL.md`. Every badge is true and live; no hardcoded "passing" shipped.
 
 ### Features
 
-* **ci:** add OpenSSF Scorecard workflow (supply-chain security posture) ([#30](https://github.com/bjgreenberg/senior-engineering-partner/issues/30)) ([9edc4e0](https://github.com/bjgreenberg/senior-engineering-partner/commit/9edc4e0969c32052a70de10db5ee27c9cb7b46b2))
-* **docs,compliance:** honest-badges discipline + run OpenSSF Scorecard on your own repo ([#33](https://github.com/bjgreenberg/senior-engineering-partner/issues/33)) ([48d5f14](https://github.com/bjgreenberg/senior-engineering-partner/commit/48d5f14dac808a91f5a355e5693cbd5a8be26f98))
-* **docs:** require a live badge row on every remote-backed repo ([#36](https://github.com/bjgreenberg/senior-engineering-partner/issues/36)) ([9fc2fcb](https://github.com/bjgreenberg/senior-engineering-partner/commit/9fc2fcb3f1580d141e77ce85afa1b2b93aab228b))
-
+* **A live badge row is now required on every remote-backed repo — and only honest badges** ([#36](https://github.com/bjgreenberg/senior-engineering-partner/issues/36), [9fc2fcb](https://github.com/bjgreenberg/senior-engineering-partner/commit/9fc2fcb3f1580d141e77ce85afa1b2b93aab228b); discipline [#33](https://github.com/bjgreenberg/senior-engineering-partner/issues/33); repo's own row [#29](https://github.com/bjgreenberg/senior-engineering-partner/issues/29)). Every repo with a remote gets a badge row from day one — the same "standard, not a flourish" posture as branch protection: a **live** CI-status `badge.svg`, license, latest release, and (public repos) an OpenSSF Scorecard posture badge. The honesty rule rides with it — a badge is a *claim*, so never a hardcoded `passing`, a coverage badge with no coverage, an SLSA/SBOM badge with no provenance, or a drifting version; a false badge is the same stale-claim failure as a wrong diagram. Every badge URL is verified live before it ships.
+* **OpenSSF Scorecard, run on our own repo — not just our dependencies** ([#30](https://github.com/bjgreenberg/senior-engineering-partner/issues/30), [9edc4e0](https://github.com/bjgreenberg/senior-engineering-partner/commit/9edc4e0969c32052a70de10db5ee27c9cb7b46b2); docs [#33](https://github.com/bjgreenberg/senior-engineering-partner/issues/33)). `foss-adoption.md` used Scorecard to vet an *inbound* dependency; `compliance.md` now documents it as **bidirectional** — the same tool run on your own repo is a supply-chain posture self-assessment, published as a public score the badge reads. Captures the gotchas learned firsthand: keep the workflow minimal (`checkout` + `scorecard-action`), SHA-pin the actions, and skip the optional SARIF upload whose codeql-action pin scorecard's publish verification rejects as an "imposter commit."
 
 ### Bug Fixes
 
-* **ci:** minimal scorecard workflow — drop SARIF upload that broke publish ([#32](https://github.com/bjgreenberg/senior-engineering-partner/issues/32)) ([933473e](https://github.com/bjgreenberg/senior-engineering-partner/commit/933473ee8fd256799231e393320fc2a8e4460a72))
-* **ci:** scope release-please write permissions to the job (least privilege) ([#34](https://github.com/bjgreenberg/senior-engineering-partner/issues/34)) ([836d0f4](https://github.com/bjgreenberg/senior-engineering-partner/commit/836d0f4a5014b5dcb09d220412018f520ee40b75))
+* **Least-privilege release-please permissions** ([#34](https://github.com/bjgreenberg/senior-engineering-partner/issues/34), [836d0f4](https://github.com/bjgreenberg/senior-engineering-partner/commit/836d0f4a5014b5dcb09d220412018f520ee40b75)). Moved `contents`/`pull-requests` write from the workflow top level to the job — the skill's own `github-actions.md` rule, and a self-inconsistency it fixes. Lifted Scorecard's Token-Permissions check from **0 to 10** (7/10 overall).
+* **Minimal Scorecard workflow — fix the broken publish** ([#32](https://github.com/bjgreenberg/senior-engineering-partner/issues/32), [933473e](https://github.com/bjgreenberg/senior-engineering-partner/commit/933473ee8fd256799231e393320fc2a8e4460a72)). The first run analyzed fine but failed to publish; dropping the optional SARIF→code-scanning step (the "imposter commit" above) fixed it and shrank the third-party action surface.
 
 ## [1.6.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.5.0...v1.6.0) (2026-07-01)
 
