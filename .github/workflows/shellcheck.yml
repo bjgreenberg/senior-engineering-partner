@@ -1,0 +1,36 @@
+name: shellcheck
+
+# Lint the helper scripts with ShellCheck. A shell script that trips ShellCheck is a broken
+# deliverable — like a failing test — so it must not merge. This is the "enable available
+# warning flags" gate (SKILL.md CODING STANDARDS + SECURITY CHECKS: "Zero warnings is the
+# standard"), and it satisfies the OpenSSF Best Practices `warnings` criterion with a real
+# check instead of a justification.
+#
+# No third-party action: ShellCheck is pre-installed on the ubuntu-latest runner, so this uses
+# only the repo's already-SHA-pinned checkout + a run step (fewer actions = less surface, the
+# same posture as scorecard.yml).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Lint helper scripts
+        run: |
+          set -euo pipefail
+          shellcheck --version
+          files=()
+          while IFS= read -r _f; do files+=("$_f"); done \
+            < <(find scripts -name '*.sh' -type f | sort)
+          if [[ ${#files[@]} -eq 0 ]]; then echo "no shell scripts"; exit 0; fi
+          printf 'linting: %s\n' "${files[@]}"
+          shellcheck "${files[@]}"

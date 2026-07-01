@@ -1,11 +1,12 @@
 # senior-engineering-partner
 
-Last updated: 2026-06-30 10:37 PM CDT
+Last updated: 2026-07-01 11:09 AM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
 [![docs-render](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/docs-render.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/docs-render.yml)
 [![leakage-guard](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/leakage-guard.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/leakage-guard.yml)
+[![shellcheck](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/shellcheck.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/shellcheck.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/bjgreenberg/senior-engineering-partner/badge)](https://scorecard.dev/viewer/?uri=github.com/bjgreenberg/senior-engineering-partner)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://www.conventionalcommits.org/en/v1.0.0/)
 
@@ -262,6 +263,9 @@ environment-specific claim**, so the more complete it is, the more grounded the 
   `@mermaid-js/mermaid-cli` (`mmdc`) — see
   [`references/diagrams-and-visual-docs.md`](references/diagrams-and-visual-docs.md). CI
   runs `scripts/render-diagrams.sh` (the `docs-render` gate) on every PR.
+- **Helper scripts are ShellCheck-clean:** a `shellcheck` gate lints `scripts/*.sh` on every PR
+  (the skill's own "zero warnings is the standard" applied to itself). A script that trips
+  ShellCheck is a broken deliverable and can't merge.
 - **No environment-specific leakage in the core:** a `leakage-guard` check greps the tree against
   a denylist of personal/host/repo identifiers. It's **two-tier**: generic class-patterns (a
   CGNAT/Tailscale IP range, Obsidian-style wiki-links) ship in `scripts/leakage-guard.sh` and run in CI,
