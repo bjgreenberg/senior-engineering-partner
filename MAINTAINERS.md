@@ -40,9 +40,20 @@ bumps the `Version` in [`SKILL.md`](SKILL.md) and prepends the new section to
    gh release create "v$VERSION" --verify-tag --title "v$VERSION" \
      --notes "$(awk "/^## \[$VERSION\]/{f=1;print;next} /^## \[/{f=0} f" CHANGELOG.md)"
    ```
-   On its next run release-please reads the `vX.Y.Z` tag as the release marker and starts
-   accumulating the following version. (Signing on a remote/locked machine: see the project's
-   own commit-signing notes — squash-merge web-signs `main`, but the *tag* must be signed locally.)
+   (Signing on a remote/locked machine: see the project's own commit-signing notes — squash-merge
+   web-signs `main`, but the *tag* must be signed locally.)
+4. **Flip the release PR's label — or the next release is silently blocked.** release-please tracks
+   release state by **PR label, not by the git tag**. With `skip-github-release: true` it never marks
+   the merged release PR as released, so every subsequent run **aborts** with *"There are untagged,
+   merged release PRs outstanding"* and opens no new release PR until you relabel it. After the tag +
+   Release are cut, move the merged release PR from `autorelease: pending` to `autorelease: tagged`:
+   ```bash
+   gh pr edit <release-pr#> --add-label "autorelease: tagged" --remove-label "autorelease: pending"
+   ```
+   (Create the `autorelease: tagged` label once if the repo doesn't have it.) Only then does
+   release-please treat `vX.Y.Z` as the baseline and start accumulating the next version.
+   *(Learned the hard way: the 1.5.0 release PR stayed `autorelease: pending` and silently blocked the
+   1.6.0 release PR across six green workflow runs until it was relabeled.)*
 
 [`.github/CODEOWNERS`](.github/CODEOWNERS) documents who owns which parts and (if "require review from
 Code Owners" is ever enabled) routes review on the sensitive paths automatically.
