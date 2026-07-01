@@ -20,13 +20,17 @@ on:
   push:
     branches: [main]
 
+# Least privilege: read-only at the top level; the write scopes release-please needs to open
+# its release PR are granted only on the job that uses them (OpenSSF Scorecard Token-Permissions).
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write         # push the release branch + tags
+      pull-requests: write    # open/update the release PR
     steps:
       - uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.4.1
         with:
