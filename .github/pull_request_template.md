@@ -19,7 +19,7 @@ Conventional-Commit PR title (it becomes the squash-merge history entry), e.g.
 <!-- Contributor checklist — see CONTRIBUTING.md. Tick what applies. -->
 - [ ] Branch is rebased on the latest `main`; PR title is a Conventional Commit.
 - [ ] Small and single-purpose (one change per PR).
-- [ ] Docs updated in **this** PR — README / the relevant `references/*.md` / any diagram or step-list the change touches; and if a discipline changed, the `SKILL.md` changelog entry + `Version` bump (this repo's changelog lives in `SKILL.md`, not a separate `CHANGELOG.md`).
+- [ ] Docs updated in **this** PR — README / the relevant `references/*.md` / any diagram or step-list the change touches. Do **not** hand-edit the `Version` or `CHANGELOG.md`: [release-please](https://github.com/googleapis/release-please) derives both from the Conventional-Commit PR title (see `MAINTAINERS.md` → *Cutting a release*).
 - [ ] `bash scripts/leakage-guard.sh` and `bash scripts/render-diagrams.sh` pass locally (and any Mermaid I touched renders).
 - [ ] No host/employer/personal identifiers added to the universal core (those live in a private `references/my-environment.md`).
 - [ ] If I added or changed a discipline, an `evals/` scenario guards it.
