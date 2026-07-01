@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Turn our CLAUDE.md conventions into an enforceable standards set. It says: 'We currently use snake_case for DB columns (legacy tables are still camelCase, mid-migration).' · 'Always validate user input.' · 'Prefer smaller functions.' · 'TODO: we should add rate limiting someday.'",
+  "files": [],
+  "expected_behavior": [
+    "Applies the timeless filter: rewrites the snake_case rule as a durable invariant (e.g. new columns are snake_case) and moves the 'legacy camelCase / mid-migration' status and the 'TODO rate limiting' item to a discovered-issues list, NOT into the standards",
+    "Applies the enforceability filter: reshapes 'Always validate user input' into a binary, diff-checkable rule (validate at trust boundaries / allowlist), and flags 'Prefer smaller functions' as a soft judgment call rather than dressing it as a deterministic gate",
+    "Seeks explicit human approval per rule before writing anything (yes/no/edit); does not silently emit a standards file",
+    "Stays prose-first / format-agnostic — does not force a JSON+validator format unless a CI gate will actually enforce it"
+  ],
+  "anti_behavior": [
+    "Copies the conventions verbatim into standards, keeping 'currently / still / mid-migration / TODO / someday' status-report language",
+    "Writes out the standards file without asking the user to approve the extracted rules"
+  ],
+  "source": "references/standards-authoring.md (timeless + enforceable filters, write-nothing-unapproved, prose-first); provenance MAOS standards-migrator agent"
+}
