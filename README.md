@@ -1,12 +1,14 @@
 # senior-engineering-partner
 
-Last updated: 2026-06-30 10:37 PM CDT
+Last updated: 2026-07-01 05:17 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
 [![docs-render](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/docs-render.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/docs-render.yml)
 [![leakage-guard](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/leakage-guard.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/leakage-guard.yml)
+[![shellcheck](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/shellcheck.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/shellcheck.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/bjgreenberg/senior-engineering-partner/badge)](https://scorecard.dev/viewer/?uri=github.com/bjgreenberg/senior-engineering-partner)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13458/badge)](https://www.bestpractices.dev/projects/13458)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://www.conventionalcommits.org/en/v1.0.0/)
 
 A custom Claude Code skill: a strict **code reviewer, pair programmer, debugger, and mentor** for
@@ -81,7 +83,7 @@ flowchart TD
     U["/senior-engineering-partner"] --> C
     C["SKILL.md — universal core<br/>modes · epistemic discipline · engineering workflow · rigor ladder<br/>security floor · coding standards · toolchain triggers"]
     C -->|"progressive disclosure: read a reference only when relevant"| R[(references/)]
-    C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · self-review)<br/>evals/ (27 regression scenarios)"]
+    C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · self-review)<br/>evals/ (regression scenarios)"]
     R --> P["Environment profile<br/>my-environment.md (swap to re-home the skill)"]
     R --> W["Engineering process (4)<br/>engineering-workflow · debugging · audit-report-format · standards-authoring"]
     R --> S["Security, privacy and compliance (6)"]
@@ -111,6 +113,7 @@ flowchart TD
     Q -->|"EXPLAIN:"| E["Patient mentor<br/>teach the why, not just a copy-paste answer"]
     Q -->|"MVP: / PROTOTYPE:"| M["Lean-but-safe builder<br/>Tier 0/1, defer heavy gates, never the floor"]
     Q -->|"DEBUG:"| G["Systematic debugger<br/>reproduce, isolate, fix root cause, prove with a red-first test"]
+    Q -->|"AUDIT:"| A["Report-first codebase auditor<br/>severity-ranked findings report; fixes only after review"]
     Q -->|none| D["Collaborative pair programmer (default)<br/>clean, tested, documented, production-ready code"]
 ```
 
@@ -121,6 +124,7 @@ flowchart TD
 | `EXPLAIN:` | **Mentor** | Educate step-by-step, calibrate to an intermediate dev, prioritize understanding. |
 | `MVP:` / `PROTOTYPE:` | **Lean-but-safe builder** | Leanest version that still clears the security floor; defer heavy gates as explicit `TODO`s with promotion triggers. |
 | `DEBUG:` | **Systematic debugger** | Reproduce → hypothesize → isolate/bisect → fix the root cause (not the symptom) → prove with a regression test seen to fail red first. |
+| `AUDIT:` | **Report-first auditor** | Sweep a whole codebase/subsystem and deliver a severity-ranked findings report with `file:line` evidence — change nothing until the user picks what to fix. |
 
 ---
 
@@ -262,6 +266,9 @@ environment-specific claim**, so the more complete it is, the more grounded the 
   `@mermaid-js/mermaid-cli` (`mmdc`) — see
   [`references/diagrams-and-visual-docs.md`](references/diagrams-and-visual-docs.md). CI
   runs `scripts/render-diagrams.sh` (the `docs-render` gate) on every PR.
+- **Helper scripts are ShellCheck-clean:** a `shellcheck` gate lints `scripts/*.sh` on every PR
+  (the skill's own "zero warnings is the standard" applied to itself). A script that trips
+  ShellCheck is a broken deliverable and can't merge.
 - **No environment-specific leakage in the core:** a `leakage-guard` check greps the tree against
   a denylist of personal/host/repo identifiers. It's **two-tier**: generic class-patterns (a
   CGNAT/Tailscale IP range, Obsidian-style wiki-links) ship in `scripts/leakage-guard.sh` and run in CI,

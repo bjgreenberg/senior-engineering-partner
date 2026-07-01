@@ -59,9 +59,10 @@ regular collaborators use a branch on the repo. Either way:
    names / email to their own local denylist.
 7. **If you encode a discipline, guard it with an eval.** New or changed rules should add or extend
    a scenario in `evals/` — the project's "changelog is the spec, evals are the tests" model.
-8. **Run the gates locally** before opening the PR: `bash scripts/leakage-guard.sh` and
-   `bash scripts/render-diagrams.sh` (render-check any Mermaid you touched). Locally-green is
-   necessary but **not sufficient** — the PR's required checks are the source of truth.
+8. **Run the gates locally** before opening the PR: `bash scripts/leakage-guard.sh`,
+   `bash scripts/render-diagrams.sh` (render-check any Mermaid you touched), and — if you touched a
+   helper script — `shellcheck scripts/*.sh`. Locally-green is necessary but **not sufficient** —
+   the PR's required checks are the source of truth.
 9. **Open the PR** with the **What changed / Why it changed / Testing** description (the PR template
    gives you the shape). Open it as a **draft** while it's WIP so CI runs but it can't merge early;
    mark it ready when it is. Link the issue it closes (`Closes #N`).
@@ -99,7 +100,7 @@ may not be checkable enough yet.
   every review thread addressed or resolved. We don't merge on green CI alone: green proves the
   *gates* passed, not that the change is correct, in-scope, and free of a subtle regression a check
   didn't cover.
-- The repo's **required checks** (`docs-render`, `leakage-guard`) must pass.
+- The repo's **required checks** (`docs-render`, `leakage-guard`, `shellcheck`) must pass.
 - Merges are **squash-only** — rebase-merge (it rewrites your commits *unsigned*) and merge-commit
   are both disabled — and the branch is auto-deleted on merge. GitHub signs the squash commit, so
   your contribution lands **Verified** on `main` even if your own commits weren't signed; you don't

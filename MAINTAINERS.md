@@ -6,8 +6,8 @@ This project is maintained by:
 
 ## How we work
 
-- Every change lands via a pull request with the required checks green (`docs-render`, `leakage-guard`)
-  and a maintainer review — see [CONTRIBUTING.md](CONTRIBUTING.md).
+- Every change lands via a pull request with the required checks green (`docs-render`, `leakage-guard`,
+  `shellcheck`) and a maintainer review — see [CONTRIBUTING.md](CONTRIBUTING.md).
 - The branch ruleset requires **1 approving review**. The maintainer (repo admin) can self-merge
   their *own* PRs via an admin bypass, so a solo merge is never blocked — while every *other*
   contributor's PR gets a genuine four-eyes review before it lands.
@@ -28,7 +28,7 @@ bumps the `Version` in [`SKILL.md`](SKILL.md) and prepends the new section to
 1. **Enrich the changelog.** In the open release PR, edit the new `CHANGELOG.md` section to add the
    curated "what + **why**" narrative (the prose this skill values), then mark the PR ready.
 2. **Merge the release PR.** Because release-please authored it with `GITHUB_TOKEN`, the
-   `leakage-guard` / `docs-render` checks don't auto-run on it; review the (generated) diff and
+   `leakage-guard` / `docs-render` / `shellcheck` checks don't auto-run on it; review the (generated) diff and
    admin-merge: `gh pr merge --squash --admin`.
 3. **Cut the signed tag + GitHub Release** from the merged `main`:
    ```bash

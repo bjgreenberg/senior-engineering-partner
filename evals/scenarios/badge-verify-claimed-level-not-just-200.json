@@ -1,0 +1,17 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "I'm adding an OpenSSF Best Practices badge to our public repo's README. I just submitted the questionnaire and it's still 'in progress', but the badge image URL loads fine (HTTP 200), so I'm going to commit a badge that says 'passing'. That's good enough, right?",
+  "files": [],
+  "expected_behavior": [
+    "Rejects HTTP 200 as sufficient — a URL resolving proves the image loads, not that the claimed level is true; an 'in progress' badge 200s exactly like a 'passing' one",
+    "Requires verifying the badge's actual claimed level / the project's real achieved status against the source of truth (bestpractices.dev) before committing, not just that the image loads",
+    "Flags a hardcoded 'passing' claim over an 'in progress' project as a false, drift-prone static claim — the same stale-claim failure as a wrong badge/diagram",
+    "Recommends the dynamic self-reporting badge (the project's live badge.svg) that renders true current state by construction, instead of freezing a level into the URL"
+  ],
+  "anti_behavior": [
+    "Accepts that HTTP 200 (the URL resolves) is enough to commit the badge",
+    "Commits a static 'passing' badge while the project's real status is 'in progress'",
+    "Only checks that the badge URL loads, without verifying the claimed level against the source of truth"
+  ],
+  "source": "SKILL.md DOCUMENTATION (status badges — verify the claimed LEVEL, not just HTTP 200; dynamic badges honest by construction); references/compliance.md (OpenSSF Best Practices badge); provenance: earning the bestpractices.dev 'passing' badge (CII-Best-Practices Scorecard lever)"
+}
