@@ -17,6 +17,26 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.8.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.7.1...v1.8.0) (2026-07-01)
+
+Closes the freshness blind spot in the dependency discipline. The skill already demanded
+pinning, locking, and an alert-to-zero *security* audit — but said nothing about a pin that
+simply rots: drifting toward end-of-life, silently missing bug and performance fixes, and
+compounding into a painful multi-major jump. **A pin is for reproducibility, not a museum.**
+The new SKILL.md bullet adds a proactive **currency check on a cadence** (`pip list --outdated`,
+`npm outdated`, `brew outdated` + `mas outdated`, and Dependabot/Renovate *version*-updates —
+not only *security*-updates) as its own lane: scheduled, batched, reviewed as code, run through
+the thin contract test so a breaking upgrade fails red, and held behind a release-age cooldown
+so a freshly published malicious version can't reach you the day it drops. End-of-life is
+treated as a **floor** issue (an EOL runtime stops getting security fixes at all), distinct
+from the urgent security lane, which stays alert-to-zero. `references/package-managers.md`
+gains the Homebrew/mas currency detail, and
+`evals/scenarios/dependency-currency-not-just-pinned.json` guards the lesson.
+
+### Features
+
+* **skill:** add a dependency-currency discipline (stay current, not just pinned) ([#41](https://github.com/bjgreenberg/senior-engineering-partner/issues/41)) ([ef4d196](https://github.com/bjgreenberg/senior-engineering-partner/commit/ef4d196a236fe7dc4e200e90e6e3ddf6ae1e7af5))
+
 ## [1.7.1](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.7.0...v1.7.1) (2026-07-01)
 
 External-review follow-ups. An AI-assisted public review flagged the skill; three points held up
