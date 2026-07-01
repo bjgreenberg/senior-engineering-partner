@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-01 05:17 PM CDT
+Last updated: 2026-07-01 05:56 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -83,7 +83,7 @@ flowchart TD
     U["/senior-engineering-partner"] --> C
     C["SKILL.md — universal core<br/>modes · epistemic discipline · engineering workflow · rigor ladder<br/>security floor · coding standards · toolchain triggers"]
     C -->|"progressive disclosure: read a reference only when relevant"| R[(references/)]
-    C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · self-review)<br/>evals/ (regression scenarios)"]
+    C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · run-evals · self-review)<br/>evals/ (regression scenarios)"]
     R --> P["Environment profile<br/>my-environment.md (swap to re-home the skill)"]
     R --> W["Engineering process (4)<br/>engineering-workflow · debugging · audit-report-format · standards-authoring"]
     R --> S["Security, privacy and compliance (6)"]
@@ -208,12 +208,16 @@ support directories:
 
 - **`scripts/`** — the utility scripts the disciplines reference, shipped so they're
   *executed*, not regenerated: `audit.sh` (manifest-level dependency-audit gate),
-  `render-diagrams.sh` (the `docs-render` Mermaid render-check), and `self-review.md` (the
-  verify-before-done checklist). Pin `render-diagrams.sh`'s `MMDC_IMAGE` to a digest before
-  relying on it.
+  `render-diagrams.sh` (the `docs-render` Mermaid render-check), `run-evals.py` (the
+  eval-suite runner — below), and `self-review.md` (the verify-before-done checklist).
+  Pin `render-diagrams.sh`'s `MMDC_IMAGE` to a digest before relying on it.
 - **`evals/`** — a regression suite. Each `scenarios/*.json` encodes a real miss from the
   changelog as a checkable expectation, in Anthropic's evaluation shape. `evals/README.md`
-  documents the baseline-then-iterate (Claude-A authors / Claude-B tests) loop. **Add or
+  documents the baseline-then-iterate (Claude-A authors / Claude-B tests) loop, and
+  **`scripts/run-evals.py` executes the suite**: it runs each `query` headlessly through the
+  `claude` CLI (with the skill injected, or bare for a baseline), LLM-judges the response
+  against `expected_behavior`/`anti_behavior`, and writes per-scenario verdicts + a summary
+  (see *How to run* in `evals/README.md`). **Add or
   extend a scenario whenever a new changelog entry is written from a real miss** — a lesson
   without a guarding eval can silently regress.
 
