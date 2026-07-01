@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.7.1](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.7.0...v1.7.1) (2026-07-01)
+
+
+### Bug Fixes
+
+* **skill:** quote the frontmatter description for strict-YAML validity ([#37](https://github.com/bjgreenberg/senior-engineering-partner/issues/37)) ([93757ab](https://github.com/bjgreenberg/senior-engineering-partner/commit/93757ab5dddc49ec35299133e9bc4b0c0ce50341))
+
 ## [1.7.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.6.0...v1.7.0) (2026-07-01)
 
 A dogfooding release: the repo adopts the supply-chain + documentation disciplines the skill
