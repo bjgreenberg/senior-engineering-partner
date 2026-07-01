@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-06-30 07:19 PM CDT
+Last updated: 2026-06-30 07:24 PM CDT
 
 A custom Claude Code skill: a strict **code reviewer, pair programmer, debugger, and mentor** for
 Python, Bash, Google Apps Script, and JavaScript. It encodes a security-first,
@@ -74,7 +74,7 @@ flowchart TD
     U["/senior-engineering-partner"] --> C
     C["SKILL.md — universal core<br/>modes · epistemic discipline · engineering workflow · rigor ladder<br/>security floor · coding standards · toolchain triggers"]
     C -->|"progressive disclosure: read a reference only when relevant"| R[(references/)]
-    C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · self-review)<br/>evals/ (19 regression scenarios)"]
+    C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · self-review)<br/>evals/ (27 regression scenarios)"]
     R --> P["Environment profile<br/>my-environment.md (swap to re-home the skill)"]
     R --> W["Engineering process (2)<br/>engineering-workflow · debugging"]
     R --> S["Security, privacy and compliance (6)"]
