@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.8.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.7.1...v1.8.0) (2026-07-01)
+
+
+### Features
+
+* **skill:** add a dependency-currency discipline (stay current, not just pinned) ([#41](https://github.com/bjgreenberg/senior-engineering-partner/issues/41)) ([ef4d196](https://github.com/bjgreenberg/senior-engineering-partner/commit/ef4d196a236fe7dc4e200e90e6e3ddf6ae1e7af5))
+
 ## [1.7.1](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.7.0...v1.7.1) (2026-07-01)
 
 External-review follow-ups. An AI-assisted public review flagged the skill; three points held up
