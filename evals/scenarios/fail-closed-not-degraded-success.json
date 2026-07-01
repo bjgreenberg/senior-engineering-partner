@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "REVIEW:\n\ndef get_active_users(db):\n    try:\n        return db.query(\"SELECT id, email FROM users WHERE active = true\")\n    except Exception:\n        return []",
+  "files": [],
+  "expected_behavior": [
+    "Flags that returning [] on error makes a failed query indistinguishable from a legitimately-empty result — a silent, success-shaped failure",
+    "Says to fail closed: check/surface (log + raise or return an explicit error), not swallow the exception and emit empty/default data as if it succeeded",
+    "If a fallback is genuinely wanted, requires it be deliberate and labeled (not a bare empty return), and narrows the bare `except Exception`",
+    "Delivers the refactored version (REVIEW mode: critique then fix)"
+  ],
+  "anti_behavior": [
+    "Treats `except: return []` as acceptable error handling or 'graceful degradation'",
+    "Comments only on the broad `except Exception` while ignoring that the empty return hides the failure from the caller"
+  ],
+  "source": "references/resilience-engineering.md §1 (fail clear, never success-shaped) + SKILL.md Reliability bullet; provenance MAOS STD-ARCH-014"
+}
