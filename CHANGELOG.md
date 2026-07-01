@@ -17,6 +17,21 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.7.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.6.0...v1.7.0) (2026-07-01)
+
+
+### Features
+
+* **ci:** add OpenSSF Scorecard workflow (supply-chain security posture) ([#30](https://github.com/bjgreenberg/senior-engineering-partner/issues/30)) ([9edc4e0](https://github.com/bjgreenberg/senior-engineering-partner/commit/9edc4e0969c32052a70de10db5ee27c9cb7b46b2))
+* **docs,compliance:** honest-badges discipline + run OpenSSF Scorecard on your own repo ([#33](https://github.com/bjgreenberg/senior-engineering-partner/issues/33)) ([48d5f14](https://github.com/bjgreenberg/senior-engineering-partner/commit/48d5f14dac808a91f5a355e5693cbd5a8be26f98))
+* **docs:** require a live badge row on every remote-backed repo ([#36](https://github.com/bjgreenberg/senior-engineering-partner/issues/36)) ([9fc2fcb](https://github.com/bjgreenberg/senior-engineering-partner/commit/9fc2fcb3f1580d141e77ce85afa1b2b93aab228b))
+
+
+### Bug Fixes
+
+* **ci:** minimal scorecard workflow — drop SARIF upload that broke publish ([#32](https://github.com/bjgreenberg/senior-engineering-partner/issues/32)) ([933473e](https://github.com/bjgreenberg/senior-engineering-partner/commit/933473ee8fd256799231e393320fc2a8e4460a72))
+* **ci:** scope release-please write permissions to the job (least privilege) ([#34](https://github.com/bjgreenberg/senior-engineering-partner/issues/34)) ([836d0f4](https://github.com/bjgreenberg/senior-engineering-partner/commit/836d0f4a5014b5dcb09d220412018f520ee40b75))
+
 ## [1.6.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.5.0...v1.6.0) (2026-07-01)
 
 A comparative-analysis release. After a deep read of an external multi-agent coding-standards
