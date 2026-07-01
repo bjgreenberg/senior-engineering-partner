@@ -2,14 +2,13 @@
 
 This project is maintained by:
 
-- **Brian Greenberg** ([@bjgreenberg](https://github.com/bjgreenberg)) — lead maintainer · <https://briangreenberg.net>
-- **[@jeffols](https://github.com/jeffols)** — maintainer
+- **Brian Greenberg** ([@bjgreenberg](https://github.com/bjgreenberg)) — maintainer · <https://briangreenberg.net>
 
 ## How we work
 
 - Every change lands via a pull request with the required checks green (`docs-render`, `leakage-guard`)
   and a maintainer review — see [CONTRIBUTING.md](CONTRIBUTING.md).
-- The branch ruleset requires **1 approving review**. The lead maintainer (repo admin) can self-merge
+- The branch ruleset requires **1 approving review**. The maintainer (repo admin) can self-merge
   their *own* PRs via an admin bypass, so a solo merge is never blocked — while every *other*
   contributor's PR gets a genuine four-eyes review before it lands.
 - Merges are **squash-only**. GitHub signs the squash commit, so contributions land **Verified** on

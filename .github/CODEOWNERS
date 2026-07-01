@@ -1,17 +1,16 @@
 # CODEOWNERS — documents who owns each part of the skill, and (when branch protection's
 # "require review from Code Owners" is enabled) routes review on the parts where a bad change
 # does the most harm. Every path must resolve to a user with repo access, or GitHub silently
-# skips the owner — so keep these current. (@jeffols activates once the collaborator invite is
-# accepted; until then GitHub harmlessly skips that owner.)
+# skips the owner — so keep these current.
 
-# Default owner for everything — both maintainers
-*                       @bjgreenberg @jeffols
+# Default owner for everything
+*                       @bjgreenberg
 
-# The skill's contract and its disciplines — the heart of the project (both maintainers)
-/SKILL.md               @bjgreenberg @jeffols
-/references/            @bjgreenberg @jeffols
+# The skill's contract and its disciplines — the heart of the project
+/SKILL.md               @bjgreenberg
+/references/            @bjgreenberg
 
-# Tooling that gates the repo + CI + the regression suite — owned by the lead maintainer
+# Tooling that gates the repo + CI + the regression suite
 /scripts/               @bjgreenberg
 /.github/               @bjgreenberg
 /evals/                 @bjgreenberg
