@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "I just pushed my new tool to a fresh PUBLIC GitHub repo. It already has a CI workflow (.github/workflows/ci.yml that runs the tests) and an MIT LICENSE. Help me polish the README.",
+  "files": [],
+  "expected_behavior": [
+    "Proactively adds a status badge row under the title as a standard for a remote-backed repo — not treating badges as optional",
+    "Uses a LIVE CI-status badge (the ci.yml workflow's own badge.svg), not a static/hardcoded 'passing' image",
+    "Includes license (and a latest-release badge if/when the repo is versioned), and — since it's public — recommends or adds an OpenSSF Scorecard security-posture badge",
+    "Only proposes badges that are true for this repo (CI exists, license exists); does not invent coverage/SLSA/version badges that aren't backed by anything, and verifies the URLs resolve"
+  ],
+  "anti_behavior": [
+    "Skips badges entirely / treats them as an optional nicety and doesn't add a row",
+    "Adds a static hardcoded 'tests passing' image or a badge for something the repo doesn't actually have"
+  ],
+  "source": "SKILL.md DOCUMENTATION (every remote-backed repo gets a live badge row — required); provenance: the v1.6.x badges/Scorecard work"
+}
