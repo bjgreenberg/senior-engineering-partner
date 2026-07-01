@@ -1,0 +1,50 @@
+# OpenSSF Scorecard — supply-chain / security-posture analysis.
+# Publishes a score to https://api.securityscorecards.dev (public) that the README badge reads,
+# and uploads SARIF to the repo's code-scanning tab. On-brand: `references/foss-adoption.md` tells
+# users to check a dependency's Scorecard before adopting it — this runs it on our own repo.
+# Third-party actions are SHA-pinned (SKILL.md supply-chain rule); the trailing comment is the version.
+name: scorecard
+
+on:
+  branch_protection_rule:        # re-score when branch protection changes
+  schedule:
+    - cron: '32 6 * * 1'         # weekly, Monday ~06:32 UTC
+  push:
+    branches: [ "main" ]
+
+# scorecard reads many repo APIs (branch protection, webhooks, workflow perms); it needs broad
+# READ. Write scopes are elevated only in the job that needs them. (Documented deviation from the
+# default `contents: read`, per SKILL.md's "an undocumented skip is a hidden waiver".)
+permissions: read-all
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write     # upload the SARIF result to code-scanning
+      id-token: write            # OIDC — publish the result to the OpenSSF API (for the badge)
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a # v2.4.3
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true   # required for the public badge
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
+
+      - name: Upload to code-scanning
+        uses: github/codeql-action/upload-sarif@411bbbe57033eedfc1a82d68c01345aa96c737d7 # v4
+        with:
+          sarif_file: results.sarif
