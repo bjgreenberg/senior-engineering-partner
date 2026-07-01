@@ -12,7 +12,7 @@ The disciplines in this skill are written to be **stack-agnostic and portable** 
 
 **Read `references/my-environment.md` early — at session start, and for any environment-specific claim** (a host, a repo, a service, a deploy target, your Git/SCM standards). Don't bake those specifics back into the universal core. If the file is absent, fall back to the assumed baseline below and proceed generically.
 
-The assumed baseline (overridable in the profile): **macOS** host, **Bash only** (never suggest PowerShell under any circumstances), **GitHub** for version control + CI, a **secret manager** (e.g. 1Password) for secrets, and a **scale-to-zero cloud target** (e.g. GCP Cloud Run) as the cheap default deploy target.
+The assumed baseline (overridable in the profile): **macOS** host, **a POSIX shell** (Bash is the shipped default — the shell examples and references are Bash/POSIX; your profile sets the actual shell), **GitHub** for version control + CI, a **secret manager** (e.g. 1Password) for secrets, and a **scale-to-zero cloud target** (e.g. GCP Cloud Run) as the cheap default deploy target. Any hard shell preference (e.g. *Bash only, never PowerShell*) is an environment choice — it belongs in `references/my-environment.md`, not the universal core.
 
 ---
 
@@ -113,7 +113,7 @@ Backup & continuity are floor, not a Tier-2 luxury: designing or writing softwar
 Enforce these proactively — never wait to be asked.
 
 - **Python:** Strictly adhere to PEP 8. Always use type hinting. Use `logging` instead of `print()`. Prefer `pathlib` over `os.path`. Use context managers for file/network I/O. **Lint + format with `ruff`** (the de-facto standard — it subsumes flake8/black/isort) and **type-check with `mypy --strict` or `pyright`** — both as merge-blocking gates, the same posture as `bandit`/`semgrep` (see *Type Annotations*). An annotation you never check is a comment.
-- **Bash:** Always use strict error handling (`set -euo pipefail`). Quote all variables. Assume ShellCheck rules applies. Never use PowerShell.
+- **Bash:** Always use strict error handling (`set -euo pipefail`). Quote all variables. Assume ShellCheck rules applies. (This skill's shell guidance is Bash/POSIX; a different shell — or a hard "never PowerShell" preference — is an environment choice that lives in `references/my-environment.md`.)
 - **JavaScript / Apps Script:** Use modern ES6+ syntax. Write modular, functional code. Use `try/catch` for all network requests and external service interactions.
 - **Reliability for Automation:** Prioritize idempotent designs (scripts that can run multiple times without causing duplicate data or errors), robust error handling (fail *closed* — never swallow an error and return an empty/default value that reads as success; see `references/resilience-engineering.md`), and clear failure alerting.
 - **Web & GUI front-end (Responsive · Accessible · Themed · Beautiful — Mandatory):** Every web app or GUI deliverable must be *beautiful by default*, fully responsive, support **light AND dark mode**, and meet **WCAG 2.2 level AA**. These four are co-equal non-negotiables, not nice-to-haves. The full standard — design tokens, the design-quality baseline, light/dark theming, the WCAG 2.2 AA checklist, the axe/Lighthouse/keyboard/screen-reader test gate, and how to use Claude Design (or any design tool) and hand its output to Claude Code — lives in **`references/ui-design-and-accessibility.md`; read it before building any UI.** The responsive floor (enforce regardless of tier):

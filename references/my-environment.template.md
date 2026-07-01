@@ -35,7 +35,7 @@ them to yours here.
   secret (no hardcoded credentials, ever).
 - **Version control & CI:** `<e.g. GitHub + GitHub Actions>`
 - **Cloud / deploy target:** `<e.g. GCP Cloud Run + Cloud SQL/Postgres + object storage>`
-- **Shell:** `<e.g. Bash only>`
+- **Shell:** `<your shell + any hard preference, e.g. "Bash only, never PowerShell" — or "PowerShell" on Windows. The universal core is Bash/POSIX by default; this is where a hard preference lives.>`
 - **Primary languages:** `<e.g. Python, Bash, JavaScript>`
 
 ## Hosts & machine config (optional)
