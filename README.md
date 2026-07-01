@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-06-29 09:22 PM CDT
+Last updated: 2026-06-30 07:19 PM CDT
 
 A custom Claude Code skill: a strict **code reviewer, pair programmer, debugger, and mentor** for
 Python, Bash, Google Apps Script, and JavaScript. It encodes a security-first,
@@ -151,6 +151,7 @@ version-specific commands.
 | **Environment profile** | `my-environment.md` | The concrete stack/hosts/repos/house-Git-standards — the one file to swap when forking the skill |
 | **Engineering process** | `engineering-workflow.md` | The spec → plan → tier-aware iron-law TDD → verify-before-done self-review loop |
 | | `debugging.md` | Systematic root-cause method (the `DEBUG:` mode): reproduce → hypothesize → isolate → fix cause → red-first regression test |
+| | `standards-authoring.md` | Distill sprawling project conventions into a checkable standards set (extract → filter → human-approve → classify floor-vs-overridable); prose-first, format-agnostic |
 | **Security, privacy & compliance** | `threat-modeling-and-api-design.md` | In-PR STRIDE threat models + attack-surface-shrinking API design |
 | | `secure-data-processing.md` | Hostile-file parsing, prompt-injection, multi-tenant data handling |
 | | `frontend-web-security.md` | Token storage, CSP, output sanitization, security headers |
