@@ -154,6 +154,12 @@ Notes from running it (verify against current action docs — surfaces drift):
 - `id-token: write` is required to publish (OIDC); a top-level `read-all` is the documented broad read Scorecard needs.
 - **Publishing is public** — the score posts to `api.securityscorecards.dev`. For a well-run repo that's a feature; make it a conscious choice, not an accident.
 
+### OpenSSF Best Practices badge — the one lever for Scorecard's `CII-Best-Practices` check
+
+Scorecard *measures* posture automatically; the **OpenSSF Best Practices** badge (bestpractices.dev, formerly the CII Best Practices badge) is the *self-attested* maturity questionnaire that **complements** it — and it is the **single lever** for Scorecard's `CII-Best-Practices` check (that check reads your badge status and nothing else: `passing` scores **5**, `silver` ~**7**, `gold` **10**; no badge scores **0**). A **Tier-2 / serious-public-repo** step, not a Tier-0 one: earning `passing` is a few hours filling the form honestly, and it lifts both the human "is this maintained?" signal and the automated Scorecard number.
+
+Answer it the way this skill answers everything — **honestly, don't over-claim `Met`.** A project that **uses no cryptography** and **ships no running service** answers the whole `crypto_*` block and the `dynamic_analysis` criteria as **N/A** (or **Unmet** where the form offers no N/A option — never a false `Met`); a false `Met` is the same stale-claim failure as a false badge (SKILL.md *Documentation*). The badge you then add is a **live, dynamic** one (the project's `badge.svg` from bestpractices.dev renders current status by construction) — so it can't drift the way a hardcoded level claim would.
+
 ---
 
 ## Well-Architected — the cloud-architecture pillars (mostly covered; name the framework + the one hole)
