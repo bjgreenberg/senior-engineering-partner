@@ -105,15 +105,19 @@ may not be checkable enough yet.
   your contribution lands **Verified** on `main` even if your own commits weren't signed; you don't
   need to set up signing.
 
-> **A note on the "0 required reviews" setting.** The branch ruleset doesn't *mechanically* require
-> an approval. That's a deliberate accommodation so the solo maintainer can merge their own work
-> (where a documented self-review stands in for a second reviewer). It is **not** a waiver:
-> **contributor PRs are reviewed by a maintainer as a matter of policy** before they land. This
-> mirrors the skill's own rule — *your own hand-written change, green checks suffice; someone
-> else's change, a human reviews it* (`references/github-teams.md` §3).
+> **A note on the review requirement.** The branch ruleset **requires one approving review**, and the
+> maintainer (the repository-admin role) is a **bypass actor** — so the two cases resolve cleanly. A
+> **contributor PR** lands the normal way: on a maintainer's approving review. The **maintainer's own
+> PR** can't be self-approved (GitHub forbids approving your own PR), so it merges via **admin bypass
+> after a documented self-review** — recorded in the PR — stands in for the second reviewer. This is
+> **not** a waiver of review: every PR is reviewed; the bypass only covers the mechanical
+> can't-approve-your-own-PR case. It mirrors the skill's own rule — *your own hand-written change,
+> green checks + a recorded self-review suffice; someone else's change, a human reviews it*
+> (`references/github-teams.md` §3).
 
-[`CODEOWNERS`](.github/CODEOWNERS) documents who owns which parts of the skill; if required reviews
-are ever turned on, it routes review automatically on the sensitive paths.
+[`CODEOWNERS`](.github/CODEOWNERS) documents who owns which parts of the skill. Code-owner review is
+**not** required in the ruleset today (`require_code_owner_review` is off), so `CODEOWNERS` is advisory
+— enabling it would route review automatically on the sensitive paths.
 
 ## Code of Conduct
 
