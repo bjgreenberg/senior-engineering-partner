@@ -1,5 +1,7 @@
 {
-  "skills": ["senior-engineering-partner"],
+  "skills": [
+    "senior-engineering-partner"
+  ],
   "query": "Our Cloud Run FastAPI service sometimes drops requests and leaves DB connections hanging when a revision is replaced or it scales down. Why, and how do we fix it?",
   "files": [],
   "expected_behavior": [
@@ -11,7 +13,9 @@
   ],
   "anti_behavior": [
     "Ignores SIGTERM / graceful shutdown",
-    "Suggests only increasing timeouts or retries without draining/closing cleanly"
+    "Suggests only increasing timeouts or retries without draining/closing cleanly",
+    "Traps SIGTERM but exits immediately without draining in-flight requests or closing the pool (a trap that doesn't drain is shutdown theater)",
+    "Treats the fix as Cloud-Run-request-path-specific and skips the same checkpoint-then-exit-cleanly discipline for Jobs/workers"
   ],
   "source": "v6.4 / references/python-web-apis.md (graceful shutdown / SIGTERM)"
 }

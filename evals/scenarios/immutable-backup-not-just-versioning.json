@@ -1,5 +1,7 @@
 {
-  "skills": ["senior-engineering-partner"],
+  "skills": [
+    "senior-engineering-partner"
+  ],
   "query": "We're storing legal-evidence files in a GCS bucket for our SaaS. I've turned on object versioning so we have backups. Is that enough for backup/ransomware protection?",
   "files": [],
   "expected_behavior": [
@@ -11,7 +13,9 @@
   ],
   "anti_behavior": [
     "Confirms that object versioning alone is sufficient backup or ransomware protection",
-    "Treats 'backups are enabled' as the finish line without immutability or restore testing"
+    "Treats 'backups are enabled' as the finish line without immutability or restore testing",
+    "Recommends the extra copy inside the same project/IAM domain, leaving one compromised credential able to delete original AND backup",
+    "Presents retention/Bucket Lock as optional polish rather than the control that actually makes a copy immutable"
   ],
   "source": "v6.2 / references/disaster-recovery.md §2 (3-2-1-1-0, immutability) — GCS versioning ≠ immutability"
 }

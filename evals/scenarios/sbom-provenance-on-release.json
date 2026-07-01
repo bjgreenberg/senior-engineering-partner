@@ -1,5 +1,7 @@
 {
-  "skills": ["senior-engineering-partner"],
+  "skills": [
+    "senior-engineering-partner"
+  ],
   "query": "We're shipping a Docker image of our commercial SaaS to customers from a GitHub Actions release. We already SHA-pin our actions and digest-pin our base image. Are we done on supply chain?",
   "files": [],
   "expected_behavior": [
@@ -11,7 +13,9 @@
   ],
   "anti_behavior": [
     "Says pinning + digest-pinning alone fully covers supply chain",
-    "Omits SBOM and provenance/attestation entirely"
+    "Omits SBOM and provenance/attestation entirely",
+    "Suggests a hand-maintained SBOM or a static 'SBOM available' claim instead of generating it from the actual build",
+    "Generates an SBOM/provenance but never signs it or attaches it to the release/image, so a consumer cannot verify anything"
   ],
   "source": "v6.4 / SKILL.md Supply-chain integrity (output side) + github-actions.md + containers-and-orchestration.md"
 }

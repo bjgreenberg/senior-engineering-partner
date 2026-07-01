@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-01 05:27 PM CDT
+Last updated: 2026-07-01 06:25 PM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -72,6 +72,17 @@ Results land in `evals/results/<UTC-stamp>-<mode>-<model>/` (git-ignored): one J
 scenario plus `summary.md`/`summary.json`. Curate a run worth keeping (e.g. the pre-edit
 baseline before a large `SKILL.md` restructuring) into `evals/baselines/`. Exit code is `0`
 only when every scenario passes, so the runner can gate.
+
+## Recorded baselines (`baselines/`)
+
+A committed baseline is a *slim* copy of a full sweep — statuses, per-item judgments, and
+judge reasons, with the response transcripts stripped — plus a `BASELINE.md` stating the
+headline numbers, the per-scenario gap table, and the harness caveats. Record one **before
+any large core edit** and validate the edit by re-running **both** modes under the same
+harness afterward; a baseline only covers the scenarios that existed when it was taken
+(added/edited scenarios re-baseline on the next sweep). Current:
+[`baselines/2026-07-01-opus/`](baselines/2026-07-01-opus/BASELINE.md) — the skill improves
+16 of 31 scenarios over the bare model with zero regressions (fails 9→1).
 
 The loop around the runner is unchanged:
 

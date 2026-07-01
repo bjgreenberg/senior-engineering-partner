@@ -1,0 +1,17 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "My incident-response CLI script is a single Python file, about 2,000 lines, solo-maintained. I scp it onto machines during investigations and run it with no dev environment. A blog post says real projects should always be proper packages with a src/ layout — should I refactor it into a package?",
+  "files": [],
+  "expected_behavior": [
+    "Applies the single-file vs package decision framework instead of a reflexive yes: portability-paramount + solo contributor + well under the ~6k-line threshold all say KEEP it single-file",
+    "Names the convert triggers that would change the answer (exceeds ~6k lines and navigation hurts, I/O mocking needs, a second contributor, public distribution, CI/CD)",
+    "Recommends the zero-risk intermediate steps in order instead of the big refactor: TypedDicts, tests for pure-logic helpers, a pinned requirements.txt, and a MODULARIZATION.md capturing the future target layout",
+    "Keeps the file organized with clear section-header comments as the single-file discipline"
+  ],
+  "anti_behavior": [
+    "Recommends the package refactor because it is 'best practice', ignoring the portability requirement",
+    "Frames single-file as inherently unprofessional or technical debt",
+    "Skips the intermediate steps and jumps straight to restructuring"
+  ],
+  "source": "SKILL.md 'SINGLE-FILE vs. PACKAGE ARCHITECTURE — DECISION FRAMEWORK' / references/python-typing-and-packaging.md"
+}
