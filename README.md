@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-06-30 07:31 PM CDT
+Last updated: 2026-06-30 07:40 PM CDT
 
 A custom Claude Code skill: a strict **code reviewer, pair programmer, debugger, and mentor** for
 Python, Bash, Google Apps Script, and JavaScript. It encodes a security-first,
@@ -76,7 +76,7 @@ flowchart TD
     C -->|"progressive disclosure: read a reference only when relevant"| R[(references/)]
     C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · self-review)<br/>evals/ (27 regression scenarios)"]
     R --> P["Environment profile<br/>my-environment.md (swap to re-home the skill)"]
-    R --> W["Engineering process (3)<br/>engineering-workflow · debugging · standards-authoring"]
+    R --> W["Engineering process (4)<br/>engineering-workflow · debugging · audit-report-format · standards-authoring"]
     R --> S["Security, privacy and compliance (6)"]
     R --> T["Testing and QA (2)"]
     R --> I["Cloud, infra and ops (9) + data (2)"]
@@ -151,6 +151,7 @@ version-specific commands.
 | **Environment profile** | `my-environment.md` | The concrete stack/hosts/repos/house-Git-standards — the one file to swap when forking the skill |
 | **Engineering process** | `engineering-workflow.md` | The spec → plan → tier-aware iron-law TDD → verify-before-done self-review loop |
 | | `debugging.md` | Systematic root-cause method (the `DEBUG:` mode): reproduce → hypothesize → isolate → fix cause → red-first regression test |
+| | `audit-report-format.md` | The `AUDIT:` mode deliverable: a severity-ranked findings report (finding schema, severity taxonomy, mechanize-the-checkable, lead-with-verified-strengths) |
 | | `standards-authoring.md` | Distill sprawling project conventions into a checkable standards set (extract → filter → human-approve → classify floor-vs-overridable); prose-first, format-agnostic |
 | **Security, privacy & compliance** | `threat-modeling-and-api-design.md` | In-PR STRIDE threat models + attack-surface-shrinking API design |
 | | `secure-data-processing.md` | Hostile-file parsing, prompt-injection, multi-tenant data handling |
