@@ -67,6 +67,7 @@ This section's controls already implement the API Top 10; name them by the **API
 | The verify → resolve → role-drop auth pipeline (`require_token`/`require_session`) | **API2:2023 Broken Authentication** (token verify, fail-closed dev mode) + **API5:2023 Broken Function Level Authorization** (the `Depends` gate per route) |
 | Capped `max_tokens`, bounded backoff, `429`+`Retry-After`, body-size cap, bombs bounded | **API4:2023 Unrestricted Resource Consumption** (the billing-DoS row in §1) |
 | Pydantic reject-unknown-fields / no auto-bind of client input to model fields | **API3:2023 Broken Object Property Level Authorization** — mass assignment **and** excessive data exposure merged into one 2023 code (no separate "API6 Mass Assignment" as in 2019) |
+| **Allowlist the destination of any server-fetched user-supplied URL** (webhook target, image/avatar/import URL, link-preview fetch); block link-local/metadata + private ranges (`169.254.169.254`, `::1`, RFC-1918) and non-`http(s)` schemes; re-validate **after** redirects. The file-parse SSRF path (XXE, doc-XML-driven fetch) is covered in `secure-data-processing.md` §2 | **API7:2023 Server-Side Request Forgery** — the server making a request *to an attacker-chosen address* (cloud metadata theft, internal-network pivot) |
 | `/docs` off in prod, CORS allowlist, generic error contract (§2) | **API8:2023 Security Misconfiguration** |
 
 ### Versioning & deprecation
