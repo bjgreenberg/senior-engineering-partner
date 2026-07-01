@@ -145,6 +145,15 @@ A real SSDF gap is, again, a *named missing artifact* — "no SBOM published for
 
 If the product ships AI features, the governance analogues to the CSF (operational) + SSDF (development) spine above are **pointers, not a separate checklist** — governance is lighter-touch here than the security floor. **NIST AI RMF (NIST AI 100-1)** is the voluntary AI risk-management operating model — four functions, **Govern / Map / Measure / Manage** (the AI-specific echo of CSF's Functions); its **Generative AI Profile (NIST AI 600-1)** catalogs the GenAI-specific risk classes (prompt injection, confabulation, data-privacy and IP leakage, value-chain risk) — use it as a risk *menu* to scope what an AI feature must defend, mapping straight onto `references/threat-modeling-and-api-design.md` and the agentic-tool rules. **ISO/IEC 42001:2023** is the certifiable **AI management-system (AIMS)** standard — the ISO counterpart to running SSDF/SOC 2 as a system, often run *with* the AI RMF inside it. *All three revise and the GenAI guidance is young — verify the current publications against NIST and ISO before citing a document number or a named risk class.* Keep it a pointer: invoke these when an AI feature needs a governance reference, not as a gate on every change.
 
+### OpenSSF Scorecard — run it on your OWN repo, not just your dependencies
+
+`foss-adoption.md` uses Scorecard to vet an *inbound* dependency; the same tool run on your **own** repo is a cheap, automatable **posture self-assessment** that scores exactly the PS/PW/RV practices above — Branch-Protection, Token-Permissions, Pinned-Dependencies, Signed-Releases, Dangerous-Workflow, SAST, Dependency-Update-Tool — most of which this skill already enforces. Add the `ossf/scorecard-action` as a scheduled + push-to-`main` workflow with `publish_results: true`; it emits a public score a README badge reads (an honest, live badge — SKILL.md *Documentation*). **Treat a dropped score as a regression to triage**, the same posture as a Dependabot alert.
+
+Notes from running it (verify against current action docs — surfaces drift):
+- **SHA-pin the action** (the supply-chain rule) and keep the workflow **minimal — `checkout` + `scorecard-action`.** The optional SARIF→code-scanning upload is *not* needed for the badge, adds action surface, and can break publishing: scorecard's publish-time **workflow verification rejects a `github/codeql-action` pin it treats as an "imposter commit"** (and default-setup CodeQL rejects third-party SARIF anyway).
+- `id-token: write` is required to publish (OIDC); a top-level `read-all` is the documented broad read Scorecard needs.
+- **Publishing is public** — the score posts to `api.securityscorecards.dev`. For a well-run repo that's a feature; make it a conscious choice, not an accident.
+
 ---
 
 ## Well-Architected — the cloud-architecture pillars (mostly covered; name the framework + the one hole)
