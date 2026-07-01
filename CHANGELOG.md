@@ -17,6 +17,21 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.6.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.5.0...v1.6.0) (2026-07-01)
+
+
+### Features
+
+* **governance:** ADRs name the discipline they waive; floor never overridable; human-review hard-block; authoring convention ([#21](https://github.com/bjgreenberg/senior-engineering-partner/issues/21)) ([6525714](https://github.com/bjgreenberg/senior-engineering-partner/commit/65257146de8f2dd5854594fcaa1ff7388aed3306))
+* **reference:** add standards-authoring.md — distill sprawling conventions into checkable rules ([#22](https://github.com/bjgreenberg/senior-engineering-partner/issues/22)) ([5eff0a5](https://github.com/bjgreenberg/senior-engineering-partner/commit/5eff0a590c70cb16dd49cb9a48316065bf64dc5e))
+* **standards:** name reuse-first, rule-of-three, and YAGNI in modular-code discipline ([#18](https://github.com/bjgreenberg/senior-engineering-partner/issues/18)) ([54bdfb3](https://github.com/bjgreenberg/senior-engineering-partner/commit/54bdfb3943680ad2b330ef958c0783ebe3fa42ad))
+
+
+### Bug Fixes
+
+* **resilience:** fail closed — never return a swallowed error as a success-shaped empty/default ([#20](https://github.com/bjgreenberg/senior-engineering-partner/issues/20)) ([fbb9b70](https://github.com/bjgreenberg/senior-engineering-partner/commit/fbb9b70d7de7f0a5562d4d0e5e3eda86209b7953))
+* **security:** CSV/spreadsheet formula injection on export + SSRF (API7) in the OWASP map ([#19](https://github.com/bjgreenberg/senior-engineering-partner/issues/19)) ([8f887b0](https://github.com/bjgreenberg/senior-engineering-partner/commit/8f887b0adc9b1a85b7b9f9cccd5be83f97df4dfb))
+
 ## [1.5.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.4.0...v1.5.0) (2026-06-30)
 
 Dogfooding again: two PRs' worth of lessons from a real build session where a **fully green test
