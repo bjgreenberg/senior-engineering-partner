@@ -17,6 +17,51 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.10.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.9.0...v1.10.0) (2026-07-02)
+
+The release where the A1 diet finally pays in bytes — and the skill learns to talk about the
+quantum clock. The five heaviest toolchain bullets become pure triggers, and a new
+crypto-agility + post-quantum discipline closes the one crypto topic the skill had zero
+coverage of.
+
+### Features
+
+* **skill:** convert the five heavy toolchain bullets to pure triggers (A1 tranche 2) ([#51](https://github.com/bjgreenberg/senior-engineering-partner/issues/51)) ([166a805](https://github.com/bjgreenberg/senior-engineering-partner/commit/166a8052165ec9a3f59de9006877bea8222dd44c))
+
+  **Why:** the always-loaded SKILL.md duplicated primer prose its references already carry,
+  defeating progressive disclosure (audit finding A1). Google Apps Script, Observability &
+  incident response, Diagrams & visual documentation, TypeScript & Node, and Security &
+  compliance frameworks now state their load-bearing non-negotiables tersely and point at their
+  references: **90,954 → 89,222 bytes (net −1,732)** — the first tranche with a real byte payoff
+  (tranche 1 was +386, the pattern and the floor). Every dropped specific was verified
+  line-by-line to already exist in its reference across three independent passes (zero misses);
+  a 4-lens adversarial review + fold re-review restored ~540 B the compression had weakened
+  (the Well-Architected sustainability carve-out, the GAS daily trigger-runtime budget's
+  silent-stop failure, the RUM-client-monitor-as-PII-scrubbed-subprocessor constraint, concrete
+  fast-burn/slow-burn alert routing). Eval-validated against the recorded 2026-07-01 baseline:
+  with-skill **23 pass / 10 partial / 3 fail / 0 error** vs bare 7/17/12 — **19 improved,
+  0 regressed**, every down causally cleared as harness artifact or judge variance. Also
+  corrects the compliance bullet's under-inclusive SOC 2 claim (CC7/CC8 → CC6–CC8) — the
+  inverse of tranche 1's Brewfile finding.
+
+* **skill:** crypto-agility + post-quantum readiness discipline ([#53](https://github.com/bjgreenberg/senior-engineering-partner/issues/53)) ([ee24ad4](https://github.com/bjgreenberg/senior-engineering-partner/commit/ee24ad47dcee6440edd192a37f60422441612f78))
+
+  **Why:** owner request ("we need to be secure") meeting a verified gap — `git grep` found zero
+  post-quantum content anywhere in the tree. `compliance.md`'s A04 block now names the anchors
+  (FIPS 203 ML-KEM / 204 ML-DSA / 205 SLH-DSA; NIST IR 8547's 112-bit-classical-deprecated-~2030
+  / all-classical-disallowed-~2035 trajectory; CNSA 2.0) and **harvest-now-decrypt-later** as
+  the threat with a clock on it — recorded traffic is broken via its *captured key exchange*,
+  not the symmetric ciphertext. Triage-by-surface: AES-256 at rest is already PQ-adequate;
+  signatures aren't HNDL-exposed *unless re-verified after the transition* (retained evidence at
+  trial, git tags at clone time → timestamp/countersign). Strategy: **crypto-agility delegated
+  to managed platforms** (hybrid X25519+ML-KEM; a default `*.run.app` endpoint gets it today, an
+  LB-fronted service needs the SSL-policy opt-in until the announced Oct-2026 default flip) —
+  hand-rolled PQC stays a finding. `data-protection.md` §4 ties HNDL to long-retention classes'
+  retention/DPIA decisions. Adversarially fact-checked against NIST/Federal Register, NSA, Google
+  Cloud, and Cloudflare sources — including an empirical `X25519MLKEM768` negotiation check —
+  and hardened by the Copilot reviewer's ambiguity catch on the HNDL wording. Eval suite grows
+  **36 → 37** (`crypto-agility-pqc-hndl`).
+
 ## [1.9.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.8.0...v1.9.0) (2026-07-02)
 
 The release where the eval suite stops being documentation and starts being a gate — and
