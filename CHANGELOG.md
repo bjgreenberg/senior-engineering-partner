@@ -17,6 +17,40 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.9.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.8.0...v1.9.0) (2026-07-02)
+
+The release where the eval suite stops being documentation and starts being a gate — and
+immediately earns its keep. **`scripts/run-evals.py` executes the regression scenarios against a
+live model** (headless `claude -p` runs, an LLM judge grading `expected_behavior`/`anti_behavior`,
+deterministic verdicts), in two modes: bare model vs. skill-injected. The first recorded baseline
+(`evals/baselines/2026-07-01-opus/`) measured the skill improving 16 of 31 scenarios over the bare
+model with zero regressions — and exposed one stuck failure the skill's prose never fixed:
+`stale-diagram-on-behavior-change`.
+
+Both findings drive the second feature. **Phase 2, tranche 1 of the core restructuring** converts
+the first DEVELOPMENT DISCIPLINE cluster (Docker/Kubernetes, GCP, Databases, Package managers,
+IDEs) to **pure triggers** — terse non-negotiables plus the read pointer — with every dropped
+specific verified line-by-line to already exist in its reference. A four-lens adversarial review
+hardened the result: it restored three load-bearing rules the trim would have lost (Kubernetes
+runtime secrets via ESO/CSI — never a base64 `Secret`; resource requests+limits; no signing
+certs/keys/profiles committed), and surfaced that the old Brewfile bullet had contradicted
+`package-managers.md`'s `--no-mas` rule since v1.0.0 — that claim is deleted as a correction, not
+relocated. And the stuck failure gets its fix: the behavior-change docs discipline is now
+**procedural** — a request to "update the code" *includes* the docs that depict that code's
+behavior (not scope creep; the *don't-widen-scope* rule cross-points here), and the hunt is
+deterministic (`git grep` the old behavior's names; append-only records get a new entry or a
+superseding ADR, never a rewrite). Re-running both sweep modes against the recorded baseline
+validated the tranche: 16 improved / 0 regressed vs. bare — the identical profile as v1.8.0 —
+and `stale-diagram-on-behavior-change` improved fail→partial. The honest ledger: the file is
++386 bytes (the strengthening and restored non-negotiables outweigh the five shortest bullets'
+trims); the byte payoff of the restructuring comes from the heavy bullets in the next tranches.
+
+
+### Features
+
+* **evals:** add a runner that executes the regression suite ([#47](https://github.com/bjgreenberg/senior-engineering-partner/issues/47)) ([7cc6e4b](https://github.com/bjgreenberg/senior-engineering-partner/commit/7cc6e4b5b380137fc9794b94de41aec918d7aef9))
+* **skill:** convert the infra toolchain cluster to pure triggers; make the behavior-change doc sweep procedural ([#49](https://github.com/bjgreenberg/senior-engineering-partner/issues/49)) ([f640611](https://github.com/bjgreenberg/senior-engineering-partner/commit/f640611bdd9886e4a81ada1ab991932dbff47998))
+
 ## [1.8.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.7.1...v1.8.0) (2026-07-01)
 
 Closes the freshness blind spot in the dependency discipline. The skill already demanded
