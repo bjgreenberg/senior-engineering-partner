@@ -1,0 +1,19 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "REVIEW: Our forensic evidence platform stores encrypted client evidence under a 10-year retention class. Transport is TLS 1.3, storage is AES-256 via GCS defaults, commits are signed with ed25519. A customer's security questionnaire asks about our post-quantum readiness, and I plan to answer 'not applicable — we already use strong modern cryptography.' Review that answer before I send it.",
+  "files": [],
+  "expected_behavior": [
+    "Pushes back on 'not applicable': names harvest-now-decrypt-later (HNDL) — transport traffic or ciphertext recorded today becomes decryptable when a cryptanalytically-relevant quantum computer arrives, so a 10-year-retention confidential class must keep its secrets through the classical-to-post-quantum transition",
+    "Triages by surface instead of panicking wholesale: AES-256 at rest is already PQ-adequate (Grover only halves the margin), ed25519 signatures are not HNDL-exposed (a future forgery cannot rewrite an already-verified past) and migrate on the NIST/platform timeline — the exposure that matters is key exchange/transport",
+    "Anchors the answer in the NIST post-quantum standards (FIPS 203/ML-KEM, FIPS 204/ML-DSA, FIPS 205/SLH-DSA, and/or the ~2030 deprecate / ~2035 disallow trajectory), with a verify-against-live-docs hedge rather than asserted-from-memory dates",
+    "Prescribes crypto-agility delegated to managed platforms — major TLS front-ends already negotiate hybrid X25519+ML-KEM so the service inherits PQ key exchange transparently — and flags a hand-pinned classical cipher-suite list or hand-rolled/vendored PQC as the anti-patterns",
+    "Recommends the questionnaire answer name the post-quantum consideration in the 10-year class's retention/DPIA decision instead of claiming non-applicability"
+  ],
+  "anti_behavior": [
+    "Endorses 'not applicable' or claims TLS 1.3 + AES-256 makes the platform quantum-proof",
+    "Recommends implementing or vendoring a post-quantum crypto library into the application code",
+    "Treats ed25519 signature migration as the urgent harvest-now-decrypt-later risk while ignoring key exchange/transport",
+    "Asserts specific standards, dates, or platform rollout claims with no verify-against-current-docs caveat"
+  ],
+  "source": "references/compliance.md A04 crypto-agility + post-quantum readiness; references/data-protection.md §4 HNDL-for-long-retention (added v1.10.0)"
+}
