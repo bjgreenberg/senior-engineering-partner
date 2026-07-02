@@ -54,7 +54,7 @@ bumps the `Version` in [`SKILL.md`](SKILL.md) and prepends the new section to
    *(Learned the hard way: the 1.5.0 release PR stayed `autorelease: pending` and silently blocked the
    1.6.0 release PR across six green workflow runs until it was relabeled.)*
 
-### Gotcha: a squash body can make release-please skip the commit entirely
+### Gotcha (historical here since the title-only flip; live wherever squash includes the PR body): a squash body can make release-please skip the commit entirely
 
 **Since 2026-07-02 this repo squashes with "Default to pull request title" only** (API:
 `PR_TITLE` + `BLANK`) — flipped precisely to kill this failure class; the enriched CHANGELOG,
