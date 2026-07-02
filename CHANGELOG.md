@@ -17,6 +17,26 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.12.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.11.0...v1.12.0) (2026-07-02)
+
+The A1 token-mass reduction lands its final tranche: every heavy toolchain bullet in the
+always-loaded core is now a pure trigger. The last two — **Scalability & system design** and
+**Python web APIs** — shed their primer prose to the deep references they point at, taking
+SKILL.md from 90,472 to 89,782 bytes with zero content loss: every dropped specific was
+verified line-by-line in its reference *before* trimming, a 4-lens adversarial review
+(content-loss, docs-honesty, coherence, load-bearing floor) folded back the few phrases that
+belong in the always-loaded layer, and both Opus eval sweeps confirmed the same
+improvement profile as the pre-trim skill (19 scenarios improved over the bare model, zero
+real regressions — every apparent flip causally cleared by re-probe).
+
+### Features
+
+* **skill:** convert the last two heavy toolchain bullets to pure triggers (A1 tranche 3) ([#59](https://github.com/bjgreenberg/senior-engineering-partner/issues/59)) ([9656be0](https://github.com/bjgreenberg/senior-engineering-partner/commit/9656be0820e5dfd0c796eba0aafb8cda3e96de3e)) — Scalability & system design 1,164→858 B and Python web APIs 1,064→664 B, keeping the non-negotiables (tenant id never from the client; don't block the event loop; graceful `SIGTERM` drain; statelessness; queue + DLQ + idempotent consumer; the pool ceiling and its pooler fix) and relocating one implicit specific into `references/python-web-apis.md`, now stated outright: uvicorn stops accepting new connections on `SIGTERM` before draining (verified against uvicorn source). The Copilot review's precision catch is fixed at the source too — a blocking call stalls that *worker's* event loop, which on the documented single-worker Cloud Run deployment is the whole instance.
+
+### Documentation
+
+* README `Last updated` stamp refresh, PQC coverage mentions in the security line + compliance catalog row, and the MAINTAINERS note recording the title-only squash setting ([#58](https://github.com/bjgreenberg/senior-engineering-partner/issues/58)) ([b5fce97](https://github.com/bjgreenberg/senior-engineering-partner/commit/b5fce97))
+
 ## [1.11.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.10.0...v1.11.0) (2026-07-02)
 
 The release where the skill learns to build the loops it already runs — and where its own
