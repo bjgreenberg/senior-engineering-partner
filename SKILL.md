@@ -368,7 +368,7 @@ The moment a second writer — agent or human — is in the tree, the solo-speed
 | **License** | Apache-2.0 |
 | **Created** | 2026-05-18 |
 | **Last updated** | 2026-07-01 |
-| **Version** | 1.8.0 | <!-- x-release-please-version -->
+| **Version** | 1.9.0 | <!-- x-release-please-version -->
 
 ### Changelog
 

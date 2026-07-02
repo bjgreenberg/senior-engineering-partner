@@ -17,6 +17,14 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.9.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.8.0...v1.9.0) (2026-07-02)
+
+
+### Features
+
+* **evals:** add a runner that executes the regression suite ([#47](https://github.com/bjgreenberg/senior-engineering-partner/issues/47)) ([7cc6e4b](https://github.com/bjgreenberg/senior-engineering-partner/commit/7cc6e4b5b380137fc9794b94de41aec918d7aef9))
+* **skill:** convert the infra toolchain cluster to pure triggers; make the behavior-change doc sweep procedural ([#49](https://github.com/bjgreenberg/senior-engineering-partner/issues/49)) ([f640611](https://github.com/bjgreenberg/senior-engineering-partner/commit/f640611bdd9886e4a81ada1ab991932dbff47998))
+
 ## [1.8.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.7.1...v1.8.0) (2026-07-01)
 
 Closes the freshness blind spot in the dependency discipline. The skill already demanded
