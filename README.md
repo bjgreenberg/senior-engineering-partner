@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-02 01:23 PM CDT
+Last updated: 2026-07-02 06:04 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -239,6 +239,51 @@ Then **customize it for your environment** (next section) and invoke it with
 core works out of the box against the assumed baseline (macOS, Bash, GitHub, a secret
 manager, a scale-to-zero cloud target); the profile is what makes its guidance specific to
 *you*.
+
+## Using it with other AI tools (Codex, Gemini CLI, …)
+
+None of this skill's *content* is Claude-specific (the few Claude-bound helpers are
+disclosed at the end of this section): the always-loaded core and every reference are
+plain Markdown, the mode triggers (`REVIEW:`, `DEBUG:`, …) are plain prompt conventions, and
+the packaging — a directory whose `SKILL.md` carries `name` + `description` frontmatter
+beside `references/` and `scripts/` — is the same **Agent Skills format** that OpenAI Codex
+and Google Gemini CLI (among a growing list of tools) now load natively. Portability tiers,
+most to least faithful:
+
+- **Agentic CLIs with native Agent Skills — drop-in.** Codex CLI and Gemini CLI both read
+  user-level skills from `~/.agents/skills/`, so one clone serves both:
+
+  ```bash
+  git clone https://github.com/bjgreenberg/senior-engineering-partner \
+    ~/.agents/skills/senior-engineering-partner
+  ```
+
+  Gemini CLI can also install straight from the repo URL (`gemini skills install …`), and
+  both tools offer explicit invocation (`/skills`; `$`-mention in Codex) or implicit
+  selection by the skill's `description`. Create `references/my-environment.md` from the
+  template exactly as in the next section — that step is tool-agnostic.
+
+- **Agentic tools without skills support — via the context file.** Any agent that reads
+  the [`AGENTS.md` standard](https://agents.md/) (Cursor, Zed, Aider, GitHub Copilot's coding agent, and
+  many others) or an equivalent (Gemini CLI's `GEMINI.md`) can carry the skill as standing
+  instructions: point the context file at `SKILL.md`'s body — copy it in, or a one-line
+  "read `SKILL.md` in this directory and follow it" — keeping `references/` adjacent so the
+  "Read `references/<topic>.md`" directives resolve against the working tree.
+
+- **Chat products (Custom GPTs, Gemini Gems) — partial fidelity; know the trade.**
+  Instruction fields cap far below the core's size (a Custom GPT allows 8,000 characters of
+  instructions plus 20 knowledge files), so the core can only ride along as uploaded
+  knowledge — *retrieved*, not always-loaded, which weakens the skill's central design
+  (non-negotiables guaranteed in context, detail read on demand). With no shell, the
+  enforced half (run the gates, TDD red-first, verify-before-asserting with real commands)
+  degrades to advice. Usable for `EXPLAIN:`-style consultation; not equivalent. A research
+  product without file or shell access (e.g. Perplexity) isn't a meaningful target.
+
+What stays Claude-specific, disclosed: the eval runner (`scripts/run-evals.py`) drives the
+`claude` CLI (the JSON scenarios themselves are runner-agnostic); the repo's CI gates are
+GitHub Actions; and how reliably a given model *follows* ~90 KB of discipline varies — the
+eval suite measures that for Claude, and this README makes no equivalent claim for other
+models.
 
 ## Customize for your environment (`my-environment.md`)
 
