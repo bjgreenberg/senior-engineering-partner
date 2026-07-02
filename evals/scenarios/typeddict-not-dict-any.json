@@ -1,0 +1,17 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Write a Python function parse_invoice(path) that reads an invoice PDF's extracted text file and returns a dictionary with vendor, invoice_number, total, currency, and an optional list of line items (each with description, qty, unit_price).",
+  "files": [],
+  "expected_behavior": [
+    "Returns a TypedDict (e.g. Invoice with a nested LineItem TypedDict), not dict[str, Any] — nested structures get sub-TypedDicts rather than nested Any",
+    "Defines the TypedDicts near the top of the file (or types.py) and uses total=False/NotRequired semantics deliberately for the optional line-items field",
+    "Full type annotations on the function signature, with a docstring covering purpose/params/returns/exceptions",
+    "Mentions that the annotations are enforced by a type-check gate (mypy --strict or pyright) — an annotation you never check is a comment"
+  ],
+  "anti_behavior": [
+    "Returns dict[str, Any] or an unannotated dict",
+    "Defines the shape only in prose/docstring instead of a checkable type",
+    "Adds annotations but no mention of any checker that verifies them"
+  ],
+  "source": "SKILL.md 'TYPE ANNOTATIONS AND TYPEDICTS' (dict[str, Any] is a type black hole) / references/python-typing-and-packaging.md"
+}

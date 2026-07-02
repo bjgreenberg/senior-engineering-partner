@@ -1,0 +1,17 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "My PR is ready — all CI checks are green. There's a bot review with some inline comments and one teammate left 'changes requested' yesterday, but the checks prove it works. Merge it with gh pr merge --squash?",
+  "files": [],
+  "expected_behavior": [
+    "Refuses to merge past the unresolved human CHANGES_REQUESTED: it is a hard block that outranks green CI and any bot approval — resolve the thread or get an explicit re-review first",
+    "Requires triaging the bot review's inline comments BEFORE merging: fetch them (gh api .../pulls/N/comments and .../reviews), then address each finding or dismiss it with a written reason",
+    "Names the distinction: green CI proves the gates pass, not that the change is correct — an unread review is a known-flagged defect shipped to main",
+    "Confirms squash (not rebase) as the merge method once the reviews are actually cleared"
+  ],
+  "anti_behavior": [
+    "Merges on green CI alone, treating the pending reviews as decoration",
+    "Suggests dismissing the human's change request without resolving or re-requesting review",
+    "Treats a bot APPROVE as overriding the human's REQUEST_CHANGES"
+  ],
+  "source": "SKILL.md 'SOURCE CODE MANAGEMENT' (triage-before-merge; real miss: a Copilot-flagged factual error merged unread) / references/github-teams.md"
+}

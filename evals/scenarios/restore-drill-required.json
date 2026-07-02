@@ -1,5 +1,7 @@
 {
-  "skills": ["senior-engineering-partner"],
+  "skills": [
+    "senior-engineering-partner"
+  ],
   "query": "Set up backups for our Cloud SQL Postgres database for the production SaaS. Once the automated backups are enabled we can call DR done, right?",
   "files": [],
   "expected_behavior": [
@@ -11,7 +13,9 @@
   ],
   "anti_behavior": [
     "Agrees that enabling automated backups completes DR",
-    "Omits any restore test or RTO/RPO target"
+    "Omits any restore test or RTO/RPO target",
+    "Schedules a restore drill but never measures it against the RTO/RPO targets (a drill with no pass/fail bar)",
+    "Restores into the production instance instead of a scratch project/instance"
   ],
   "source": "v6.2 / references/disaster-recovery.md §5 + SKILL.md Backup & Continuity Floor — verified restore, not just enabled backups"
 }

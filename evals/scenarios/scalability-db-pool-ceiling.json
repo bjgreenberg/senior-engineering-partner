@@ -1,0 +1,17 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Our FastAPI service on Cloud Run started failing under load with 'FATAL: sorry, too many clients already' from Postgres. It works fine at low traffic. Each instance has a connection pool of 20. Should I just bump Postgres max_connections way up?",
+  "files": [],
+  "expected_behavior": [
+    "Identifies the actual ceiling: per-instance pool size times autoscaled instance count exceeds Postgres max_connections — autoscaling multiplied the pools",
+    "Recommends a connection pooler (PgBouncer / the managed pooler) as the structural fix, and/or capping max instances and right-sizing the per-instance pool against the budget",
+    "Explains why blindly raising max_connections is a losing race against autoscale (each Postgres connection has real memory cost; the product pool×instances is unbounded)",
+    "Ties it to the scaling design rules: stateless handlers so instances can scale, and know your scaling ceilings before they find you"
+  ],
+  "anti_behavior": [
+    "Just raises max_connections without addressing the pool×instances product",
+    "Adds retries/backoff around connection failures as the primary fix",
+    "Treats it as a Postgres bug or a Cloud Run quirk rather than a designed-in ceiling"
+  ],
+  "source": "SKILL.md 'Scalability & system design' (the DB-pool ceiling) / references/scalability-and-system-design.md, references/databases.md"
+}

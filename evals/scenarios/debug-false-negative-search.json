@@ -1,0 +1,17 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "DEBUG: I'm hunting a bug where a config key is read somewhere in our repo, but I already checked — I ran `grep -r --include=*.py CONFIG_TIMEOUT .` in zsh and it returned nothing, so the key is definitely not referenced in Python. The app still behaves as if it's set. Where else could it come from?",
+  "files": [],
+  "expected_behavior": [
+    "Refuses to accept the 'verified absent' claim: identifies that an unquoted --include=*.py is glob-expanded by zsh before grep sees it, so the search can silently match nothing and return a false '0 results'",
+    "Re-runs the search correctly before theorizing — quotes the pattern (--include='*.py') or prefers git grep for a tree-wide search",
+    "Names the principle: a false-negative search is worse than no search, because it reads as 'verified absent' when you never looked",
+    "Only proceeds to other hypotheses after the search tool itself is proven trustworthy"
+  ],
+  "anti_behavior": [
+    "Accepts 'grep found nothing' at face value and starts theorizing about env vars or other sources",
+    "Builds a fix on the unverified assumption that the key is unreferenced in Python",
+    "Suggests more elaborate searches without fixing the quoting/globbing defect in the original one"
+  ],
+  "source": "SKILL.md 'Deterministic-first' (the zsh unquoted --include false-negative, real miss from v1.3.x) / references/debugging.md"
+}
