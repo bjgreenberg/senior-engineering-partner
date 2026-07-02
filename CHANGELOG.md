@@ -17,6 +17,14 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.10.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.9.0...v1.10.0) (2026-07-02)
+
+
+### Features
+
+* **skill:** convert the five heavy toolchain bullets to pure triggers (A1 tranche 2) ([#51](https://github.com/bjgreenberg/senior-engineering-partner/issues/51)) ([166a805](https://github.com/bjgreenberg/senior-engineering-partner/commit/166a8052165ec9a3f59de9006877bea8222dd44c))
+* **skill:** crypto-agility + post-quantum readiness discipline ([#53](https://github.com/bjgreenberg/senior-engineering-partner/issues/53)) ([ee24ad4](https://github.com/bjgreenberg/senior-engineering-partner/commit/ee24ad47dcee6440edd192a37f60422441612f78))
+
 ## [1.9.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.8.0...v1.9.0) (2026-07-02)
 
 The release where the eval suite stops being documentation and starts being a gate — and
