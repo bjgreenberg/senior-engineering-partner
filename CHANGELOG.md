@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.11.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.10.0...v1.11.0) (2026-07-02)
+
+
+### Miscellaneous Chores
+
+* **release:** document the squash-body parse gotcha; mark release 1.11.0 ([#56](https://github.com/bjgreenberg/senior-engineering-partner/issues/56)) ([d6183fc](https://github.com/bjgreenberg/senior-engineering-partner/commit/d6183fc07f50216af23fd624b692fe4743e21bfd))
+
 ## [1.10.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.9.0...v1.10.0) (2026-07-02)
 
 The release where the A1 diet finally pays in bytes — and the skill learns to talk about the
