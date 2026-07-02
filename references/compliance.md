@@ -99,7 +99,7 @@ In the 2025 edition SSRF is no longer a standalone item — it folds into Broken
 
 ### Going deeper
 - **OWASP ASVS** (Application Security Verification Standard) is the per-requirement verification standard — use it when "did we cover Axx?" needs to become "which specific L1/L2 requirements pass?" Pick a target level (L2 for the B2B SaaS handling tenant data) and verify against it.
-- **OWASP Dependency-Check** and **trivy** are the concrete SCA tools backing A03/A08; **OWASP ZAP** is the option for dynamic (DAST) scanning of a running Cloud Run service.
+- **OWASP Dependency-Check** and **trivy** are the concrete SCA tools backing A03/A08; **OWASP ZAP** is the option for dynamic (DAST) scanning of a running service — run it as a light pass against **staging** (never production; the environment-isolation floor), complementing the SAST gate, which sees the code but never the running behavior.
 
 ---
 
