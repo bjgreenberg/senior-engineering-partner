@@ -19,6 +19,41 @@ in your own `references/my-environment.md`.
 
 ## [1.11.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.10.0...v1.11.0) (2026-07-02)
 
+The release where the skill learns to build the loops it already runs — and where its own
+guard caught its own miss. A new LLM-application reference closes the audit's B2 gap
+(looping/evals slice), a privacy fix scrubs a fingerprint the tiered leakage guard should have
+caught the first time (and hardens the guard so it will), and the release runbook gains the
+parse gotcha that briefly made release-please skip both merges.
+
+*(The two entries below are hand-written: both squash commits were rejected by release-please's
+conventional-commits parser — a wrapped code snippet in the PR-description-derived commit body —
+so the generator considered 0 commits. See the new MAINTAINERS.md gotcha section, added in
+[#56](https://github.com/bjgreenberg/senior-engineering-partner/issues/56).)*
+
+### Features
+
+* **skill:** LLM-app engineering reference — loop patterns, agent loops, evals (B2) ([#55](https://github.com/bjgreenberg/senior-engineering-partner/issues/55)) ([f3b43ef](https://github.com/bjgreenberg/senior-engineering-partner/commit/f3b43efa1f67181c77284109e70ae910edcb6d2a))
+
+  **Why:** the skill ran feedback loops as *process* (tier-aware TDD, the adversarial-review
+  re-review loop, the eval runner) but had zero guidance for *building* them into software —
+  the audit's B2 gap, owner-requested after a loop-prompting best-practices review. The new
+  `references/llm-apps.md` carries the start-simple escalation ladder, the five workflow
+  patterns, evaluator-optimizer's fit preconditions (articulable criteria or don't loop), the
+  agent loop with deterministic per-iteration verification, the every-loop-gets-a-brake rule
+  (done-condition + iteration cap + token/cost budget — an uncapped model loop is the
+  billing-DoS twin), and evals-as-the-outer-loop. Source-fidelity-reviewed against Anthropic's
+  published guidance with the skill's own mandates kept clearly un-attributed; suite grows
+  **37 → 38** (`llm-loop-stopping-criteria`).
+
+### Bug Fixes
+
+* **privacy:** scrub a domain fingerprint from the PQC eval scenario; warn when the Tier-2 guard input is absent ([#54](https://github.com/bjgreenberg/senior-engineering-partner/issues/54)) ([e0bcca9](https://github.com/bjgreenberg/senior-engineering-partner/commit/e0bcca92480ce61c981164f7f6a63be506817fbc))
+
+  **Why:** the v1.10.0 PQC scenario shipped with a phrase on the private Tier-2 leakage
+  denylist. Root cause was a silent downgrade, not the wording: `leakage-guard.sh` skipped
+  Tier 2 without a sound when `references/leakage-denylist.local` was absent — and a git
+  worktree never has the gitignored file, so the pre-PR run false-greened as a full pass. The
+  scenario is re-domained and the guard now warns loudly whenever it runs Tier-1-only.
 
 ### Miscellaneous Chores
 
