@@ -1,0 +1,19 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "REVIEW: New feature for our SaaS — Claude drafts a compliance report, then a second Claude call critiques the draft, and we loop generate→critique→regenerate in a while-loop until the critique responds 'APPROVED'. It worked great on my three test documents, so I think it's ready to ship. Thoughts?",
+  "files": [],
+  "expected_behavior": [
+    "Identifies the shape as the evaluator-optimizer pattern and checks its preconditions: articulable evaluation criteria the critic actually applies (a rubric/spec in the critic prompt), not vibes — no clear criteria means don't loop",
+    "Flags the unbounded while-until-APPROVED loop as the defect: demands a deterministic done-condition PLUS a hard iteration cap PLUS a token/cost budget (per run and per tenant), noting an uncapped model loop is a cost-runaway/billing-DoS risk and a critic that never approves is a hang",
+    "Recommends per-iteration verification with deterministic checks where possible (schema/required-sections validation, measurable score) rather than relying solely on the critic model's self-assessment",
+    "Questions the escalation: asks whether a single well-prompted call (with examples/retrieval) was demonstrably insufficient before shipping a loop, and notes diminishing returns after the first iteration or two",
+    "Rejects 'worked on three test documents' as shipping evidence: requires an eval suite with expected/anti behaviors and a recorded baseline, treating future prompt changes as code changes gated by eval validation"
+  ],
+  "anti_behavior": [
+    "Endorses the unbounded loop-until-APPROVED design, or fixes it only by raising a timeout",
+    "Adds more agents/orchestration complexity without justifying why the simpler shape fails",
+    "Treats the three manual test documents as sufficient validation, or proposes shipping with 'monitor it in prod' as the only safeguard",
+    "Ignores cost entirely — no iteration cap, token budget, or per-tenant metering in the answer"
+  ],
+  "source": "references/llm-apps.md §3 evaluator-optimizer preconditions + §5 every-loop-gets-a-brake + §6 evals-as-outer-loop"
+}

@@ -60,7 +60,7 @@ carries standards for:
 - **Source control & CI/CD:** GitHub · GitHub Actions · branch protection / rulesets · supply-chain gates (SBOM · SLSA · signing)
 - **Cloud & infra:** GCP / Cloud Run · Docker · Kubernetes · Terraform (IaC)
 - **Data:** Postgres / Supabase (RLS) · BigQuery · SQLite · caching
-- **App layer:** FastAPI / Python web APIs · front-end & browser security · responsive, accessible (WCAG 2.2 AA) UI
+- **App layer:** FastAPI / Python web APIs · front-end & browser security · responsive, accessible (WCAG 2.2 AA) UI · LLM-app engineering (workflow/agent-loop patterns · stopping criteria · evals)
 - **Security & standards:** the security floor (secrets · injection · input validation · isolation · least privilege) · NIST CSF 2.0 + SSDF · OWASP Top 10 / **API Top 10** / **LLM Top 10** · STRIDE · SOC 2 · Well-Architected · PCI-DSS scope
 - **Reliability & ops:** resilience engineering · disaster recovery & business continuity · scalability / system design · observability + incident response (DORA · SLOs)
 - **Platform-specific:** macOS app bundles / TCC · local & agentic AI tooling · diagrams-as-code (Mermaid)
@@ -90,7 +90,7 @@ flowchart TD
     R --> T["Testing and QA (2)"]
     R --> I["Cloud, infra and ops (9) + data (2)"]
     R --> A["App toolchains, CI and collaboration (11)"]
-    R --> X["UI, a11y, diagrams, AI tooling, macOS (4)"]
+    R --> X["UI, a11y, diagrams, AI tooling, macOS (5)"]
 ```
 
 `SKILL.md` carries the rules that must always be in context (the modes, the security
@@ -197,6 +197,7 @@ version-specific commands.
 | **UI, docs & AI tooling** | `ui-design-and-accessibility.md` | Responsive + light/dark + WCAG 2.2 AA + Claude Design handoff |
 | | `diagrams-and-visual-docs.md` | Diagrams-as-code, Mermaid-first; render-check before commit |
 | | `local-and-agentic-ai-tools.md` | Agentic assistants + self-hosted LLMs (Ollama/Open WebUI) |
+| | `llm-apps.md` | Building software that contains model calls: the five workflow patterns, evaluator-optimizer preconditions, the agent loop (verify every iteration), stopping criteria + cost budgets, evals as the outer loop |
 | | `macos-app-bundles.md` | LaunchAgent `.app` bundles, TCC/FDA, the compiled-launcher requirement |
 
 ---
