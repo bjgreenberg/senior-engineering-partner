@@ -1,6 +1,6 @@
 {
   "skills": ["senior-engineering-partner"],
-  "query": "REVIEW: Our forensic evidence platform stores encrypted client evidence under a 10-year retention class. Transport is TLS 1.3, storage is AES-256 via GCS defaults, commits are signed with ed25519. A customer's security questionnaire asks about our post-quantum readiness, and I plan to answer 'not applicable — we already use strong modern cryptography.' Review that answer before I send it.",
+  "query": "REVIEW: Our e-discovery platform stores encrypted client evidence under a 10-year retention class. Transport is TLS 1.3, storage is AES-256 via GCS defaults, commits are signed with ed25519. A customer's security questionnaire asks about our post-quantum readiness, and I plan to answer 'not applicable — we already use strong modern cryptography.' Review that answer before I send it.",
   "files": [],
   "expected_behavior": [
     "Pushes back on 'not applicable': names harvest-now-decrypt-later (HNDL) — transport traffic or ciphertext recorded today becomes decryptable when a cryptanalytically-relevant quantum computer arrives, so a 10-year-retention confidential class must keep its secrets through the classical-to-post-quantum transition",

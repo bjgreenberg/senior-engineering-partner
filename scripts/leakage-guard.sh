@@ -43,6 +43,10 @@ if [[ -f "$local_list" ]]; then
     frag="${frag%"${frag##*[![:space:]]}"}"              # rtrim
     denylist+="|${frag}"
   done < "$local_list"
+else
+  # A missing local list silently downgrades this run to Tier-1 only — say so loudly, so a
+  # worktree/fresh-clone run is never mistaken for the full pre-PR gate (CONTRIBUTING.md).
+  echo "WARN: $local_list not found — Tier 2 (private identifiers) NOT checked; this run covers Tier 1 only." >&2
 fi
 
 # Files to scan: tracked Markdown/JSON/shell, excluding this script and the private profile.
