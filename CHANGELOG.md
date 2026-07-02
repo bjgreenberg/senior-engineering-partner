@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.12.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.11.0...v1.12.0) (2026-07-02)
+
+
+### Features
+
+* **skill:** convert the last two heavy toolchain bullets to pure triggers (A1 tranche 3) ([#59](https://github.com/bjgreenberg/senior-engineering-partner/issues/59)) ([9656be0](https://github.com/bjgreenberg/senior-engineering-partner/commit/9656be0820e5dfd0c796eba0aafb8cda3e96de3e))
+
 ## [1.11.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.10.0...v1.11.0) (2026-07-02)
 
 The release where the skill learns to build the loops it already runs — and where its own
