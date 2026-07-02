@@ -56,8 +56,9 @@ bumps the `Version` in [`SKILL.md`](SKILL.md) and prepends the new section to
 
 ### Gotcha: a squash body can make release-please skip the commit entirely
 
-This repo squashes with **`PR_TITLE` + `PR_BODY`**, so the whole PR description becomes the
-commit body — and release-please runs the *conventional-commits parser over that body*. A body
+This repo's squash-merge setting is **"Default to pull request title and description"** (the API
+calls it `PR_TITLE` + `PR_BODY`), so the whole PR description becomes the *commit message body* —
+and release-please runs the *conventional-commits parser over that body*. A body
 line that (after GitHub's ~72-column hard-wrap) **begins with a `token(`-shaped fragment** — e.g.
 a wrapped code snippet starting a line with `json.load(open(` — is read as a malformed footer and
 the parser rejects the WHOLE commit: the run logs `commit could not be parsed … unexpected token '('`
