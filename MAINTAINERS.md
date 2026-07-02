@@ -54,5 +54,23 @@ bumps the `Version` in [`SKILL.md`](SKILL.md) and prepends the new section to
    *(Learned the hard way: the 1.5.0 release PR stayed `autorelease: pending` and silently blocked the
    1.6.0 release PR across six green workflow runs until it was relabeled.)*
 
+### Gotcha: a squash body can make release-please skip the commit entirely
+
+This repo's squash-merge setting is **"Default to pull request title and description"** (the API
+calls it `PR_TITLE` + `PR_BODY`), so the whole PR description becomes the *commit message body* —
+and release-please runs the *conventional-commits parser over that body*. A body
+line that (after GitHub's ~72-column hard-wrap) **begins with a `token(`-shaped fragment** — e.g.
+a wrapped code snippet starting a line with `json.load(open(` — is read as a malformed footer and
+the parser rejects the WHOLE commit: the run logs `commit could not be parsed … unexpected token '('`
+and `Considering: 0 commits`, and the release PR silently never opens or updates. *(Learned the
+hard way: the #54/#55 merges were both skipped this way and 1.11.0 had to be forced.)* Two rules:
+
+- **Check the release-please run log after every merge to `main`** — a green run that "considered
+  0 commits" is a failure wearing a success conclusion.
+- **Recover with a `Release-As` footer**: open a tiny `chore:` PR whose *entire* PR body is a short
+  plain-prose line plus a final `Release-As: X.Y.Z` line (no code spans, no long lines). That
+  forces the version; then hand-write the skipped merges' entries during the changelog-enrichment
+  step (step 1 above), citing their PR numbers.
+
 [`.github/CODEOWNERS`](.github/CODEOWNERS) documents who owns which parts and (if "require review from
 Code Owners" is ever enabled) routes review on the sensitive paths automatically.
