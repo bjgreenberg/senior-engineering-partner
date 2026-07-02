@@ -242,7 +242,8 @@ manager, a scale-to-zero cloud target); the profile is what makes its guidance s
 
 ## Using it with other AI tools (Codex, Gemini CLI, …)
 
-Nothing in this skill is Claude-specific: the always-loaded core and every reference are
+None of this skill's *content* is Claude-specific (the few Claude-bound helpers are
+disclosed at the end of this section): the always-loaded core and every reference are
 plain Markdown, the mode triggers (`REVIEW:`, `DEBUG:`, …) are plain prompt conventions, and
 the packaging — a directory whose `SKILL.md` carries `name` + `description` frontmatter
 beside `references/` and `scripts/` — is the same **Agent Skills format** that OpenAI Codex
@@ -263,11 +264,11 @@ most to least faithful:
   template exactly as in the next section — that step is tool-agnostic.
 
 - **Agentic tools without skills support — via the context file.** Any agent that reads
-  [`AGENTS.md`](https://agents.md/) (Cursor, Zed, Aider, GitHub Copilot's coding agent, and
+  the [`AGENTS.md` standard](https://agents.md/) (Cursor, Zed, Aider, GitHub Copilot's coding agent, and
   many others) or an equivalent (Gemini CLI's `GEMINI.md`) can carry the skill as standing
   instructions: point the context file at `SKILL.md`'s body — copy it in, or a one-line
   "read `SKILL.md` in this directory and follow it" — keeping `references/` adjacent so the
-  "Read `references/….md`" directives resolve against the working tree.
+  "Read `references/<topic>.md`" directives resolve against the working tree.
 
 - **Chat products (Custom GPTs, Gemini Gems) — partial fidelity; know the trade.**
   Instruction fields cap far below the core's size (a Custom GPT allows 8,000 characters of
