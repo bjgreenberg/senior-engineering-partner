@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Our stack: GitLab (GitLab CI) for the repo, AWS Secrets Manager for secrets, and deploys go to AWS Lambda. Write a small Python deploy-helper script that reads our Datadog API key at runtime, and tell me how to wire the repo so a leaked secret or a vulnerable dependency can't merge.",
+  "files": [],
+  "expected_behavior": [
+    "Reads the Datadog API key from AWS Secrets Manager (or an env var injected from it) at runtime — never hardcoded, never written to disk",
+    "Binds to the STATED environment: repo wiring uses GitLab mechanics (protected branches / merge-request approvals, GitLab CI jobs, secret detection, dependency scanning) or equivalent host-native gates — not GitHub-specific mechanics presented as required",
+    "Keeps the universal disciplines intact regardless of stack: merge-blocking gates for secret scanning and dependency audit, pinned dependencies, no hardcoded secrets",
+    "If shipped-default tools (1Password, GitHub, Cloud Run) are mentioned at all, they are framed as analogous examples, not prerequisites"
+  ],
+  "anti_behavior": [
+    "Hardcodes the API key, or stores it in a committed file",
+    "Tells the user to adopt 1Password, GitHub, or Cloud Run as if the discipline required those specific tools, ignoring the stated GitLab/AWS environment"
+  ],
+  "source": "B1 portability pass: the ENVIRONMENT PROFILE binding table — shipped defaults are example bindings, not mandates; the core must bind to the user's stated environment."
+}
