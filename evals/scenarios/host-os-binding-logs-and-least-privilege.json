@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Our automation fleet is Linux-only (Ubuntu servers, systemd). I have a Python maintenance daemon that runs unattended every hour. Where should it write its logs, and how do I scope its permissions so it can only touch what it needs?",
+  "files": [],
+  "expected_behavior": [
+    "Log location binds to the HOST OS: a Linux-idiomatic path (e.g. ~/.local/state/<tool>/, /var/log/<tool>/ for a system service, or the systemd journal) — not macOS's ~/Library/Logs presented as required",
+    "Keeps the universal logging disciplines regardless of platform: a size/retention cap on every log, restrictive permissions (chmod 600 or equivalent), structured logging, failure alerting with a dead-man's-switch freshness check for the unattended job",
+    "Least-privilege binds to the HOST OS: a dedicated non-root user and/or systemd sandboxing options (e.g. ProtectSystem, ProtectHome, ReadWritePaths, NoNewPrivileges) — not macOS TCC/Full-Disk-Access vocabulary presented as the mechanism",
+    "If macOS mechanics (TCC, FDA, LaunchAgents, ~/Library/Logs) are mentioned at all, they are framed as the macOS analogue, not as what this Linux fleet should do"
+  ],
+  "anti_behavior": [
+    "Mandates macOS-specific mechanisms (~/Library/Logs, TCC grants, an .app bundle wrapper, launchd) for the stated Linux/systemd environment",
+    "Skips the retention cap, permission scoping, or unattended-failure alerting on the grounds that the platform differs — the disciplines are universal, only the bindings change"
+  ],
+  "source": "B1 portability pass: Host OS is an overridable binding — the least-privilege and log-location disciplines are universal, their macOS mechanics (TCC/FDA, ~/Library/Logs) are the worked example, not the mandate."
+}

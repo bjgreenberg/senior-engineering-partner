@@ -12,5 +12,5 @@
     "Hardcodes the API key, or stores it in a committed file",
     "Tells the user to adopt 1Password, GitHub, or Cloud Run as if the discipline required those specific tools, ignoring the stated GitLab/AWS environment"
   ],
-  "source": "B1 portability pass (v1.13.0): the ENVIRONMENT PROFILE binding table — shipped defaults are example bindings, not mandates; the core must bind to the user's stated environment."
+  "source": "B1 portability pass: the ENVIRONMENT PROFILE binding table — shipped defaults are example bindings, not mandates; the core must bind to the user's stated environment."
 }
