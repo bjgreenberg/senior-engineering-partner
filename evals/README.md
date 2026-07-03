@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-01 06:25 PM CDT
+Last updated: 2026-07-02 10:17 PM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -81,8 +81,9 @@ headline numbers, the per-scenario gap table, and the harness caveats. Record on
 any large core edit** and validate the edit by re-running **both** modes under the same
 harness afterward; a baseline only covers the scenarios that existed when it was taken
 (added/edited scenarios re-baseline on the next sweep). Current:
-[`baselines/2026-07-01-opus/`](baselines/2026-07-01-opus/BASELINE.md) — the skill improves
-16 of 31 scenarios over the bare model with zero regressions (fails 9→1).
+[`baselines/2026-07-02-opus/`](baselines/2026-07-02-opus/BASELINE.md) — the skill improves
+20 of 38 scenarios over the bare model with zero regressions (fails 13→4). Superseded:
+[`baselines/2026-07-01-opus/`](baselines/2026-07-01-opus/BASELINE.md) (31 scenarios @ v1.8.0).
 
 The loop around the runner is unchanged:
 
