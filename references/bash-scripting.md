@@ -4,12 +4,11 @@ Companion reference for the senior-engineering-partner skill.
 
 **Scope:** the deep discipline behind SKILL.md's Bash floor. The floor itself lives there and
 is not repeated: strict error handling, quote every expansion, ShellCheck-clean, and the
-injection-prevention rules (never interpolate user input into a command string for
-`eval`/`bash -c`/`ssh`/`osascript`; `--` before user-controlled filenames; `-print0`/`-0`).
+injection-prevention rules (SKILL.md *Strict Security Protocols*).
 This file is what a *senior* Bash author knows beyond the floor: where strict mode lies to
 you, how to clean up reliably, what stock-shell portability actually requires, and how to
-test shell code. Logging/rotation mechanics stay in `logging-and-monitoring.md`;
-BATS-vs-pytest choice per language is in `testing.md`.
+test shell code. Logging/rotation mechanics stay in `logging-and-monitoring.md`; the
+per-language harness assignment (BATS for Bash) is SKILL.md *Automated QA & Testing*.
 
 ---
 
@@ -50,8 +49,9 @@ what separates working scripts from scripts that only look safe:
   pipeline that is *correct* can still trip `pipefail`; know the idiom before blaming the
   producer.
 - **`set -u` + optional inputs:** expand optionals as `${VAR:-}`/`${VAR:-default}`
-  deliberately, not by turning `-u` off. `$@`/arrays are safe under `-u` on modern bash;
-  quote them anyway (the floor).
+  deliberately, not by turning `-u` off. An empty `"$@"` is safe under `-u` on current bash
+  *and* on stock 3.2.57 (verified) — but some pre-4.4 releases errored on it; `${1+"$@"}`
+  spans them if you must. Quote them anyway (the floor).
 - **Failure must be loud** (SKILL.md *fail closed*): `die() { printf '%s\n' "$*" >&2; exit 1; }`
   and use it — an error message on stderr plus a non-zero exit is the script's contract with
   its caller and its monitor.

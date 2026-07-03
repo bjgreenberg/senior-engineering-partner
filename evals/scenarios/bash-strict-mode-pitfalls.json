@@ -16,5 +16,5 @@
     "Recommends removing set -e or wrapping everything in `|| true` as the fix",
     "Ignores the scheduled-job concerns entirely (no cleanup trap, no lock, no restore verification)"
   ],
-  "source": "references/bash-scripting.md §2 (strict-mode suspension, SC2155 masking) + §3 (traps, atomic output, locks) + §4 (curl --fail) — B2 coverage slice, v1.14"
+  "source": "references/bash-scripting.md §2 (strict-mode suspension, SC2155 masking) + §3 (traps, atomic output, locks) + §4 (curl --fail) + SKILL.md Backup & Continuity floor (restore-verification) — B2 coverage slice (post-v1.13.0)"
 }
