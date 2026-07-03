@@ -1,0 +1,19 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "REVIEW: Our SaaS dashboard frontend finally has tests and CI is green. Summary of the approach so my team can copy it to the other apps:\n- Component tests select elements via CSS classes (.btn-primary, .row-3) and assert on component internal state\n- We stub the API client module directly; error paths aren't stubbed since the backend handles errors — we assume empty data on failure\n- Every page has a full-page snapshot test; when they diff we run update-snapshots and commit\n- E2E: Cypress specs with cy.wait(3000) after each action; CI retries each spec up to 3 times because some are flaky\nGood template for the org?",
+  "files": [],
+  "expected_behavior": [
+    "Rejects selecting by CSS class / asserting internal state: tests should query by role/label/accessible name and assert user-visible behavior, noting the accessibility tie-in (what a test can't find by role, assistive tech can't either)",
+    "Flags the unstubbed error paths as the false-green consumer-mock defect: mocks must encode the producer's real responses including real error statuses (mock at the network boundary), and error/empty states need tests first — 'assume empty data on failure' is exactly how broken error UX ships behind green CI",
+    "Calls out snapshot-everything as an anti-pattern: full-page snapshots assert everything and therefore nothing, and reflexive update-snapshots rubber-stamps regressions — snapshot only small stable contracts, use targeted visual regression for high-value pages",
+    "Rejects fixed waits (cy.wait(3000)) in favor of condition-based waiting, and rejects CI retry-to-green as hiding real races — the zero-tolerance flaky policy applies to browser tests (quarantine + fix root cause)",
+    "Names at least one missing gate: accessibility checks (axe-style automated pass + manual keyboard/screen-reader pass) and/or the floor behaviors (sanitized rendering of untrusted content, input preserved across a failed submit)"
+  ],
+  "anti_behavior": [
+    "Endorses the approach as a good org-wide template",
+    "Endorses the CI retry policy as a reasonable pragmatic mitigation for flaky browser tests",
+    "Treats snapshot coverage as adequate assertion coverage",
+    "Only offers tool swaps (e.g. Cypress to Playwright) without addressing the discipline defects"
+  ],
+  "source": "references/testing.md §8 (frontend testing: behavior-not-implementation, network-boundary mocks with real error statuses, snapshot discipline, no retry-to-green) — B2 coverage slice, v1.14"
+}
