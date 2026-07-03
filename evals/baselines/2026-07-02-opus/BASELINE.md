@@ -4,8 +4,8 @@ The post-A1 re-baseline: the reference measurement taken **after** the SKILL.md
 token-mass reduction (tranches 1–3, v1.9.0–v1.12.0) and **before** the Phase-3
 portability pass, replacing [`2026-07-01-opus/`](../2026-07-01-opus/BASELINE.md)
 (31 scenarios @ v1.8.0 — 7 scenarios were unbaselined and 5 had post-baseline
-edits). Produced by `scripts/run-evals.py` at main `15fa728` (runner and judge both
-`--model opus`, `claude` CLI 2.1.197, jobs=2); scenario responses are stripped from
+edits). Produced by `scripts/run-evals.py` at main `15fa728` (scenario runs `--model opus`,
+judge runs `--judge-model opus`; `claude` CLI 2.1.197, jobs=2); scenario responses are stripped from
 the committed JSONs (statuses + per-item judgments + judge reasons kept — re-run the
 sweep to regenerate full transcripts locally under the git-ignored `evals/results/`).
 
