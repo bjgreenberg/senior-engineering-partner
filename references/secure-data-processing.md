@@ -3,7 +3,7 @@
 Companion reference for the senior-engineering-partner skill.
 
 
-For any app deployed commercially that **ingests attacker-controlled files, feeds untrusted content to an LLM, and isolates sensitive data across paying tenants**, the surfaces below are non-negotiable. The example multi-tenant SaaS is the worked example — it parses hostile email/office/PDF/archive uploads, sends extracted text to Claude, and stores sensitive records (PII, an append-only audit trail) for many tenants. Four threat surfaces: **the parser, the model, the tenant boundary — and, the moment retrieval is added, the vector store (§4).** Each gets discipline and the tests that prove it (the first three in full QA/test-case structure; §4 folds its tests inline).
+For any app deployed commercially that **ingests attacker-controlled files, feeds untrusted content to an LLM, and isolates sensitive data across paying tenants**, the surfaces below are non-negotiable. The example multi-tenant SaaS is the worked example — it parses hostile email/office/PDF/archive uploads, sends extracted text to Claude, and stores sensitive records (PII, an append-only audit trail) for many tenants. Four threat surfaces: **the parser, the model, the tenant boundary — and the vector store, the moment retrieval is added (§4).** Each gets discipline and the tests that prove it (the first three in full QA/test-case structure; §4 folds its tests inline).
 
 ---
 
