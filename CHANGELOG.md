@@ -19,6 +19,20 @@ in your own `references/my-environment.md`.
 
 ## [1.13.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.12.0...v1.13.0) (2026-07-03)
 
+The Phase-3 portability pass (audit finding B1): the universal core no longer bakes the
+author's environment in as mandates. The assumed-baseline paragraph becomes a
+**core-vs-overridable binding table** (Host OS / Shell / VC+CI / secrets manager / deploy
+target) that governs any binding a profile doesn't set, and every mandate-position stack
+noun — 1Password, Cloud Run, the GitHub framing, and the macOS mechanics that two
+*universal* sections still mandated (the least-privilege floor's TCC/FDA vocabulary and the
+`~/Library/Logs` log rule) — now reads as the shipped default's worked example, with host
+equivalents named. The concrete worked examples stay concrete by design; the environment
+profile template gains a Host OS field so every table row has a designated override slot.
+Validated against the fresh 2026-07-02 recorded baseline (#62, the post-A1 re-baseline):
+with-skill 6 up / 31 flat / 1 variance-cleared down on the 38 shared scenarios, 24 improved
+/ 0 regressed vs bare, and **both new portability evals pass** (suite 38 → 40). Shaped by a
+4-lens adversarial review + fold re-review, plus five folded Copilot findings.
+
 
 ### Features
 
