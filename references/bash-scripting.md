@@ -93,6 +93,8 @@ what separates working scripts from scripts that only look safe:
   `curl -fsSL --max-time <n> --retry <k> --retry-all-errors -o tmp && mv tmp final` —
   fail on HTTP errors, bound the hang, retry only when the operation is idempotent
   (`resilience-engineering.md`), download to temp, rename into place.
+  (`--retry-all-errors` needs curl 7.71+ — on an older build drop it and bare `--retry`
+  covers only transient errors; the §5 rule applies to curl versions too.)
 - **Give every network/long command a timeout** — `curl --max-time`, `timeout <secs> cmd`
   where available — an automation script with an unbounded hang is a stuck LaunchAgent/cron
   slot that alerts no one (its dead-man's-switch never fires because it never *stops*).
