@@ -16,5 +16,5 @@
     "Reviews only cost/performance/relevance aspects without surfacing the isolation or erasure defects",
     "Approves the design as ready to build without structural changes"
   ],
-  "source": "references/secure-data-processing.md §4 (RAG & the vector store) + references/llm-apps.md §7 — B2 coverage slice, v1.14"
+  "source": "references/secure-data-processing.md §4 (RAG & the vector store) + references/llm-apps.md §7 — B2 coverage slice (post-v1.13.0)"
 }

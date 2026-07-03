@@ -15,5 +15,5 @@
     "Ignores the output-validation half (treats input-side fencing as the complete defense)",
     "Omits any regression test/eval for the known bypass"
   ],
-  "source": "references/secure-data-processing.md §2 worked example (two-zone fence, delimiter neutralization, injection-as-finding) — B2 coverage slice, v1.14"
+  "source": "references/secure-data-processing.md §2 worked example (two-zone fence, delimiter neutralization, injection-as-finding) — B2 coverage slice (post-v1.13.0)"
 }

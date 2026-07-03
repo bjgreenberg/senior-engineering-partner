@@ -168,8 +168,8 @@ shape demonstrably fails:
   cost-control shape; meter tokens per §5 either way.
 
 The security half — tenant isolation in the vector store, the poisoned-corpus injection path,
-the embedding-call egress — is `secure-data-processing.md` §4, and it is floor, not
-tier-scaled polish.
+the embedding-call egress — is `secure-data-processing.md` §4; its isolation and injection
+halves are the security floor applied to a new store (no tier defers them).
 
 ## Sources
 
