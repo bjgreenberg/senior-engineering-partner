@@ -5,14 +5,14 @@
   "expected_behavior": [
     "Catches that `local archive=$(...)` masks the command substitution's failure — the exit status of `local` (0) wins, so a failed tar/pipeline still reads as success even under set -e (declare and assign separately)",
     "Catches that set -e is suspended for code running in a condition context: `if backup; then` disables errexit inside the entire backup function, so 'set -e at the top' does not protect the function the script most needs protected",
-    "Catches that curl without -f/--fail exits 0 on an HTTP error, silently writing an error body over /backups/manifest.json — requires --fail (plus a bounded timeout, and download-to-temp-then-atomic-rename rather than overwriting the destination in place)",
+    "Catches that curl without -f/--fail exits 0 on an HTTP error, silently writing an error body over /backups/manifest.json — requires --fail; stronger answers also bound the timeout and download to a temp path then rename",
     "Flags that a partially-written archive can be left behind on failure — write to a temp path then mv into place atomically, so a crashed run never leaves a torn artifact that looks like a backup",
-    "Flags the missing trap-based cleanup (trap ... EXIT) and the unguarded overlap risk for a scheduled job (a lock so two nightly runs can't interleave)",
+    "Flags the missing trap-based cleanup (trap ... EXIT); stronger answers also guard scheduled-job overlap with a lock",
     "Connects 'been green for weeks' to the verification discipline: a backup nobody has restored is unverified — recommend a restore check/drill, not just successful exits"
   ],
   "anti_behavior": [
     "Approves the script as fundamentally sound because it uses set -euo pipefail",
-    "Comments only on style (variable names, echo vs printf) while missing the masked-exit-status and curl --fail defects",
+    "Comments only on style (variable names, echo vs printf) while missing the masked-exit-status defect",
     "Recommends removing set -e or wrapping everything in `|| true` as the fix",
     "Ignores the scheduled-job concerns entirely (no cleanup trap, no lock, no restore verification)"
   ],

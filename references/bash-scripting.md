@@ -38,38 +38,50 @@ what separates working scripts from scripts that only look safe:
 - **`-e` is suspended in condition contexts.** Inside `if cmd`, `while cmd`, `cmd && x`,
   `cmd || x`, and any function *called from* one of those, a non-zero exit does not abort —
   the entire function body runs with `-e` effectively off. Don't bury must-not-fail work in
-  a function that's ever called from a condition; check its exit explicitly.
+  a function that's ever called from a condition; check its exit explicitly. (ShellCheck
+  flags this only as optional SC2310/SC2311 under `--enable=all`.)
 - **`local`/`declare`/`export` masks command-substitution failure.** In
   `local out=$(cmd)`, the exit status of `local` (0) wins and `cmd`'s failure vanishes —
   under `set -e`, silently (ShellCheck SC2155). Declare and assign in two steps:
   `local out; out=$(cmd)`.
 - **`pipefail` tells you *that* a pipeline failed, not *which* stage** — read
   `"${PIPESTATUS[@]}"` (bash) immediately after when the stage matters. And a pipe into a
-  consumer that exits early (`… | head -1`) makes the producer fail with SIGPIPE — a
-  pipeline that is *correct* can still trip `pipefail`; know the idiom before blaming the
-  producer.
+  consumer that exits early (`… | head -1`) can make the producer die of SIGPIPE — a
+  pipeline that is *correct* can still trip `pipefail`. Tolerate it explicitly
+  (`cmd | head -1 || [ "${PIPESTATUS[0]}" -eq 141 ]`) or restructure so the consumer reads
+  everything (`awk 'NR==1'`).
 - **`set -u` + optional inputs:** expand optionals as `${VAR:-}`/`${VAR:-default}`
   deliberately, not by turning `-u` off. An empty `"$@"` is safe under `-u` on current bash
   *and* on stock 3.2.57 (verified) — but some pre-4.4 releases errored on it; `${1+"$@"}`
   spans them if you must. Quote them anyway (the floor).
+- **An unmatched glob passes through as the literal pattern** — `for f in *.log` with no
+  logs iterates once over the string `*.log`; neither strict mode nor ShellCheck catches it.
+  `shopt -s nullglob` (empty loop) or `failglob` (hard error) — choose one deliberately.
 - **Failure must be loud** (SKILL.md *fail closed*): `die() { printf '%s\n' "$*" >&2; exit 1; }`
   and use it — an error message on stderr plus a non-zero exit is the script's contract with
   its caller and its monitor.
 
 ## 3. Cleanup, temp files & atomic output
 
-- **One `trap cleanup EXIT` near the top,** after defining `cleanup()`. `EXIT` fires on
-  normal end, on `-e` aborts, and (with `trap cleanup INT TERM` or by re-raising) on
-  signals — it is the `finally` block. Create scratch space with `mktemp -d`, store the path
-  in a variable `cleanup` removes, and never write scratch into the source tree or a shared
-  `/tmp` name.
+- **One `trap cleanup EXIT` near the top,** after defining `cleanup()`. On bash, `EXIT`
+  fires on normal end, on `-e` aborts, *and* on fatal INT/TERM — it is the `finally` block.
+  **Never add a bare `trap cleanup INT TERM` on top of it:** the handler *returns*, the
+  script keeps running past the kill, and it exits 0 — a killed job reporting success. If
+  callers must see death-by-signal, re-raise — `trap 'trap - TERM; kill -TERM $$' TERM` —
+  and let `EXIT` do the cleanup. Nothing fires on SIGKILL or power loss. Create scratch with
+  `mktemp -d`, store the path in a variable `cleanup` removes, and never write scratch into
+  the source tree or a shared `/tmp` name.
 - **Never leave a half-written artifact.** Write to a temp file *in the destination's
-  directory*, then `mv -f tmp final` — `mv` within a filesystem is atomic; a reader (or a
-  crashed re-run) sees the old file or the new one, never a torn one. This is also what makes
-  re-runs idempotent (SKILL.md *Reliability for Automation*).
+  directory*, then `mv -f tmp final` — `mv` within a filesystem is atomic: a reader (or a
+  crashed re-run) sees the old file or the new one, never a torn one. (Atomic against a
+  crashed *process*, not power loss — rename doesn't flush file data.) This is also what
+  makes re-runs idempotent (SKILL.md *Reliability for Automation*).
 - **Single-instance scripts take a lock.** `flock` on Linux; stock macOS has no `flock`
   binary — the portable idiom is `mkdir "$lockdir"` (atomic create-or-fail) with the removal
-  in `cleanup`. A cron/launchd job that can overlap itself *will* eventually overlap itself.
+  in `cleanup` — knowing its residual: a SIGKILL'd holder never runs `cleanup`, and the
+  stale dir then blocks every later run. Write `$$` into the lockdir and treat a dead-PID
+  lock as stale, or at minimum alert on repeated skips. A cron/launchd job that can overlap
+  itself *will* eventually overlap itself.
 
 ## 4. Robust command execution
 
@@ -96,8 +108,10 @@ The bash you develop on is not the bash the script runs on:
   `mapfile`/`readarray`, associative arrays (`declare -A`), `${var,,}`/`${var^^}`,
   `&>>` — dies on a stock Mac, in non-interactive SSH (where your interactive PATH's
   Homebrew bash isn't first), and in `sh`-invoked contexts. Portable array fill:
-  `while IFS= read -r line; do arr+=("$line"); done < <(cmd)`. (A shipped gate script in this
-  very repo once broke exactly this way — works-on-my-shell is not portability.)
+  `while IFS= read -r line; do arr+=("$line"); done < <(cmd)` — the `< <(cmd)` form matters:
+  `cmd | while …` runs the loop in a pipeline subshell whose variable writes vanish. (A
+  shipped gate script in this very repo once broke exactly this way on `mapfile` —
+  works-on-my-shell is not portability.)
 - **Declare the interpreter you actually need.** `#!/usr/bin/env bash` for bash scripts
   (never `#!/bin/sh` with bashisms); if the script must run on stock macOS, write to bash
   3.2 and say so in the header; if it genuinely needs 4+, preflight-check
@@ -106,8 +120,9 @@ The bash you develop on is not the bash the script runs on:
   macOS/BSD. For a cross-platform script, stick to POSIX flags, feature-detect, or require
   the GNU tool explicitly by name (`gsed`, `gdate`) — don't ship a script that works only on
   the userland you happened to write it on (`debugging.md` has the `grep -P` tell).
-- ShellCheck catches most bashisms-in-`sh` automatically — one more reason the zero-warning
-  gate is the floor.
+- ShellCheck catches most bashisms-in-`sh` automatically — but it does **not** version-check
+  bash (`mapfile` under a bash shebang passes clean), so the 3.2 floor above stays on you.
+  One more reason the zero-warning gate is the floor, not the ceiling.
 
 ## 6. Testing Bash — BATS, stubs & the source-guard pattern
 
