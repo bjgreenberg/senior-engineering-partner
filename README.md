@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-03 12:26 PM CDT
+Last updated: 2026-07-03 12:47 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -89,7 +89,7 @@ flowchart TD
     R --> S["Security, privacy and compliance (6)"]
     R --> T["Testing and QA (2)"]
     R --> I["Cloud, infra and ops (9) + data (2)"]
-    R --> A["App toolchains, CI and collaboration (11)"]
+    R --> A["App toolchains, CI and collaboration (12)"]
     R --> X["UI, a11y, diagrams, AI tooling, macOS (5)"]
 ```
 
@@ -194,6 +194,7 @@ version-specific commands.
 | | `python-typing-and-packaging.md` | The TypedDict worked example + the single-file→package target layout |
 | | `google-apps-script.md` | `clasp` + git over the editor, minimal `oauthScopes`, `PropertiesService` secrets/limits, `LockService`, trigger quotas + the 6-min wall, Advanced Services vs `UrlFetchApp`, `console`→Cloud Logging, pure-logic isolation for testing |
 | | `javascript-and-typescript.md` | TS strict mode (the `mypy --strict` analog) + the flags `strict` misses, runtime-validated typed boundaries (the Pydantic analog), Node `SIGTERM`/no-floating-promises patterns |
+| | `bash-scripting.md` | Strict mode's documented gaps (`-e` suspension, masked substitutions), traps/atomic output/locks, `curl -f`, stock-bash-3.2 portability, BATS + command stubs |
 | **UI, docs & AI tooling** | `ui-design-and-accessibility.md` | Responsive + light/dark + WCAG 2.2 AA + Claude Design handoff |
 | | `diagrams-and-visual-docs.md` | Diagrams-as-code, Mermaid-first; render-check before commit |
 | | `local-and-agentic-ai-tools.md` | Agentic assistants + self-hosted LLMs (Ollama/Open WebUI) |
