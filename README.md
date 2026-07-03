@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-02 06:04 PM CDT
+Last updated: 2026-07-03 12:26 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -60,7 +60,7 @@ carries standards for:
 - **Source control & CI/CD:** GitHub · GitHub Actions · branch protection / rulesets · supply-chain gates (SBOM · SLSA · signing)
 - **Cloud & infra:** GCP / Cloud Run · Docker · Kubernetes · Terraform (IaC)
 - **Data:** Postgres / Supabase (RLS) · BigQuery · SQLite · caching
-- **App layer:** FastAPI / Python web APIs · front-end & browser security · responsive, accessible (WCAG 2.2 AA) UI · LLM-app engineering (workflow/agent-loop patterns · stopping criteria · evals)
+- **App layer:** FastAPI / Python web APIs · front-end & browser security · responsive, accessible (WCAG 2.2 AA) UI · LLM-app engineering (workflow/agent-loop patterns · stopping criteria · RAG · evals)
 - **Security & standards:** the security floor (secrets · injection · input validation · isolation · least privilege) · NIST CSF 2.0 + SSDF · OWASP Top 10 / **API Top 10** / **LLM Top 10** · STRIDE · SOC 2 · Well-Architected · PCI-DSS scope · crypto-agility / **post-quantum readiness** (FIPS 203–205, HNDL)
 - **Reliability & ops:** resilience engineering · disaster recovery & business continuity · scalability / system design · observability + incident response (DORA · SLOs)
 - **Platform-specific:** macOS app bundles / TCC · local & agentic AI tooling · diagrams-as-code (Mermaid)
@@ -165,7 +165,7 @@ version-specific commands.
 | | `audit-report-format.md` | The `AUDIT:` mode deliverable: a severity-ranked findings report (finding schema, severity taxonomy, mechanize-the-checkable, lead-with-verified-strengths) |
 | | `standards-authoring.md` | Distill sprawling project conventions into a checkable standards set (extract → filter → human-approve → classify floor-vs-overridable); prose-first, format-agnostic |
 | **Security, privacy & compliance** | `threat-modeling-and-api-design.md` | In-PR STRIDE threat models + attack-surface-shrinking API design |
-| | `secure-data-processing.md` | Hostile-file parsing, prompt-injection, multi-tenant data handling |
+| | `secure-data-processing.md` | Hostile-file parsing, prompt-injection fencing (two-zone worked example), RAG/vector-store isolation, multi-tenant data handling |
 | | `frontend-web-security.md` | Token storage, CSP, output sanitization, security headers |
 | | `secrets-and-key-rotation.md` | Rotation lifecycle, zero-downtime overlap, KMS key-version re-wrap |
 | | `data-protection.md` | GDPR/UK-GDPR/CCPA as code: DSAR, erasure cascade, retention, DPIA |
@@ -197,7 +197,7 @@ version-specific commands.
 | **UI, docs & AI tooling** | `ui-design-and-accessibility.md` | Responsive + light/dark + WCAG 2.2 AA + Claude Design handoff |
 | | `diagrams-and-visual-docs.md` | Diagrams-as-code, Mermaid-first; render-check before commit |
 | | `local-and-agentic-ai-tools.md` | Agentic assistants + self-hosted LLMs (Ollama/Open WebUI) |
-| | `llm-apps.md` | Building software that contains model calls: the five workflow patterns, evaluator-optimizer preconditions, the agent loop (verify every iteration), stopping criteria + cost budgets, evals as the outer loop |
+| | `llm-apps.md` | Building software that contains model calls: the five workflow patterns, evaluator-optimizer preconditions, the agent loop (verify every iteration), stopping criteria + cost budgets, RAG as architecture (retriever evals, index as derived cache), evals as the outer loop |
 | | `macos-app-bundles.md` | LaunchAgent `.app` bundles, TCC/FDA, the compiled-launcher requirement |
 
 ---

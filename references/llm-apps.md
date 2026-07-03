@@ -1,9 +1,10 @@
-# LLM Application Engineering — loop patterns, agent loops & evals
+# LLM Application Engineering — loop patterns, agent loops, RAG & evals
 
 Companion reference for the senior-engineering-partner skill.
 
 **Scope:** the *design* of software that contains model calls — which loop shape to reach for,
-when to loop at all, how a loop stops, and how you prove the feature works (evals). The
+when to loop at all, how a loop stops, how retrieval fits (§7), and how you prove the feature
+works (evals). The
 *security* of that software is owned elsewhere and deliberately not repeated: hostile input /
 indirect prompt injection / model-output validation live in `secure-data-processing.md`;
 self-hosted models and agentic dev tools in `local-and-agentic-ai-tools.md`; per-tenant cost
@@ -30,7 +31,8 @@ The published guidance is blunt: *"optimizing single LLM calls with retrieval an
 examples is usually enough."* Complexity is an escalation you justify, not a default — each
 rung trades latency, cost, and **compounding error** for capability:
 
-1. **A single call**, with a well-engineered prompt, retrieval, and in-context examples.
+1. **A single call**, with a well-engineered prompt, retrieval, and in-context examples
+   (retrieval architecture in §7).
 2. **A workflow** — LLM calls orchestrated through *predefined code paths* (§2). Deterministic
    control flow, model-shaped steps.
 3. **An agent** — the LLM *dynamically directs its own process and tool usage* (§4). Reach for
@@ -130,6 +132,44 @@ branch → PR → eval validation, the same gate discipline as everything else i
 - **Close the loop on mistakes.** Every failure a human catches becomes a durable instruction
   (a prompt rule, a scenario, a skill edit) — the CLAUDE.md/skill feedback loop. A mistake
   caught twice without a new guard is a process gap, not bad luck.
+
+## 7. RAG — grounding the model in your data (retrieval as architecture)
+
+Retrieval-augmented generation is rung 1 of the ladder (§1) — *a single call with retrieval*
+— not an agent pattern. Like every other rung, it earns its complexity only after a simpler
+shape demonstrably fails:
+
+- **Escalate into RAG, don't start there.** If the corpus fits the context window, put it in
+  the context (with prompt caching for the stable prefix — `caching.md`); a vector database
+  serving a corpus that would fit in one prompt is YAGNI with infrastructure bills. Reach for
+  retrieval when the corpus outgrows the context, changes faster than you'd re-prompt, or must
+  stay tenant-scoped. Fine-tuning is for style/format, not knowledge freshness — a later
+  resort, not the next rung.
+- **The retrieval pipeline is deterministic software — engineer it like any other.** Chunking,
+  embedding, indexing, and query construction are testable, versionable code paths (the
+  deterministic-first rule). Pin the embedding model version — a silent embedding-model swap
+  invalidates the whole index (vectors from different models don't compare); re-embed
+  deliberately, like a schema migration. Version the chunking strategy, and rebuild the index
+  as a reproducible batch job, not an accretion.
+- **Evaluate the retriever separately from the generator.** A wrong RAG answer is usually a
+  retrieval miss, not a generation failure — and you can't fix what you can't attribute.
+  Keep a labeled query→relevant-chunks set and measure retrieval deterministically
+  (recall@k-style metrics), then eval the end-to-end answer per §6. Log which chunks each
+  answer used, so a bad answer traces to what the model actually saw.
+- **Ground truth, or say so.** Retrieved chunks carry provenance (source document, section);
+  the answer cites its sources so a human can verify. Set a relevance floor: below it, answer
+  "not found in the corpus" or fall back — stuffing weak matches into the prompt trades a
+  visible "I don't know" for a confident wrong answer.
+- **The index is a derived cache of the corpus** — `caching.md`'s invalidation rule applies:
+  re-embed on document change, and **erasure must reach the vector store** — embeddings and
+  stored chunks of an erased document are still that document's data (`data-protection.md`'s
+  verified-cascade rule extends to the index).
+- **Cost:** bounded top-k retrieval caps the prompt size — for a large corpus RAG is also the
+  cost-control shape; meter tokens per §5 either way.
+
+The security half — tenant isolation in the vector store, the poisoned-corpus injection path,
+the embedding-call egress — is `secure-data-processing.md` §4, and it is floor, not
+tier-scaled polish.
 
 ## Sources
 
