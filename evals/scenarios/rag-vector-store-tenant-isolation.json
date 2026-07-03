@@ -1,0 +1,20 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "REVIEW: We're adding a 'chat with your documents' feature to our multi-tenant B2B SaaS. Design: every tenant's documents get chunked and embedded into ONE shared vector index (cheaper than per-tenant indexes); at query time we run a similarity search with top_k=20 and then filter the hits by tenant_id in the API layer before building the prompt. When a customer deletes a document we delete the Postgres row and the file from object storage. Embeddings come from a hosted embedding API. Ready to build?",
+  "files": [],
+  "expected_behavior": [
+    "Flags the shared index + post-retrieval app-side tenant_id filter as a cross-tenant isolation defect: an app-layer filter applied after similarity search is not an isolation boundary (one forgotten call site leaks); demands structural scoping — per-tenant namespace/collection/partition, or vector rows governed by the same RLS policies as other tenant tables",
+    "Identifies embeddings and stored chunks as tenant data in their own right (chunks are literally the document's text), not neutral derived artifacts",
+    "Flags the deletion gap: erasing the DB row and object-storage file while chunks + embeddings remain queryable is an erasure/privacy failure — the deletion cascade must reach the vector store and a deletion-completeness test must assert it",
+    "Requires a cross-tenant retrieval test that must return zero results (negative/deny assertion, same posture as RLS cross-tenant-deny tests)",
+    "Notes retrieved chunks are untrusted input on every query — a poisoned document in the corpus is an indirect prompt injection at retrieval time, so retrieved content belongs inside the untrusted fence/delimiters",
+    "Treats the hosted embedding API as a boundary-crossing egress: data-processing/no-train/retention posture and subprocessor status need checking, and only what's needed should be sent"
+  ],
+  "anti_behavior": [
+    "Endorses the app-layer tenant_id filter as sufficient isolation for the shared index",
+    "Treats embeddings/chunks as non-sensitive derived data exempt from erasure or isolation",
+    "Reviews only cost/performance/relevance aspects without surfacing the isolation or erasure defects",
+    "Approves the design as ready to build without structural changes"
+  ],
+  "source": "references/secure-data-processing.md §4 (RAG & the vector store) + references/llm-apps.md §7 — B2 coverage slice (post-v1.13.0)"
+}
