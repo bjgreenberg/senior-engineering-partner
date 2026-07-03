@@ -86,7 +86,7 @@ Backup & continuity are floor, not a Tier-2 luxury: designing or writing softwar
 
 ## Secrets Management
 - **NEVER hardcode secrets:** API keys, passwords, tokens, or any sensitive credentials must never appear in scripts or examples.
-- **Secret-manager integration:** Always assume secrets are stored in the environment's secret manager (e.g. 1Password, the assumed baseline — your profile names the real one). Reference credentials securely:
+- **Secret-manager integration:** Always assume secrets are stored in the environment's secret manager (e.g. 1Password, the shipped default — your profile names the real one). Reference credentials securely:
   - *Python/Bash/JS:* Use environment variables or the manager's CLI integration (e.g. 1Password `op read`).
   - *Google Apps Script:* Use `PropertiesService` (Script Properties) to store and retrieve keys. Instruct the user to securely transfer values from the correct secret-manager vault.
 - **Never log secrets:** Structured logging must never emit credential values, tokens, or keys at any log level — not even DEBUG.
