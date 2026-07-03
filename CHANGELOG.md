@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.13.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.12.0...v1.13.0) (2026-07-03)
+
+
+### Features
+
+* **skill:** de-bias the universal core — shipped defaults become example bindings, not mandates (B1) ([#63](https://github.com/bjgreenberg/senior-engineering-partner/issues/63)) ([b83d8a3](https://github.com/bjgreenberg/senior-engineering-partner/commit/b83d8a367369c08a96f55a733120257c8626739f))
+
 ## [1.12.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.11.0...v1.12.0) (2026-07-02)
 
 The A1 token-mass reduction lands its final tranche: every heavy toolchain bullet in the
