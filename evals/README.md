@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-04 12:03 PM CDT
+Last updated: 2026-07-04 12:11 PM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -114,7 +114,10 @@ harness afterward; a baseline only covers the scenarios that existed when it was
 (added/edited scenarios re-baseline on the next sweep). Current:
 [`baselines/2026-07-02-opus/`](baselines/2026-07-02-opus/BASELINE.md) — the skill improves
 20 of 38 scenarios over the bare model with zero regressions (fails 13→4) — plus the
-per-model portability sweeps of 2026-07-04, starting with
+per-model portability sweeps of 2026-07-04:
+[`baselines/2026-07-04-sonnet/`](baselines/2026-07-04-sonnet/BASELINE.md) — 14 of 45
+improved, 0 regressed (fails 12→7; four of the seven remaining fails are the same durable
+fails Opus records, i.e. content gaps, not model gaps) — and
 [`baselines/2026-07-04-haiku/`](baselines/2026-07-04-haiku/BASELINE.md) — the skill improves
 15 of 45 scenarios on Haiku 4.5 (fails 23→16), but 15 scenarios stay failed with the skill
 loaded, where Opus left 4: the content transfers down-model, the enforcement reliability
