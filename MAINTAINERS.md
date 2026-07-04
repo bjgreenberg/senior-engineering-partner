@@ -40,7 +40,8 @@ bumps the `Version` in [`SKILL.md`](SKILL.md) (and `version`/`date-released` in
 > marker and bumps the first semver on any line that carries one. So a line that merely
 > *quotes* a complete marker as documentation gets its semver rewritten too — the v1.15.0
 > release did exactly this, silently changing a "CFF 1.2.0" spec reference to "CFF 1.15.0"
-> (fixed in v1.15.1). The release PR's `SKILL.md`/`CITATION.cff` diff should only ever touch
+> (corrected by the follow-up fix, which ships as the v1.15.1 patch). The release PR's
+> `SKILL.md`/`CITATION.cff` diff should only ever touch
 > the intended version stamp; any *other* changed line is this bug — reject and fix the prose
 > to name the marker family (`x-release-please`), not the literal complete tokens.
 
