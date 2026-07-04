@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-04 01:11 PM CDT
+Last updated: 2026-07-04 06:05 PM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -126,7 +126,11 @@ loaded, where Opus left 4: the content transfers down-model, the enforcement rel
 does not. Across the four recorded sweeps, with-skill fails run 16 (Haiku) → 7 (Sonnet) →
 4 (Opus, older suite) → 3 (Fable) with identical skill text — the shared durable-fail core
 (dependency-manifest-drift · stale-diagram-on-behavior-change · tdd-regression-red-first)
-is the standing sharpening target. Superseded:
+is the standing sharpening target. The tranche-4 core compression (~18% of SKILL.md,
+rules-lossless) was validated against those pre-edit references the same day —
+[`baselines/2026-07-04-post-t4/`](baselines/2026-07-04-post-t4/BASELINE.md): no drop on any
+model traces to lost text; future core edits compare with-skill runs against the post-t4
+record. Superseded:
 [`baselines/2026-07-01-opus/`](baselines/2026-07-01-opus/BASELINE.md) (31 scenarios @ v1.8.0).
 
 The loop around the runner is unchanged:
