@@ -17,6 +17,49 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.11.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.14.0...v1.11.0) (2026-07-04)
+
+
+### Features
+
+* **ci:** add OpenSSF Scorecard workflow (supply-chain security posture) ([#30](https://github.com/bjgreenberg/senior-engineering-partner/issues/30)) ([9edc4e0](https://github.com/bjgreenberg/senior-engineering-partner/commit/9edc4e0969c32052a70de10db5ee27c9cb7b46b2))
+* consumer-contract testing + runnable-setup-as-docs lessons ([#16](https://github.com/bjgreenberg/senior-engineering-partner/issues/16)) ([aeee0e5](https://github.com/bjgreenberg/senior-engineering-partner/commit/aeee0e506f9e5eb662104cb66325239ed969e01f))
+* content additions — OWASP LLM/API Top-10 naming, Apps Script + JS/TS refs, profiling, refactoring, systems-theory ([#7](https://github.com/bjgreenberg/senior-engineering-partner/issues/7)) ([594b9fb](https://github.com/bjgreenberg/senior-engineering-partner/commit/594b9fbe500bbe53d4b599385405121dddb56ddf))
+* **docs,compliance:** honest-badges discipline + run OpenSSF Scorecard on your own repo ([#33](https://github.com/bjgreenberg/senior-engineering-partner/issues/33)) ([48d5f14](https://github.com/bjgreenberg/senior-engineering-partner/commit/48d5f14dac808a91f5a355e5693cbd5a8be26f98))
+* **docs:** require a live badge row on every remote-backed repo ([#36](https://github.com/bjgreenberg/senior-engineering-partner/issues/36)) ([9fc2fcb](https://github.com/bjgreenberg/senior-engineering-partner/commit/9fc2fcb3f1580d141e77ce85afa1b2b93aab228b))
+* **evals:** add a runner that executes the regression suite ([#47](https://github.com/bjgreenberg/senior-engineering-partner/issues/47)) ([7cc6e4b](https://github.com/bjgreenberg/senior-engineering-partner/commit/7cc6e4b5b380137fc9794b94de41aec918d7aef9))
+* **governance:** ADRs name the discipline they waive; floor never overridable; human-review hard-block; authoring convention ([#21](https://github.com/bjgreenberg/senior-engineering-partner/issues/21)) ([6525714](https://github.com/bjgreenberg/senior-engineering-partner/commit/65257146de8f2dd5854594fcaa1ff7388aed3306))
+* initial public release (v1.0.0) ([5590b62](https://github.com/bjgreenberg/senior-engineering-partner/commit/5590b62f63ffa607f3fbdb8d3c85e7ec480c1a02))
+* **reference:** add standards-authoring.md — distill sprawling conventions into checkable rules ([#22](https://github.com/bjgreenberg/senior-engineering-partner/issues/22)) ([5eff0a5](https://github.com/bjgreenberg/senior-engineering-partner/commit/5eff0a590c70cb16dd49cb9a48316065bf64dc5e))
+* **references:** bash-scripting.md — the shell deep reference (B2) ([#69](https://github.com/bjgreenberg/senior-engineering-partner/issues/69)) ([064e96f](https://github.com/bjgreenberg/senior-engineering-partner/commit/064e96ff525dcef4c52644edc3f45f694b1723f8))
+* **references:** frontend testing folded into testing.md as §8 — the last B2 coverage slice ([#70](https://github.com/bjgreenberg/senior-engineering-partner/issues/70)) ([0293e69](https://github.com/bjgreenberg/senior-engineering-partner/commit/0293e693326d7c823e1c828793a17c197da32de7))
+* **references:** RAG + prompt-injection worked example — the remaining B2 coverage slices ([#66](https://github.com/bjgreenberg/senior-engineering-partner/issues/66)) ([44fcc3b](https://github.com/bjgreenberg/senior-engineering-partner/commit/44fcc3b2cd0f1eab5b3f2fdb45d87d70eaf0bab9))
+* **skill:** add a dependency-currency discipline (stay current, not just pinned) ([#41](https://github.com/bjgreenberg/senior-engineering-partner/issues/41)) ([ef4d196](https://github.com/bjgreenberg/senior-engineering-partner/commit/ef4d196a236fe7dc4e200e90e6e3ddf6ae1e7af5))
+* **skill:** add AUDIT: mode + dogfooding lessons (v1.2.0) ([#10](https://github.com/bjgreenberg/senior-engineering-partner/issues/10)) ([f1bb22a](https://github.com/bjgreenberg/senior-engineering-partner/commit/f1bb22ae1727393c47cd6d9bae07523c20ae8727))
+* **skill:** convert the five heavy toolchain bullets to pure triggers (A1 tranche 2) ([#51](https://github.com/bjgreenberg/senior-engineering-partner/issues/51)) ([166a805](https://github.com/bjgreenberg/senior-engineering-partner/commit/166a8052165ec9a3f59de9006877bea8222dd44c))
+* **skill:** convert the infra toolchain cluster to pure triggers; make the behavior-change doc sweep procedural ([#49](https://github.com/bjgreenberg/senior-engineering-partner/issues/49)) ([f640611](https://github.com/bjgreenberg/senior-engineering-partner/commit/f640611bdd9886e4a81ada1ab991932dbff47998))
+* **skill:** convert the last two heavy toolchain bullets to pure triggers (A1 tranche 3) ([#59](https://github.com/bjgreenberg/senior-engineering-partner/issues/59)) ([9656be0](https://github.com/bjgreenberg/senior-engineering-partner/commit/9656be0820e5dfd0c796eba0aafb8cda3e96de3e))
+* **skill:** crypto-agility + post-quantum readiness discipline ([#53](https://github.com/bjgreenberg/senior-engineering-partner/issues/53)) ([ee24ad4](https://github.com/bjgreenberg/senior-engineering-partner/commit/ee24ad47dcee6440edd192a37f60422441612f78))
+* **skill:** de-bias the universal core — shipped defaults become example bindings, not mandates (B1) ([#63](https://github.com/bjgreenberg/senior-engineering-partner/issues/63)) ([b83d8a3](https://github.com/bjgreenberg/senior-engineering-partner/commit/b83d8a367369c08a96f55a733120257c8626739f))
+* **standards:** name reuse-first, rule-of-three, and YAGNI in modular-code discipline ([#18](https://github.com/bjgreenberg/senior-engineering-partner/issues/18)) ([54bdfb3](https://github.com/bjgreenberg/senior-engineering-partner/commit/54bdfb3943680ad2b330ef958c0783ebe3fa42ad))
+* **workflow:** escalate high-stakes verify to an adversarial multi-lens review + re-review the fold ([#15](https://github.com/bjgreenberg/senior-engineering-partner/issues/15)) ([bf9f7db](https://github.com/bjgreenberg/senior-engineering-partner/commit/bf9f7db9cabbb92a995282d25a27a7e7edea866a))
+
+
+### Bug Fixes
+
+* **ci:** minimal scorecard workflow — drop SARIF upload that broke publish ([#32](https://github.com/bjgreenberg/senior-engineering-partner/issues/32)) ([933473e](https://github.com/bjgreenberg/senior-engineering-partner/commit/933473ee8fd256799231e393320fc2a8e4460a72))
+* **ci:** scope release-please write permissions to the job (least privilege) ([#34](https://github.com/bjgreenberg/senior-engineering-partner/issues/34)) ([836d0f4](https://github.com/bjgreenberg/senior-engineering-partner/commit/836d0f4a5014b5dcb09d220412018f520ee40b75))
+* make leakage-guard + docs-render bash 3.2-portable (drop mapfile) ([#9](https://github.com/bjgreenberg/senior-engineering-partner/issues/9)) ([f0fbcef](https://github.com/bjgreenberg/senior-engineering-partner/commit/f0fbcefc039103f63ef4b671dba3ca4ab275dd87))
+* **resilience:** fail closed — never return a swallowed error as a success-shaped empty/default ([#20](https://github.com/bjgreenberg/senior-engineering-partner/issues/20)) ([fbb9b70](https://github.com/bjgreenberg/senior-engineering-partner/commit/fbb9b70d7de7f0a5562d4d0e5e3eda86209b7953))
+* **security:** CSV/spreadsheet formula injection on export + SSRF (API7) in the OWASP map ([#19](https://github.com/bjgreenberg/senior-engineering-partner/issues/19)) ([8f887b0](https://github.com/bjgreenberg/senior-engineering-partner/commit/8f887b0adc9b1a85b7b9f9cccd5be83f97df4dfb))
+* **skill:** quote the frontmatter description for strict-YAML validity ([#37](https://github.com/bjgreenberg/senior-engineering-partner/issues/37)) ([93757ab](https://github.com/bjgreenberg/senior-engineering-partner/commit/93757ab5dddc49ec35299133e9bc4b0c0ce50341))
+* two-tier leakage-guard (keep literals private) + trim frontmatter description ≤1024 ([#6](https://github.com/bjgreenberg/senior-engineering-partner/issues/6)) ([f157519](https://github.com/bjgreenberg/senior-engineering-partner/commit/f157519aeb7a1f6d870b810ba5cf725722db8260))
+
+
+### Miscellaneous Chores
+
+* **release:** document the squash-body parse gotcha; mark release 1.11.0 ([#56](https://github.com/bjgreenberg/senior-engineering-partner/issues/56)) ([d6183fc](https://github.com/bjgreenberg/senior-engineering-partner/commit/d6183fc07f50216af23fd624b692fe4743e21bfd))
+
 ## [1.14.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.13.0...v1.14.0) (2026-07-04)
 
 ### Features
