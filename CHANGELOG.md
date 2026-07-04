@@ -17,6 +17,18 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.16.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.15.0...v1.16.0) (2026-07-04)
+
+
+### Features
+
+* per-model portability baselines, cross-CLI eval runner, and the tranche-4 rules-lossless core reduction ([#78](https://github.com/bjgreenberg/senior-engineering-partner/issues/78)) ([bb28ce1](https://github.com/bjgreenberg/senior-engineering-partner/commit/bb28ce118e792fd48c2d5df60262ff2a6d1cc23b))
+
+
+### Bug Fixes
+
+* stop release-please from corrupting the CFF spec-version reference in SKILL.md ([#75](https://github.com/bjgreenberg/senior-engineering-partner/issues/75)) ([bd5b87c](https://github.com/bjgreenberg/senior-engineering-partner/commit/bd5b87c97ccaa97ad0bee10715d3cbfe98adf3fa))
+
 ## [1.15.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.14.0...v1.15.0) (2026-07-04)
 
 
