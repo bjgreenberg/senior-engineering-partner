@@ -1,0 +1,3 @@
+# Dependencies installed into the server image.
+pypdf==4.0.1
+httpx==0.27.0

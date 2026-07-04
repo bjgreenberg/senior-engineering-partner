@@ -13,5 +13,5 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Build server image
         run: docker build -t pdf-report-service .
-      - name: Trivy image scan (fails on HIGH/CRITICAL)
+      - name: Trivy image scan
         run: trivy image --severity HIGH,CRITICAL --exit-code 1 pdf-report-service
