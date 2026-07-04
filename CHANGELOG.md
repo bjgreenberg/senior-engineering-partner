@@ -17,6 +17,15 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.14.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.13.0...v1.14.0) (2026-07-04)
+
+
+### Features
+
+* **references:** bash-scripting.md — the shell deep reference (B2) ([#69](https://github.com/bjgreenberg/senior-engineering-partner/issues/69)) ([064e96f](https://github.com/bjgreenberg/senior-engineering-partner/commit/064e96ff525dcef4c52644edc3f45f694b1723f8))
+* **references:** frontend testing folded into testing.md as §8 — the last B2 coverage slice ([#70](https://github.com/bjgreenberg/senior-engineering-partner/issues/70)) ([0293e69](https://github.com/bjgreenberg/senior-engineering-partner/commit/0293e693326d7c823e1c828793a17c197da32de7))
+* **references:** RAG + prompt-injection worked example — the remaining B2 coverage slices ([#66](https://github.com/bjgreenberg/senior-engineering-partner/issues/66)) ([44fcc3b](https://github.com/bjgreenberg/senior-engineering-partner/commit/44fcc3b2cd0f1eab5b3f2fdb45d87d70eaf0bab9))
+
 ## [1.13.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.12.0...v1.13.0) (2026-07-03)
 
 The Phase-3 portability pass (audit finding B1): the universal core no longer bakes the
