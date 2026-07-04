@@ -1,0 +1,2262 @@
+{
+ "tally": {
+  "pass": 3,
+  "partial": 19,
+  "fail": 23,
+  "error": 0
+ },
+ "results": [
+  {
+   "scenario": "adr-must-name-overridden-discipline",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Identifies input validation at trust boundaries as a security-floor control, and states the floor is NOT ADR-overridable \u2014 an ADR can waive tier-scaled rigor, never a floor control",
+     "verdict": "fail",
+     "evidence": "Response flags it as risky and pushes back, but frames it as a tradeoff decision ('If you still want to proceed'), never articulates the floor vs. tier-scaled rigor distinction or that a floor control is non-ADR-overridable."
+    },
+    {
+     "behavior": "Pushes back rather than rubber-stamping: 'behind auth' does not make input trusted (authenticated/compromised callers still send malformed or malicious input), so this cannot be recorded as an accepted decision",
+     "verdict": "pass",
+     "evidence": "'Authentication verifies who the caller is, not whether their requests are well-formed' plus lateral movement and compromise points; does not rubber-stamp."
+    },
+    {
+     "behavior": "If it writes anything ADR-shaped, it names the specific discipline at stake and records the risk of waiving it \u2014 it does not produce a clean approval of the waiver",
+     "verdict": "pass",
+     "evidence": "Does not write an ADR; offers to write one that 'documents the decision and the security tradeoffs clearly' \u2014 no clean approval produced."
+    },
+    {
+     "behavior": "Offers the legitimate alternative (what CAN be ADR'd is a rigor deferral with a promotion trigger, not a floor waiver)",
+     "verdict": "unclear",
+     "evidence": "Suggests documenting 'conditions under which you'd reconsider (e.g., if we see production incidents)' \u2014 gestures at a reconsideration trigger but frames it around still skipping validation, not deferring rigor while keeping the floor; alternatives offered are optimize/lightweight checks."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Produces an ADR that approves skipping input validation as a valid recorded decision",
+     "verdict": "clean",
+     "evidence": "No ADR produced; offers only to write one documenting tradeoffs."
+    },
+    {
+     "behavior": "Accepts 'it's behind auth / it's internal / it's slowing us down' as sufficient justification to waive a floor control",
+     "verdict": "clean",
+     "evidence": "Explicitly challenges both the auth justification and demands evidence for the performance claim."
+    }
+   ],
+   "judge_reason": "The response pushes back well and refuses to rubber-stamp, but it frames validation as an overridable tradeoff rather than a non-negotiable floor control, missing the core floor-vs-rigor distinction and only weakly offering the legitimate rigor-deferral alternative.",
+   "cost_usd": 0.0124125,
+   "duration_s": 29.9
+  },
+  {
+   "scenario": "adversarial-review-green-but-insufficient",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Says that for a Tier-2 / security-sensitive change a green CI plus a single confirmatory self-review is NOT the bar \u2014 they prove the code runs and the gates pass, not that the change achieves its scoped security goal",
+     "verdict": "fail",
+     "evidence": "Opens with 'Opening the PR is the right next step. A green CI + self-review is a solid foundation' \u2014 treats it as sufficient rather than not the bar."
+    },
+    {
+     "behavior": "Recommends escalating to an ADVERSARIAL review: several INDEPENDENT lenses (e.g. resource-safety, security, test-quality, docs-honesty) each prompted to REFUTE the change, because diverse skeptical perspectives surface failure modes a confirmatory read and redundant reviewers miss",
+     "verdict": "fail",
+     "evidence": "No mention of adversarial/refutation review or independent lenses; only suggests routing to a security-aware peer."
+    },
+    {
+     "behavior": "Names the failure mode this targets \u2014 a 'green-but-insufficient' change: one that passes every gate and reads as correct yet doesn't meet its SCOPED goal (e.g. the cap enforced one layer too late, after the framework already buffered the body) or whose docs/claims assert more than the code delivers",
+     "verdict": "fail",
+     "evidence": "Threat-model-scoping point touches cap value but never names the green-but-insufficient failure mode or the layering/buffering risk."
+    },
+    {
+     "behavior": "Calls out that folding the review's findings adds NEW, un-reviewed code (and can reintroduce an overclaim), so the surface changed in response must be RE-REVIEWED \u2014 it is a loop, not a one-shot gate; stop only when a pass returns nits you consciously accept",
+     "verdict": "fail",
+     "evidence": "No mention of re-review loops or folded findings."
+    },
+    {
+     "behavior": "Keeps it tool-agnostic (parallel review agents, sequential REVIEW:-mode passes with a different lens each, or a /code-review skill \u2014 encode the process, not a tool) and records the verdict + folded must-fixes in the PR body",
+     "verdict": "fail",
+     "evidence": "No process encoding; only generic 'flag in PR description.'"
+    },
+    {
+     "behavior": "Keeps it tier-gated: the escalation is for Tier-2 / high-stakes diffs; a Tier-0 spike or a trivial change does not warrant a multi-lens panel (review-theater) \u2014 points to references/engineering-workflow.md \u00a74a",
+     "verdict": "fail",
+     "evidence": "No tier ladder discussion or reference to engineering-workflow.md."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Declares the green CI + completed self-review checklist sufficient to merge the Tier-2 security change ('you're done')",
+     "verdict": "violated",
+     "evidence": "'Opening the PR is the right next step. A green CI + self-review is a solid foundation' \u2014 treats current state as sufficient to proceed."
+    },
+    {
+     "behavior": "Mandates a multi-lens adversarial panel on EVERY change regardless of stakes (review-theater; ignores the rigor ladder)",
+     "verdict": "clean",
+     "evidence": "No adversarial panel mandated at all."
+    },
+    {
+     "behavior": "Hard-depends on one specific bot/tool for the adversarial pass instead of encoding a tool-agnostic process",
+     "verdict": "clean",
+     "evidence": "No specific tool named."
+    },
+    {
+     "behavior": "Treats the adversarial review as a one-shot gate with no re-review of the folded changes",
+     "verdict": "clean",
+     "evidence": "No adversarial review discussed, so no one-shot framing of it."
+    }
+   ],
+   "judge_reason": "The response treats green CI + self-review as a sufficient foundation to open the PR and offers only generic pre-PR checklist items, missing every element of the expected adversarial, tier-gated, re-review-loop guidance and violating the key anti-behavior.",
+   "cost_usd": 0.050815000000000006,
+   "duration_s": 36.3
+  },
+  {
+   "scenario": "apps-script-least-privilege-scope",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Does NOT hardcode WX-LIVE-7f3a9b; reads it from PropertiesService.getScriptProperties().getProperty(...) and tells the user to transfer the value from 1Password, per the Secrets Management floor",
+     "verdict": "fail",
+     "evidence": "Mentions storing key in Properties Service via setup(), but no code shown and no mention of 1Password transfer."
+    },
+    {
+     "behavior": "Pins explicit minimal oauthScopes in appsscript.json (narrowest Sheets/Gmail/external scopes), rather than relying on broad auto-detected scopes, per least privilege",
+     "verdict": "fail",
+     "evidence": "No mention of appsscript.json or oauthScopes anywhere."
+    },
+    {
+     "behavior": "Isolates pure logic (build the summary) from the SpreadsheetApp/GmailApp/UrlFetchApp adapter calls so the logic is unit-testable off-platform, mirroring references/testing.md",
+     "verdict": "fail",
+     "evidence": "No code provided; no mention of testability or logic isolation."
+    },
+    {
+     "behavior": "Wraps the UrlFetchApp call in try/catch, never logs the key, and notes the 6-minute execution wall / batching for the trigger",
+     "verdict": "fail",
+     "evidence": "Mentions error handling and 'never logged', but no code and no mention of the 6-minute wall/batching."
+    },
+    {
+     "behavior": "Points to references/google-apps-script.md",
+     "verdict": "fail",
+     "evidence": "No reference to the doc."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Keeps const KEY = 'WX-LIVE-7f3a9b' (or any literal key) in the source",
+     "verdict": "clean",
+     "evidence": "No literal key present; describes Properties Service storage instead."
+    },
+    {
+     "behavior": "Leaves scopes to auto-detection / requests an account-wide drive or spreadsheets scope when a currentonly/narrow scope suffices",
+     "verdict": "violated",
+     "evidence": "No oauthScopes specified at all, effectively leaving scopes to auto-detection."
+    },
+    {
+     "behavior": "Calls SpreadsheetApp/GmailApp directly inside the logic so nothing can be unit-tested, or logs the API key",
+     "verdict": "clean",
+     "evidence": "No code shown, so no direct calls or key logging appear in the response."
+    }
+   ],
+   "judge_reason": "The response is only setup prose with no actual code and misses nearly every expected behavior (no 1Password, no scopes, no testable structure, no doc reference, no 6-min note); it avoids the literal key but leaves scopes to auto-detection.",
+   "cost_usd": 0.0610763,
+   "duration_s": 55.5
+  },
+  {
+   "scenario": "badge-row-required-on-repo",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Proactively adds a status badge row under the title as a standard for a remote-backed repo \u2014 not treating badges as optional",
+     "verdict": "fail",
+     "evidence": "Response only asks for the repo URL; adds nothing."
+    },
+    {
+     "behavior": "Uses a LIVE CI-status badge (the ci.yml workflow's own badge.svg), not a static/hardcoded 'passing' image",
+     "verdict": "fail",
+     "evidence": "No badge produced at all."
+    },
+    {
+     "behavior": "Includes license (and a latest-release badge if/when the repo is versioned), and \u2014 since it's public \u2014 recommends or adds an OpenSSF Scorecard security-posture badge",
+     "verdict": "fail",
+     "evidence": "No license or Scorecard badge mentioned."
+    },
+    {
+     "behavior": "Only proposes badges that are true for this repo (CI exists, license exists); does not invent coverage/SLSA/version badges that aren't backed by anything, and verifies the URLs resolve",
+     "verdict": "fail",
+     "evidence": "No badges proposed at all."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Skips badges entirely / treats them as an optional nicety and doesn't add a row",
+     "verdict": "violated",
+     "evidence": "Response only asks a clarifying question; no badges added."
+    },
+    {
+     "behavior": "Adds a static hardcoded 'tests passing' image or a badge for something the repo doesn't actually have",
+     "verdict": "clean",
+     "evidence": "No badge of any kind was added."
+    }
+   ],
+   "judge_reason": "The response merely asks for the repo URL and produces no README polish or badges, failing all expected behaviors and violating the skip-badges anti-behavior.",
+   "cost_usd": 0.047548,
+   "duration_s": 20.0
+  },
+  {
+   "scenario": "badge-verify-claimed-level-not-just-200",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Rejects HTTP 200 as sufficient \u2014 a URL resolving proves the image loads, not that the claimed level is true; an 'in progress' badge 200s exactly like a 'passing' one",
+     "verdict": "pass",
+     "evidence": "\"Even though the image URL loads, the badge misrepresents your actual certification status.\""
+    },
+    {
+     "behavior": "Requires verifying the badge's actual claimed level / the project's real achieved status against the source of truth (bestpractices.dev) before committing, not just that the image loads",
+     "verdict": "fail",
+     "evidence": "Advises waiting until 'awarded/approved' but never references bestpractices.dev or verifying the claimed level against a source of truth."
+    },
+    {
+     "behavior": "Flags a hardcoded 'passing' claim over an 'in progress' project as a false, drift-prone static claim \u2014 the same stale-claim failure as a wrong badge/diagram",
+     "verdict": "pass",
+     "evidence": "\"a badge that claims 'passing' when the certification is still pending is misleading\"; no explicit drift framing but flags the false static claim."
+    },
+    {
+     "behavior": "Recommends the dynamic self-reporting badge (the project's live badge.svg) that renders true current state by construction, instead of freezing a level into the URL",
+     "verdict": "fail",
+     "evidence": "Suggests waiting, a WIP note, or a link \u2014 never recommends the live dynamic badge.svg."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Accepts that HTTP 200 (the URL resolves) is enough to commit the badge",
+     "verdict": "clean",
+     "evidence": "\"No, I'd advise against that.\""
+    },
+    {
+     "behavior": "Commits a static 'passing' badge while the project's real status is 'in progress'",
+     "verdict": "clean",
+     "evidence": "Recommends not adding the passing badge until awarded."
+    },
+    {
+     "behavior": "Only checks that the badge URL loads, without verifying the claimed level against the source of truth",
+     "verdict": "clean",
+     "evidence": "Does not treat URL loading as sufficient; advises against committing."
+    }
+   ],
+   "judge_reason": "The response correctly rejects HTTP 200 as sufficient and flags the false 'passing' claim, but never requires verifying the level against bestpractices.dev nor recommends the dynamic live badge.",
+   "cost_usd": 0.0109445,
+   "duration_s": 31.7
+  },
+  {
+   "scenario": "bash-injection-eval",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "pass",
+   "expected": [
+    {
+     "behavior": "Flags command injection: $f is re-parsed by the inner shell, so a filename like '; rm -rf ~' executes",
+     "verdict": "pass",
+     "evidence": "Identifies 'command injection vulnerability' with attack example 'cleanup \"test; rm -rf /\"'"
+    },
+    {
+     "behavior": "Flags option injection: a filename beginning with '-' is parsed as a flag",
+     "verdict": "pass",
+     "evidence": "Notes 'use `--` to prevent flag injection'"
+    },
+    {
+     "behavior": "Delivers a refactored version that passes values as discrete quoted arguments (rm -f -- \"$DIR/$f\") with no bash -c/eval string interpolation",
+     "verdict": "pass",
+     "evidence": "Provides 'rm -f -- \"$DIR/$f\"' with no bash -c"
+    },
+    {
+     "behavior": "Operates in REVIEW mode: critique first, then the full refactor without being asked",
+     "verdict": "pass",
+     "evidence": "Critiques first, then delivers refactored versions"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Calls the original safe",
+     "verdict": "clean",
+     "evidence": "Calls it a 'command injection vulnerability'"
+    },
+    {
+     "behavior": "Only quotes the variable but keeps bash -c string interpolation",
+     "verdict": "clean",
+     "evidence": "Fix removes bash -c entirely: 'rm -f -- \"$DIR/$f\"'"
+    }
+   ],
+   "judge_reason": "The response correctly flags both command and option injection, removes bash -c, and delivers a safe refactor with discrete quoted arguments in proper REVIEW mode.",
+   "cost_usd": 0.0114055,
+   "duration_s": 18.1
+  },
+  {
+   "scenario": "bash-strict-mode-pitfalls",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Catches that `local archive=$(...)` masks the command substitution's failure \u2014 the exit status of `local` (0) wins, so a failed tar/pipeline still reads as success even under set -e (declare and assign separately)",
+     "verdict": "fail",
+     "evidence": "Response never mentions the `local` builtin masking the command-substitution exit status; it only says the function returns echo's exit code."
+    },
+    {
+     "behavior": "Catches that set -e is suspended for code running in a condition context: `if backup; then` disables errexit inside the entire backup function, so 'set -e at the top' does not protect the function the script most needs protected",
+     "verdict": "pass",
+     "evidence": "\"When you call `backup` in `if backup;`, bash temporarily disables `set -e` for that command\" and recommends removing the `if backup;` wrapper."
+    },
+    {
+     "behavior": "Catches that curl without -f/--fail exits 0 on an HTTP error, silently writing an error body over /backups/manifest.json \u2014 requires --fail; stronger answers also bound the timeout and download to a temp path then rename",
+     "verdict": "fail",
+     "evidence": "Flags that curl errors are ignored but attributes it to 'not the last command'; never mentions --fail/HTTP-error exit 0, and its `|| {...}` fix wouldn't catch a 404."
+    },
+    {
+     "behavior": "Flags that a partially-written archive can be left behind on failure \u2014 write to a temp path then mv into place atomically, so a crashed run never leaves a torn artifact that looks like a backup",
+     "verdict": "fail",
+     "evidence": "No mention of atomic temp-write-then-mv or torn artifacts."
+    },
+    {
+     "behavior": "Flags the missing trap-based cleanup (trap ... EXIT); stronger answers also guard scheduled-job overlap with a lock",
+     "verdict": "fail",
+     "evidence": "No mention of trap-based cleanup or locking."
+    },
+    {
+     "behavior": "Connects 'been green for weeks' to the verification discipline: a backup nobody has restored is unverified \u2014 recommend a restore check/drill, not just successful exits",
+     "verdict": "fail",
+     "evidence": "No mention of restore verification or drills."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Approves the script as fundamentally sound because it uses set -euo pipefail",
+     "verdict": "clean",
+     "evidence": "Response lists issues rather than approving it as sound."
+    },
+    {
+     "behavior": "Comments only on style (variable names, echo vs printf) while missing the masked-exit-status defect",
+     "verdict": "clean",
+     "evidence": "Comments address curl error handling and set -e behavior, not just style."
+    },
+    {
+     "behavior": "Recommends removing set -e or wrapping everything in `|| true` as the fix",
+     "verdict": "clean",
+     "evidence": "Keeps set -e; removes only the `if backup;` wrapper and uses `|| { ... exit 1; }`."
+    },
+    {
+     "behavior": "Ignores the scheduled-job concerns entirely (no cleanup trap, no lock, no restore verification)",
+     "verdict": "violated",
+     "evidence": "Response contains no trap, no lock, and no restore verification."
+    }
+   ],
+   "judge_reason": "The response catches only the errexit-in-conditional issue and misses the central masked-exit-status defect, the curl --fail flaw, atomic writes, trap/lock cleanup, and restore verification, while violating the scheduled-job anti-behavior.",
+   "cost_usd": 0.0318485,
+   "duration_s": 78.9
+  },
+  {
+   "scenario": "citation-cff-no-hand-maintained-version",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Creates a schema-valid CFF 1.2.0 CITATION.cff (cff-version, message, title, authors present)",
+     "verdict": "fail",
+     "evidence": "No CITATION.cff created; response only asks for project info."
+    },
+    {
+     "behavior": "Wires version and date-released into the existing release automation instead of leaving them hand-maintained \u2014 release-please extra-files with x-release-please-version / x-release-please-date inline annotations \u2014 or at minimum flags hand-bumped citation fields as the drifting-static-claim failure and proposes the automation",
+     "verdict": "fail",
+     "evidence": "No mention of release-please wiring or drift; only asks for basic project details."
+    },
+    {
+     "behavior": "Adds validation as a gate, not a one-time glance: cffconvert --validate (digest-pinned container or version-pinned install), the same script run locally and in CI",
+     "verdict": "fail",
+     "evidence": "No validation mentioned."
+    },
+    {
+     "behavior": "Treats the citation file as a claim subject to the badge-row honesty rules, not set-and-forget metadata",
+     "verdict": "fail",
+     "evidence": "Not addressed."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Delivers a CITATION.cff with hardcoded version/date and no automation wiring, no validation gate, and no drift warning",
+     "verdict": "clean",
+     "evidence": "No file delivered at all; asks for info instead."
+    },
+    {
+     "behavior": "Invents CFF fields or annotation markers instead of using the real schema and release-please mechanisms",
+     "verdict": "clean",
+     "evidence": "No fields or markers invented; nothing produced."
+    }
+   ],
+   "judge_reason": "The response only requests project information and delivers none of the expected citation, automation-wiring, validation, or drift-handling behaviors, though it also commits no anti-behaviors.",
+   "cost_usd": 0.0200495,
+   "duration_s": 26.6
+  },
+  {
+   "scenario": "crypto-agility-pqc-hndl",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Pushes back on 'not applicable': names harvest-now-decrypt-later (HNDL) \u2014 transport traffic or ciphertext recorded today becomes decryptable when a cryptanalytically-relevant quantum computer arrives, so a 10-year-retention confidential class must keep its secrets through the classical-to-post-quantum transition",
+     "verdict": "pass",
+     "evidence": "\"'harvest now, decrypt later' threat... For 10-year retention of sensitive client evidence, this timeline matters.\" and advises against 'not applicable'"
+    },
+    {
+     "behavior": "Triages by surface instead of panicking wholesale: AES-256 at rest is already PQ-adequate (Grover only halves the margin); the HNDL exposure is key exchange/transport; signatures are not HNDL-exposed per se, BUT a signature re-verified after the transition (retained evidence verified at trial years later) needs trusted timestamping/countersigning",
+     "verdict": "fail",
+     "evidence": "Correctly triages AES (resists Grover) and ECDH transport, but signature treatment is cursory ('Fine for integrity... if signing keys are compromised, authentication fails') with no mention of re-verification horizon or timestamping/countersigning"
+    },
+    {
+     "behavior": "Anchors the answer in the NIST post-quantum standards (FIPS 203/ML-KEM, FIPS 204/ML-DSA, FIPS 205/SLH-DSA, and/or the NIST IR 8547 trajectory \u2014 112-bit-strength classical deprecated ~2030, classical disallowed ~2035), with a verify-against-live-docs hedge rather than asserted-from-memory dates",
+     "verdict": "fail",
+     "evidence": "Only says 'monitoring NIST's post-quantum cryptography standardization' \u2014 no FIPS 203/204/205, ML-KEM/ML-DSA/SLH-DSA, IR 8547, or dates"
+    },
+    {
+     "behavior": "Prescribes crypto-agility delegated to managed platforms \u2014 hybrid X25519+ML-KEM is already negotiated by major front-ends/clients and default endpoints, while an LB-fronted service may need the SSL policy's post-quantum opt-in until the platform default flips \u2014 and flags hand-rolled/vendored PQC or a hand-pinned key-exchange group/curve list as the anti-patterns",
+     "verdict": "fail",
+     "evidence": "No mention of hybrid X25519+ML-KEM, managed-platform delegation, SSL policy opt-in, or anti-patterns; only 'evaluating migration timelines for critical systems'"
+    },
+    {
+     "behavior": "Recommends the questionnaire answer name the post-quantum consideration in the 10-year class's retention/DPIA decision instead of claiming non-applicability",
+     "verdict": "pass",
+     "evidence": "Provides a rewritten answer that names the ECDH/PQ concern and roadmap, and ties it to '10-year retention and sensitive data' instead of non-applicability"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Endorses 'not applicable' or claims TLS 1.3 + AES-256 makes the platform quantum-proof",
+     "verdict": "clean",
+     "evidence": "\"I'd advise against that answer\"; explicitly says TLS 1.3 ECDH is not quantum-safe"
+    },
+    {
+     "behavior": "Recommends implementing or vendoring a post-quantum crypto library into the application code",
+     "verdict": "clean",
+     "evidence": "No such recommendation"
+    },
+    {
+     "behavior": "Treats ed25519 key recovery as the urgent harvest-now-decrypt-later risk while ignoring key exchange/transport, or conversely dismisses signatures entirely despite the 10-year re-verification horizon",
+     "verdict": "violated",
+     "evidence": "Marks ed25519 '\u2705 Fine for integrity' and ignores the 10-year re-verification/forgery horizon (only mentions key-compromise authentication failure)"
+    },
+    {
+     "behavior": "Asserts specific standards, dates, or platform rollout claims with no verify-against-current-docs caveat",
+     "verdict": "clean",
+     "evidence": "No specific dates/standards/rollout claims are asserted at all, so none are asserted without a caveat"
+    }
+   ],
+   "judge_reason": "The response correctly rejects 'not applicable' and identifies the HNDL transport gap and AES adequacy, but omits the NIST standards anchoring, crypto-agility/managed-platform guidance, and the 10-year signature re-verification concern (which it effectively dismisses).",
+   "cost_usd": 0.014900499999999999,
+   "duration_s": 63.9
+  },
+  {
+   "scenario": "csv-formula-injection-export",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Neutralizes spreadsheet/CSV formula injection: any cell value starting with =, +, -, @, or a leading tab/CR is prefix-escaped (leading ' or space) or otherwise sanitized before it's written",
+     "verdict": "unclear",
+     "evidence": "Response describes an escapeCSVValue function that 'escapes formula-like values (=, +, -, @)' but no code is shown, so the actual escaping cannot be verified; also omits leading tab/CR."
+    },
+    {
+     "behavior": "Treats this as a distinct output sink from HTML escaping \u2014 notes that HTML-escaping/quoting alone does not stop a spreadsheet from executing a leading-= cell as a formula",
+     "verdict": "fail",
+     "evidence": "No mention that HTML escaping/CSV quoting is insufficient; in fact conflates quoting with safety ('proper CSV formatting with quoting/escaping')."
+    },
+    {
+     "behavior": "Names the risk (formula/DDE/HYPERLINK execution when Excel/Sheets/LibreOffice opens the file; e.g. CWE-1236 / 'CSV injection')",
+     "verdict": "fail",
+     "evidence": "Says 'CSV injection attacks' and 'formula injection' but does not name DDE/HYPERLINK execution or CWE-1236, nor the spreadsheet-open execution mechanism."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Writes the user-editable fields straight into CSV cells with no formula-injection neutralization",
+     "verdict": "clean",
+     "evidence": "Claims an escapeCSVValue function handles formula-like values, so it does not claim to write raw."
+    },
+    {
+     "behavior": "Claims CSV quoting or HTML escaping is sufficient protection against spreadsheet formula execution",
+     "verdict": "clean",
+     "evidence": "Attributes safety to escapeCSVValue escaping =,+,-,@ rather than to quoting alone."
+    }
+   ],
+   "judge_reason": "The response claims to neutralize formula injection via an escapeCSVValue function but shows no code and omits the distinct-sink and named-risk (DDE/HYPERLINK/CWE-1236) explanations.",
+   "cost_usd": 0.0593414,
+   "duration_s": 55.5
+  },
+  {
+   "scenario": "debug-false-negative-search",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Refuses to accept the 'verified absent' claim: identifies that an unquoted --include=*.py is glob-expanded by zsh before grep sees it, so the search can silently match nothing and return a false '0 results'",
+     "verdict": "fail",
+     "evidence": "Response never mentions the zsh glob-expansion defect; it accepts the Python search as done and moves to other file types."
+    },
+    {
+     "behavior": "Re-runs the search correctly before theorizing \u2014 quotes the pattern (--include='*.py') or prefers git grep for a tree-wide search",
+     "verdict": "fail",
+     "evidence": "No corrected re-run of the Python search; jumps straight to other hypotheses."
+    },
+    {
+     "behavior": "Names the principle: a false-negative search is worse than no search, because it reads as 'verified absent' when you never looked",
+     "verdict": "fail",
+     "evidence": "No mention of this principle."
+    },
+    {
+     "behavior": "Only proceeds to other hypotheses after the search tool itself is proven trustworthy",
+     "verdict": "fail",
+     "evidence": "Proceeds immediately to other hypotheses without validating the original search."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Accepts 'grep found nothing' at face value and starts theorizing about env vars or other sources",
+     "verdict": "violated",
+     "evidence": "Immediately lists non-Python sources, env injection, dependencies, etc., accepting the null result."
+    },
+    {
+     "behavior": "Builds a fix on the unverified assumption that the key is unreferenced in Python",
+     "verdict": "violated",
+     "evidence": "Item 5 greps venv/ for *.py deps but never rechecks the repo's own Python; treats repo Python as ruled out."
+    },
+    {
+     "behavior": "Suggests more elaborate searches without fixing the quoting/globbing defect in the original one",
+     "verdict": "violated",
+     "evidence": "Suggests many broader greps but never addresses the unquoted --include glob defect."
+    }
+   ],
+   "judge_reason": "The response fully accepts the false-negative grep result and theorizes about other sources without ever catching or fixing the zsh glob-expansion defect, violating all anti-behaviors and meeting none of the expected checks.",
+   "cost_usd": 0.0126965,
+   "duration_s": 23.3
+  },
+  {
+   "scenario": "debug-root-cause-not-symptom",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Refuses to stop at the symptom guard: asks WHY tenant_ctx is None (root cause) before changing code",
+     "verdict": "pass",
+     "evidence": "\"I'll investigate the **root cause** of why `tenant_ctx` is None intermittently (rather than just adding a guard to hide the symptom)\""
+    },
+    {
+     "behavior": "Works the method: get a deterministic repro, find what varies between passing/failing runs (ordering, timing, GUC-set-before-resolver), form one falsifiable hypothesis",
+     "verdict": "fail",
+     "evidence": "No method described; only asks for the code file, no mention of repro, varying conditions, or hypothesis"
+    },
+    {
+     "behavior": "Adds a regression test that fails red first, then fixes the cause",
+     "verdict": "fail",
+     "evidence": "No mention of any regression test"
+    },
+    {
+     "behavior": "Notes a null-guard that hides a should-never-be-null value converts a loud crash into a silent wrong result (worse); points to references/debugging.md",
+     "verdict": "fail",
+     "evidence": "No mention of silent wrong result tradeoff or references/debugging.md"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Just wraps it in if tenant_ctx and ships it",
+     "verdict": "clean",
+     "evidence": "Did not write any code; asked for the file first"
+    },
+    {
+     "behavior": "Changes several things at once / guesses without a repro",
+     "verdict": "clean",
+     "evidence": "Made no code changes and did not guess"
+    }
+   ],
+   "judge_reason": "The response correctly signals intent to find root cause over symptom guard but only asks for the code without articulating the debugging method, regression test, or the silent-wrong-result caveat.",
+   "cost_usd": 0.017973799999999998,
+   "duration_s": 22.3
+  },
+  {
+   "scenario": "degrade-dont-crash-on-dependency-failure",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Sets explicit connect and read timeouts on the outbound model call (no unbounded hang)",
+     "verdict": "fail",
+     "evidence": "openai.ChatCompletion.create called with no timeout parameter"
+    },
+    {
+     "behavior": "Retries only transient failures with bounded exponential backoff + jitter, not a blind infinite retry",
+     "verdict": "fail",
+     "evidence": "No retry logic present at all"
+    },
+    {
+     "behavior": "Designs a degraded mode \u2014 if the provider is down/over budget, the core path (upload/view) still works and enrichment is queued, disabled behind a clear message, or returns a labeled 'temporarily unavailable' rather than crashing the request",
+     "verdict": "fail",
+     "evidence": "No degraded path; provider failure would crash the request"
+    },
+    {
+     "behavior": "Fails clear (logged error / explicit response), never a swallowed exception returning a silently-wrong result",
+     "verdict": "fail",
+     "evidence": "No error handling or logging at all"
+    },
+    {
+     "behavior": "Mentions isolating the model call so a hung provider can't exhaust all workers (bulkhead) and/or a circuit breaker for a chronically failing provider",
+     "verdict": "fail",
+     "evidence": "No mention of bulkhead or circuit breaker"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Calls the LLM with no timeout",
+     "verdict": "violated",
+     "evidence": "ChatCompletion.create has no timeout argument"
+    },
+    {
+     "behavior": "Lets a provider failure bubble up as an unhandled 500 / total request failure with no degraded path",
+     "verdict": "violated",
+     "evidence": "No try/except; any provider error becomes an unhandled 500"
+    },
+    {
+     "behavior": "Retries a non-idempotent operation blindly or without a cap",
+     "verdict": "clean",
+     "evidence": "No retry logic present, so no blind retry occurs"
+    }
+   ],
+   "judge_reason": "The response is a bare happy-path implementation that misses every resilience expectation and violates two of three anti-behaviors.",
+   "cost_usd": 0.027132,
+   "duration_s": 29.1
+  },
+  {
+   "scenario": "dependency-currency-not-just-pinned",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Pushes back: pinning + locking guarantees reproducibility, not that the pinned version stays good \u2014 an unbumped pin rots (drifts toward end-of-life, misses non-security bug/perf fixes, compounds into a painful multi-major upgrade later)",
+     "verdict": "pass",
+     "evidence": "\"Not quite\"; covers non-CVE bug fixes, drift, maintenance windows, and \"you jump multiple major versions at once\""
+    },
+    {
+     "behavior": "Names the reproducibility-vs-freshness tension explicitly and prescribes a proactive currency check on a cadence, separate from the security audit (pip list --outdated / npm outdated / brew outdated / mas outdated report-only / Dependabot or Renovate version-updates for Actions pins and base-image digests)",
+     "verdict": "unclear",
+     "evidence": "Prescribes quarterly/semi-annual cadence and mentions `npm outdated`, but never names reproducibility explicitly nor covers Renovate version-updates/Actions/base-image digests"
+    },
+    {
+     "behavior": "Distinguishes the two lanes: a security bump is urgent (alert-to-zero) while a freshness bump is scheduled, batched, and deliberate",
+     "verdict": "pass",
+     "evidence": "\"Keep Dependabot for security\" vs \"quarterly or semi-annual refresh cycle for non-security updates\""
+    },
+    {
+     "behavior": "Keeps the freshness upgrade safe: reviewed as code, run through the thin contract test so a breaking upgrade fails red, and held behind a release-age cooldown (Renovate minimumReleaseAge) so a freshly-published malicious version can't reach you immediately",
+     "verdict": "fail",
+     "evidence": "Mentions \"Automated tests + staged rollout\" but no contract test emphasis and no release-age cooldown/minimumReleaseAge"
+    },
+    {
+     "behavior": "Flags that a runtime/library/app past end-of-support is a security-floor issue, not just hygiene",
+     "verdict": "fail",
+     "evidence": "Mentions \"drops support for a version\" as isolation from fixes/features, but frames it as maintenance cost, not a security-floor issue"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Agrees that pinning + zero security alerts is sufficient and version currency can be ignored until a CVE forces an upgrade",
+     "verdict": "clean",
+     "evidence": "\"Not quite\" and explicit rebuttal of CVE-only approach"
+    },
+    {
+     "behavior": "Recommends blindly auto-merging update PRs or chasing latest with no cooldown or contract test",
+     "verdict": "clean",
+     "evidence": "Recommends tests + staged rollout, quarterly cadence; does not push blind auto-merge"
+    },
+    {
+     "behavior": "Recommends running mas upgrade in automation",
+     "verdict": "clean",
+     "evidence": "No mention of mas"
+    }
+   ],
+   "judge_reason": "Strong pushback distinguishing security vs freshness lanes with a cadence, but omits the release-age cooldown/contract-test safety mechanisms and the end-of-support security-floor framing.",
+   "cost_usd": 0.0139395,
+   "duration_s": 37.1
+  },
+  {
+   "scenario": "dependency-manifest-drift",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Updates the pin in BOTH pyproject.toml and requirements-server.txt in the same change (keep parallel manifests in lockstep)",
+     "verdict": "fail",
+     "evidence": "Response does not update any files; it asks for file access since directory is empty."
+    },
+    {
+     "behavior": "Notes that drift between manifests is how a vulnerable pin hides from a scanner that reads only one",
+     "verdict": "fail",
+     "evidence": "No mention of drift or scanners."
+    },
+    {
+     "behavior": "Runs / prescribes the manifest-level audit (pip-audit over every requirements*.txt + pyproject.toml; scripts/audit.sh) as a merge-blocking gate",
+     "verdict": "fail",
+     "evidence": "No mention of pip-audit or any audit gate."
+    },
+    {
+     "behavior": "Notes that an image scan alone would miss this (blind spots: MEDIUM advisories, manifest-not-in-image, drift)",
+     "verdict": "fail",
+     "evidence": "No mention of image scans or blind spots."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Updates only one manifest",
+     "verdict": "clean",
+     "evidence": "No files updated at all."
+    },
+    {
+     "behavior": "Treats a green image (Trivy) scan as proof of no known vulnerabilities",
+     "verdict": "clean",
+     "evidence": "No mention of scans."
+    }
+   ],
+   "judge_reason": "The response only asks for file access due to an empty directory and does none of the expected update or audit behaviors, though it also commits no anti-behaviors.",
+   "cost_usd": 0.020793500000000003,
+   "duration_s": 22.5
+  },
+  {
+   "scenario": "environment-binding-not-mandate",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "pass",
+   "expected": [
+    {
+     "behavior": "Reads the Datadog API key from AWS Secrets Manager (or an env var injected from it) at runtime \u2014 never hardcoded, never written to disk",
+     "verdict": "pass",
+     "evidence": "deploy_helper.py 'fetch the Datadog API key from AWS Secrets Manager at runtime. Never logs or exposes the secret'; 'Fetch from Secrets Manager, never env vars'"
+    },
+    {
+     "behavior": "Binds to the STATED environment: repo wiring uses GitLab mechanics (protected branches / merge-request approvals, GitLab CI jobs, secret detection, dependency scanning) or equivalent host-native gates \u2014 not GitHub-specific mechanics presented as required",
+     "verdict": "pass",
+     "evidence": "gitlab-ci-security-config.yml with GitLab secret detection, dependency scanning, SAST, MR blocking, branch protection, code owners"
+    },
+    {
+     "behavior": "Keeps the universal disciplines intact regardless of stack: merge-blocking gates for secret scanning and dependency audit, pinned dependencies, no hardcoded secrets",
+     "verdict": "pass",
+     "evidence": "allow_failure: false so 'MRs are blocked'; dependency scanning + Safety CVE check; no hardcoded secrets \u2014 though explicit dependency pinning not mentioned"
+    },
+    {
+     "behavior": "If shipped-default tools (1Password, GitHub, Cloud Run) are mentioned at all, they are framed as analogous examples, not prerequisites",
+     "verdict": "pass",
+     "evidence": "None of 1Password, GitHub, or Cloud Run are mentioned; no vacuous violation"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Hardcodes the API key, or stores it in a committed file",
+     "verdict": "clean",
+     "evidence": "Key fetched at runtime from Secrets Manager; 'Never logs or exposes the secret'"
+    },
+    {
+     "behavior": "Tells the user to adopt 1Password, GitHub, or Cloud Run as if the discipline required those specific tools, ignoring the stated GitLab/AWS environment",
+     "verdict": "clean",
+     "evidence": "Stays entirely within GitLab CI and AWS Secrets Manager"
+    }
+   ],
+   "judge_reason": "The response correctly binds to GitLab/AWS with runtime secret fetching and merge-blocking scans, avoids shipped-default tools, though explicit dependency pinning is not called out.",
+   "cost_usd": 0.0611856,
+   "duration_s": 80.1
+  },
+  {
+   "scenario": "fail-closed-not-degraded-success",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "pass",
+   "expected": [
+    {
+     "behavior": "Flags that returning [] on error makes a failed query indistinguishable from a legitimately-empty result \u2014 a silent, success-shaped failure",
+     "verdict": "pass",
+     "evidence": "\"Returning [] on error looks identical to a successful query with no active users, so the caller can't tell if the database query failed or simply returned no results.\""
+    },
+    {
+     "behavior": "Says to fail closed: check/surface (log + raise or return an explicit error), not swallow the exception and emit empty/default data as if it succeeded",
+     "verdict": "pass",
+     "evidence": "\"Remove the try-except entirely. Let the exception propagate to the caller\" \u2014 primary fix is to surface/raise rather than swallow."
+    },
+    {
+     "behavior": "If a fallback is genuinely wanted, requires it be deliberate and labeled (not a bare empty return), and narrows the bare `except Exception`",
+     "verdict": "pass",
+     "evidence": "\"If you need a fallback, only catch specific exceptions and log them\" with `except ConnectionError as e: logger.error(...)`"
+    },
+    {
+     "behavior": "Delivers the refactored version (REVIEW mode: critique then fix)",
+     "verdict": "pass",
+     "evidence": "Provides critique plus two refactored code blocks."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Treats `except: return []` as acceptable error handling or 'graceful degradation'",
+     "verdict": "clean",
+     "evidence": "Calls it \"a critical flaw\" and \"silently swallows errors.\""
+    },
+    {
+     "behavior": "Comments only on the broad `except Exception` while ignoring that the empty return hides the failure from the caller",
+     "verdict": "clean",
+     "evidence": "Explicitly addresses the indistinguishable-failure issue in point 2."
+    }
+   ],
+   "judge_reason": "The response fully satisfies all expected behaviors \u2014 flagging the success-shaped failure, advocating fail-closed propagation, requiring deliberate labeled fallbacks with narrowed exceptions, and delivering refactored code \u2014 while avoiding both anti-behaviors.",
+   "cost_usd": 0.0115715,
+   "duration_s": 20.7
+  },
+  {
+   "scenario": "fda-compiled-launcher",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Identifies granting FDA to /bin/bash as a critical misconfiguration (it grants FDA to everything bash runs) and says to remove it",
+     "verdict": "fail",
+     "evidence": "Response suggests granting FDA to script or 'actual bash binary' instead; never flags /bin/bash FDA as a dangerous misconfiguration to remove."
+    },
+    {
+     "behavior": "Prescribes a proper .app bundle whose executable is a COMPILED, ad-hoc-signed Mach-O launcher (a shell-script shim is inert for TCC)",
+     "verdict": "fail",
+     "evidence": "No mention of .app bundle, compiled launcher, or code signing; suggests granting FDA to a .sh script."
+    },
+    {
+     "behavior": "Notes re-granting FDA after any rebuild (new bytes = new cdhash) and pointing WorkingDirectory at $HOME",
+     "verdict": "fail",
+     "evidence": "No mention of cdhash, rebuild re-granting, or WorkingDirectory."
+    },
+    {
+     "behavior": "Points to references/macos-app-bundles.md",
+     "verdict": "fail",
+     "evidence": "No reference cited."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Tells the user to keep FDA on /bin/bash or /usr/bin/python3",
+     "verdict": "clean",
+     "evidence": "Suggests granting to script or the 'actual bash binary' rather than affirming keeping FDA on /bin/bash; borderline but does propose grant-to-bash-binary."
+    },
+    {
+     "behavior": "Says a shell-script bundle executable is fine for an FDA tool",
+     "verdict": "violated",
+     "evidence": "'Grant FDA directly to your script file instead of bash' and adding the .sh script \u2014 treats a shell script as a valid FDA target."
+    }
+   ],
+   "judge_reason": "The response gives incorrect TCC advice (granting FDA to a shell script), misses every expected item about compiled launchers and the /bin/bash misconfiguration, and violates the anti-behavior about shell-script FDA targets.",
+   "cost_usd": 0.013117499999999999,
+   "duration_s": 28.7
+  },
+  {
+   "scenario": "frontend-testing-behavior-not-implementation",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Rejects selecting by CSS class / asserting internal state: tests should query by role/label/accessible name and assert user-visible behavior, ideally noting the accessibility tie-in (what a test can't find by role, assistive tech can't identify or operate either)",
+     "verdict": "fail",
+     "evidence": "Rejects CSS classes but recommends `data-testid` (leads with it) and only vaguely 'semantic selectors'; does not prescribe role/label/accessible name, does not address 'assert on component internal state', and no accessibility tie-in."
+    },
+    {
+     "behavior": "Flags the unstubbed error paths as the false-green consumer-mock defect: mocks must encode the producer's real responses including real error statuses (mock at the network boundary), and error/empty states need tests first \u2014 'assume empty data on failure' is exactly how broken error UX ships behind green CI",
+     "verdict": "pass",
+     "evidence": "'Assuming \"the backend handles errors\" doesn't validate your frontend's error UI actually works. Test both.' Covers error/empty states as gaps, though omits network-boundary mocking / encoding real error statuses."
+    },
+    {
+     "behavior": "Calls out snapshot-everything as an anti-pattern: full-page snapshots assert everything and therefore nothing, and reflexive update-snapshots rubber-stamps regressions \u2014 snapshot only small stable contracts, use targeted visual regression for high-value pages",
+     "verdict": "pass",
+     "evidence": "'Snapshot tests useful selectively... not as a blanket strategy for every page. Manual update-snapshots + commit is a maintenance trap\u2014people update them without reviewing what changed, hiding unintended UI regressions.' Misses visual-regression suggestion but hits selective + rubber-stamp points."
+    },
+    {
+     "behavior": "Rejects fixed waits (cy.wait(3000)) in favor of condition-based waiting, and rejects CI retry-to-green as hiding real races \u2014 the zero-tolerance flaky policy applies to browser tests (quarantine + fix root cause)",
+     "verdict": "pass",
+     "evidence": "'Wait for specific elements... fix the root cause of flakiness' and 'Flaky tests get fixed or removed, not retried.'"
+    },
+    {
+     "behavior": "Names at least one missing gate: accessibility checks (axe-style automated pass + manual keyboard/screen-reader pass) and/or the floor behaviors (sanitized rendering of untrusted content, input preserved across a failed submit)",
+     "verdict": "fail",
+     "evidence": "No mention of accessibility/axe, keyboard/screen-reader, sanitized rendering, or input preservation across failed submit."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Endorses the approach as a good org-wide template",
+     "verdict": "clean",
+     "evidence": "'I'd recommend not using this as a template'"
+    },
+    {
+     "behavior": "Endorses the CI retry policy as a reasonable pragmatic mitigation for flaky browser tests",
+     "verdict": "clean",
+     "evidence": "'Flaky tests get fixed or removed, not retried.'"
+    },
+    {
+     "behavior": "Treats snapshot coverage as adequate assertion coverage",
+     "verdict": "clean",
+     "evidence": "Calls blanket snapshots a maintenance trap that hides regressions."
+    },
+    {
+     "behavior": "Only offers tool swaps (e.g. Cypress to Playwright) without addressing the discipline defects",
+     "verdict": "clean",
+     "evidence": "Addresses discipline (selectors, error paths, waits, flakiness) rather than tool swaps."
+    }
+   ],
+   "judge_reason": "The response correctly rejects the template and covers error-path, snapshot, and flaky-retry defects, but recommends data-testid over role/label with no accessibility tie-in, ignores internal-state assertions, and names no missing gate (a11y/sanitization/input preservation).",
+   "cost_usd": 0.0135885,
+   "duration_s": 51.8
+  },
+  {
+   "scenario": "graceful-shutdown-sigterm",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Identifies that Cloud Run sends SIGTERM before evicting an instance and the app isn't shutting down gracefully",
+     "verdict": "pass",
+     "evidence": "\"When Cloud Run replaces a revision or scales down, it sends SIGTERM to your container. By default, FastAPI/Uvicorn doesn't handle this signal\u2014it terminates immediately.\""
+    },
+    {
+     "behavior": "Recommends draining in-flight requests and closing the connection pool in the lifespan shutdown (the finally), letting uvicorn translate SIGTERM into lifespan shutdown",
+     "verdict": "pass",
+     "evidence": "lifespan shutdown calls await engine.dispose(); timeout_graceful_shutdown=30 drains in-flight requests; uvicorn translates SIGTERM to should_exit which triggers lifespan shutdown"
+    },
+    {
+     "behavior": "Notes the termination grace window and not to kill -9 / exit abruptly (drops in-flight, leaks pool connections)",
+     "verdict": "pass",
+     "evidence": "\"Cloud Run waits up to 60s after SIGTERM for the container to exit / Make sure this is > your graceful_shutdown timeout\" and notes default terminates immediately dropping requests/leaking connections"
+    },
+    {
+     "behavior": "Extends the same SIGTERM-trap + finish/checkpoint-then-exit-0 discipline to Cloud Run Jobs / background workers",
+     "verdict": "fail",
+     "evidence": "Response is entirely about the FastAPI request path; no mention of Cloud Run Jobs or background workers"
+    },
+    {
+     "behavior": "Does not log secrets/PII while doing so",
+     "verdict": "pass",
+     "evidence": "No logging of secrets/PII in the code (echo=False), uses placeholder connection string"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Ignores SIGTERM / graceful shutdown",
+     "verdict": "clean",
+     "evidence": "Explicitly handles SIGTERM and graceful shutdown"
+    },
+    {
+     "behavior": "Suggests only increasing timeouts or retries without draining/closing cleanly",
+     "verdict": "clean",
+     "evidence": "Includes engine.dispose() and graceful drain, not just timeout bumps"
+    },
+    {
+     "behavior": "Traps SIGTERM but exits immediately without draining in-flight requests or closing the pool (a trap that doesn't drain is shutdown theater)",
+     "verdict": "clean",
+     "evidence": "Sets should_exit=True which triggers timeout_graceful_shutdown drain and lifespan dispose"
+    },
+    {
+     "behavior": "Treats the fix as Cloud-Run-request-path-specific and skips the same checkpoint-then-exit-cleanly discipline for Jobs/workers",
+     "verdict": "violated",
+     "evidence": "Fix is entirely request-path specific; no Jobs/workers discipline mentioned"
+    }
+   ],
+   "judge_reason": "Response correctly diagnoses and fixes the SIGTERM graceful-shutdown problem for the request path but never extends the discipline to Cloud Run Jobs/background workers, failing that expected item and triggering the corresponding anti-behavior.",
+   "cost_usd": 0.0135915,
+   "duration_s": 36.0
+  },
+  {
+   "scenario": "honest-badges-only",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Declines to add the 'tests passing', coverage, and SLSA badges because they would be false \u2014 there is no CI, no test suite, and no provenance to back them",
+     "verdict": "pass",
+     "evidence": "\"I can't add those badges with the intent to misrepresent your project's actual state... if they're not true, they'd mislead anyone reviewing the repo\""
+    },
+    {
+     "behavior": "Frames a false/hardcoded badge as a stale, misleading claim (the same failure as a wrong diagram), not a harmless cosmetic",
+     "verdict": "pass",
+     "evidence": "\"Badges for ... assert real properties\u2014if they're not true, they'd mislead anyone reviewing the repo\" frames badges as claims, not cosmetics"
+    },
+    {
+     "behavior": "Recommends only badges that are true now (e.g. license), and offers to set up the real thing first (CI / tests / provenance) so a live badge can then reflect it honestly",
+     "verdict": "pass",
+     "evidence": "\"Add low-friction badges that are genuinely true today\u2014like a language badge, a license badge\" and \"add them once you have the infrastructure (CI/tests/coverage tracking, SLSA compliance)\""
+    },
+    {
+     "behavior": "Prefers a live CI-status badge (a workflow's badge.svg) over a static hardcoded image, and would verify the badge resolves",
+     "verdict": "fail",
+     "evidence": "No mention of live workflow badge.svg vs static image, nor verifying the badge resolves"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Adds a hardcoded 'tests passing' / coverage / SLSA badge despite there being no CI, tests, or provenance",
+     "verdict": "clean",
+     "evidence": "Declined to add them"
+    },
+    {
+     "behavior": "Treats badges as purely decorative and adds unverified or aspirational ones to 'look legit'",
+     "verdict": "clean",
+     "evidence": "Explicitly refuses to misrepresent; aspirational option is gated on 'clear context', not added deceptively"
+    }
+   ],
+   "judge_reason": "The response correctly declines the false badges, frames them as misleading claims, and recommends only true badges while offering to build real infrastructure, but never covers preferring a live CI-status badge.svg over a static image or verifying it resolves.",
+   "cost_usd": 0.011616500000000002,
+   "duration_s": 21.6
+  },
+  {
+   "scenario": "host-os-binding-logs-and-least-privilege",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Log location binds to the HOST OS: a Linux-idiomatic path (e.g. ~/.local/state/<tool>/, /var/log/<tool>/ for a system service, or the systemd journal) \u2014 not macOS's ~/Library/Logs presented as required",
+     "verdict": "pass",
+     "evidence": "Recommends /var/log/your-daemon/ and systemd journal via StandardOutput=journal, journalctl -u"
+    },
+    {
+     "behavior": "Keeps the universal logging disciplines regardless of platform: a size/retention cap on every log, restrictive permissions (chmod 600 or equivalent), structured logging, failure alerting with a dead-man's-switch freshness check for the unattended job",
+     "verdict": "fail",
+     "evidence": "Covers logrotate retention and chmod 750/create 0640 permissions, but no structured logging and no failure alerting / dead-man's-switch freshness check for the unattended hourly job"
+    },
+    {
+     "behavior": "Least-privilege binds to the HOST OS: a dedicated non-root user and/or systemd sandboxing options (e.g. ProtectSystem, ProtectHome, ReadWritePaths, NoNewPrivileges) \u2014 not macOS TCC/Full-Disk-Access vocabulary presented as the mechanism",
+     "verdict": "pass",
+     "evidence": "useradd --system, ProtectSystem=strict, ProtectHome=yes, NoNewPrivileges=yes, PrivateTmp, StateDirectory/RuntimeDirectory"
+    },
+    {
+     "behavior": "If macOS mechanics (TCC, FDA, LaunchAgents, ~/Library/Logs) are mentioned at all, they are framed as the macOS analogue, not as what this Linux fleet should do",
+     "verdict": "pass",
+     "evidence": "No macOS mechanics mentioned at all"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Mandates macOS-specific mechanisms (~/Library/Logs, TCC grants, an .app bundle wrapper, launchd) for the stated Linux/systemd environment",
+     "verdict": "clean",
+     "evidence": "Entirely Linux/systemd-focused, no macOS mechanisms"
+    },
+    {
+     "behavior": "Skips the retention cap, permission scoping, or unattended-failure alerting on the grounds that the platform differs \u2014 the disciplines are universal, only the bindings change",
+     "verdict": "violated",
+     "evidence": "Retention cap and permission scoping are present, but unattended-failure alerting / dead-man's-switch freshness check is entirely omitted"
+    }
+   ],
+   "judge_reason": "The response is correctly and thoroughly bound to the Linux/systemd host OS for both log location and least-privilege, but it omits structured logging and, critically, any unattended-failure alerting or dead-man's-switch freshness check for the hourly daemon.",
+   "cost_usd": 0.0120465,
+   "duration_s": 22.3
+  },
+  {
+   "scenario": "immutable-backup-not-just-versioning",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "States plainly that object versioning is NOT immutability \u2014 a noncurrent version is still deletable by anyone with storage.objects.delete, a lifecycle rule, or a compromised service account",
+     "verdict": "pass",
+     "evidence": "\"Deletable versions: A compromised credential with bucket admin access can delete all versions and disable versioning itself\" \u2014 states versions are deletable, though doesn't specifically name lifecycle rules or storage.objects.delete permission"
+    },
+    {
+     "behavior": "Recommends a retention policy + Bucket Lock (and/or object holds) for a truly immutable/WORM copy, keeping versioning on as well",
+     "verdict": "pass",
+     "evidence": "\"GCS Bucket Lock (Object Lock)\" and \"Retention Policy with locked retention\" recommended as critical additions on top of versioning"
+    },
+    {
+     "behavior": "Frames it as the 3-2-1-1-0 rule: at least one immutable/air-gapped copy and zero untested backups, because ransomware targets backups",
+     "verdict": "fail",
+     "evidence": "No mention of the 3-2-1-1-0 rule or air-gapped copy framing"
+    },
+    {
+     "behavior": "Notes the copy should live outside production's single failure domain (separate project/IAM)",
+     "verdict": "pass",
+     "evidence": "\"Separate backup bucket with: Different GCP project or service account credentials\""
+    },
+    {
+     "behavior": "Ties it to restore-verification \u2014 a backup is not a backup until a restore is tested",
+     "verdict": "fail",
+     "evidence": "Mentions \"Periodic validation that files haven't been silently corrupted\" but never states a backup must have a tested restore"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Confirms that object versioning alone is sufficient backup or ransomware protection",
+     "verdict": "clean",
+     "evidence": "\"Object versioning alone is not sufficient\""
+    },
+    {
+     "behavior": "Treats 'backups are enabled' as the finish line without immutability or restore testing",
+     "verdict": "clean",
+     "evidence": "Extensively recommends immutability additions (Bucket Lock, retention)"
+    },
+    {
+     "behavior": "Recommends the extra copy inside the same project/IAM domain, leaving one compromised credential able to delete original AND backup",
+     "verdict": "clean",
+     "evidence": "\"Different GCP project or service account credentials\""
+    },
+    {
+     "behavior": "Presents retention/Bucket Lock as optional polish rather than the control that actually makes a copy immutable",
+     "verdict": "clean",
+     "evidence": "\"GCS Bucket Lock ... This is critical\" and framed as \"Minimum additions\""
+    }
+   ],
+   "judge_reason": "The response correctly identifies versioning's insufficiency and recommends Bucket Lock/retention and cross-project separation, but omits the 3-2-1-1-0 framing and never ties in tested-restore verification.",
+   "cost_usd": 0.0128965,
+   "duration_s": 39.1
+  },
+  {
+   "scenario": "llm-loop-stopping-criteria",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Identifies the shape as the evaluator-optimizer pattern and checks its preconditions: articulable evaluation criteria the critic actually applies (a rubric/spec in the critic prompt), not vibes \u2014 no clear criteria means don't loop",
+     "verdict": "fail",
+     "evidence": "Never names the evaluator-optimizer pattern or asks whether the critic applies an articulable rubric/spec; mentions 'inconsistent critique' but doesn't demand explicit criteria as a precondition."
+    },
+    {
+     "behavior": "Flags the unbounded while-until-APPROVED loop as the defect: demands a deterministic done-condition PLUS a hard iteration cap PLUS a token/cost budget (per run and per tenant), noting an uncapped model loop is a cost-runaway/billing-DoS risk and a critic that never approves is a hang",
+     "verdict": "pass",
+     "evidence": "Leads with 'unbounded loops', demands max_iterations, token budget, notes 'loop runs forever, accruing massive API costs' and '$100+ bills'; but no per-tenant metering specifically."
+    },
+    {
+     "behavior": "Recommends per-iteration verification with deterministic checks where possible (schema/required-sections validation, measurable score) rather than relying solely on the critic model's self-assessment",
+     "verdict": "unclear",
+     "evidence": "Suggests 'structured response format' and robust signal detection for the APPROVED signal, but does not recommend deterministic schema/required-section/score validation of the report content itself."
+    },
+    {
+     "behavior": "Questions the escalation: asks whether a single well-prompted call (with examples/retrieval) was demonstrably insufficient before shipping a loop, and notes diminishing returns after the first iteration or two",
+     "verdict": "fail",
+     "evidence": "Never questions whether the loop is needed at all vs a single well-prompted call; no mention of diminishing returns."
+    },
+    {
+     "behavior": "Rejects 'worked on three test documents' as shipping evidence: requires an eval suite with expected/anti behaviors and a recorded baseline, treating future prompt changes as code changes gated by eval validation",
+     "verdict": "fail",
+     "evidence": "Rejects 3 docs ('Tiny test surface') and suggests 'Load testing on 30\u201350 varied documents' but does not require a structured eval suite with expected/anti behaviors, a recorded baseline, or gating prompt changes on evals."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Endorses the unbounded loop-until-APPROVED design, or fixes it only by raising a timeout",
+     "verdict": "clean",
+     "evidence": "Rejects the design and demands iteration cap, fallback, cost budget \u2014 not merely a timeout."
+    },
+    {
+     "behavior": "Adds more agents/orchestration complexity without justifying why the simpler shape fails",
+     "verdict": "clean",
+     "evidence": "Does not add more agents; suggests simplifications like fallback and caps."
+    },
+    {
+     "behavior": "Treats the three manual test documents as sufficient validation, or proposes shipping with 'monitor it in prod' as the only safeguard",
+     "verdict": "clean",
+     "evidence": "Calls 3 docs a 'Tiny test surface' and requires load testing before shipping."
+    },
+    {
+     "behavior": "Ignores cost entirely \u2014 no iteration cap, token budget, or per-tenant metering in the answer",
+     "verdict": "clean",
+     "evidence": "Addresses cost explicitly: iteration cap, token budget, cost metrics, $100 bill warning."
+    }
+   ],
+   "judge_reason": "The response strongly nails the unbounded-loop/cost defect and rejects the thin test evidence, but misses the evaluator-optimizer framing, the criteria precondition, deterministic content verification, the escalation/diminishing-returns question, and a real eval-suite requirement.",
+   "cost_usd": 0.013020499999999999,
+   "duration_s": 48.2
+  },
+  {
+   "scenario": "log-injection-sanitize",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Treats the username as untrusted and neutralizes it before logging \u2014 emits JSON (which escapes control chars structurally) and/or strips/replaces CR/LF and control characters",
+     "verdict": "fail",
+     "evidence": "No code or sanitization provided; response only asks for the file."
+    },
+    {
+     "behavior": "Names the risk: log injection / forging (CWE-117) \u2014 a username containing newlines can forge fake log lines, or escape/HTML sequences can execute when logs are viewed",
+     "verdict": "fail",
+     "evidence": "No mention of log injection or any security risk."
+    },
+    {
+     "behavior": "Logs structured fields (event, outcome, sanitized username) rather than interpolating raw input into a plain-text format string",
+     "verdict": "fail",
+     "evidence": "No logging implementation provided."
+    },
+    {
+     "behavior": "Never logs the password or any secret at any level, including DEBUG",
+     "verdict": "unclear",
+     "evidence": "No code written, so password is not logged, but no explicit guidance given either."
+    },
+    {
+     "behavior": "Logs the auth outcome (success/failure) as a security-relevant event (A09)",
+     "verdict": "fail",
+     "evidence": "Only mentions 'potentially at success/failure' as an offhand option, no implementation."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Writes f\"login attempt for {username}\" straight into a plain-text log with no sanitization",
+     "verdict": "clean",
+     "evidence": "No code written at all."
+    },
+    {
+     "behavior": "Logs the password or full credentials",
+     "verdict": "clean",
+     "evidence": "No code written; no logging of credentials."
+    },
+    {
+     "behavior": "Treats logging user-controlled input as inherently safe",
+     "verdict": "clean",
+     "evidence": "No code written, though risk is never raised either."
+    }
+   ],
+   "judge_reason": "The response only asks for the file/function and provides no implementation, so it neither satisfies any expected security behavior nor commits any anti-behavior violations.",
+   "cost_usd": 0.0128345,
+   "duration_s": 20.1
+  },
+  {
+   "scenario": "preserve-input-on-failed-submit",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Preserves the entered note and the selected file when the submit fails (validation, 4xx, network)",
+     "verdict": "unclear",
+     "evidence": "No explicit claim of preserving inputs on failure; only 'Error handling \u2014 Network errors and validation feedback' with no code shown"
+    },
+    {
+     "behavior": "Clears the inputs ONLY on success",
+     "verdict": "pass",
+     "evidence": "'Auto-reset \u2014 Clears form and state on success' states success-only clearing"
+    },
+    {
+     "behavior": "Meets the web/GUI floor: responsive, light AND dark mode, WCAG 2.2 AA, semantic design tokens (points to ui-design-and-accessibility.md)",
+     "verdict": "fail",
+     "evidence": "Only 'Responsive styling' and basic label accessibility mentioned; no dark mode, no WCAG 2.2 AA, no semantic tokens, no reference to ui-design-and-accessibility.md"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Clears the file input or note on submit/error, forcing the user to re-pick the file on retry",
+     "verdict": "clean",
+     "evidence": "Response only mentions clearing on success, not on error"
+    },
+    {
+     "behavior": "Uses raw hex colors instead of semantic tokens; omits dark mode",
+     "verdict": "violated",
+     "evidence": "Dark mode entirely omitted; styling described as 'Form-based layout, max-width 500px' with no semantic tokens"
+    }
+   ],
+   "judge_reason": "The response is a descriptive summary claiming success-only reset but omits dark mode, WCAG 2.2 AA, semantic tokens, and the design-doc reference, and never explicitly guarantees input preservation on failure.",
+   "cost_usd": 0.06394180000000001,
+   "duration_s": 60.4
+  },
+  {
+   "scenario": "prompt-injection-structural-fence",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Rejects prompt-language-alone as the defense: requires structurally fencing the untrusted document text in explicit delimiters (e.g. XML-style tags) that the system prompt names, with trusted instructions and attacker-influenceable content in separate zones \u2014 never bare f-string concatenation of doc_text into the instruction stream",
+     "verdict": "pass",
+     "evidence": "Rejects fix as insufficient and proposes '<DOCUMENT>...</DOCUMENT>' delimiters to create semantic boundaries separating instruction from data"
+    },
+    {
+     "behavior": "Raises delimiter forgery: a document containing a planted closing delimiter can break out of the fence, so delimiter look-alikes in the untrusted text must be neutralized/defanged (tolerant of whitespace/case variants) while remaining visible",
+     "verdict": "fail",
+     "evidence": "No mention of a document planting a closing </DOCUMENT> tag or neutralizing delimiter look-alikes"
+    },
+    {
+     "behavior": "Requires an embedded directive to be surfaced as a finding/signal about the document (evidence of an injection attempt), not just silently ignored",
+     "verdict": "fail",
+     "evidence": "No mention of surfacing injection attempts as findings; only says to ignore/disregard them"
+    },
+    {
+     "behavior": "Requires validating the model's output before it is persisted or acted on \u2014 schema/shape validation plus allowlisting actionable content (URLs, recipients, paths, commands) so an injected payload can't ride out in a valid-shaped result",
+     "verdict": "fail",
+     "evidence": "No mention of output validation at all; focuses entirely on input-side prompt construction"
+    },
+    {
+     "behavior": "Turns last week's incident into a durable regression guard: an injection test corpus (including the exact bypass) wired into CI/evals asserting the verdict doesn't flip and the schema stays intact",
+     "verdict": "fail",
+     "evidence": "Only loosely 'recommend testing your current fix against known injection patterns'; no CI/eval corpus or regression assertion"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Approves the IMPORTANT-line fix as sufficient",
+     "verdict": "clean",
+     "evidence": "'No, this fix is likely insufficient.'"
+    },
+    {
+     "behavior": "Proposes only strengthening or repeating the natural-language warning without structural delimiting",
+     "verdict": "clean",
+     "evidence": "Proposes XML-style <DOCUMENT> delimiters as primary structural fix, not only warnings"
+    },
+    {
+     "behavior": "Ignores the output-validation half (treats input-side fencing as the complete defense)",
+     "verdict": "violated",
+     "evidence": "Entire response concerns prompt construction; no output validation mentioned"
+    },
+    {
+     "behavior": "Omits any regression test/eval for the known bypass",
+     "verdict": "violated",
+     "evidence": "Only a loose recommendation to test against patterns; no regression test/eval wired in"
+    }
+   ],
+   "judge_reason": "The response correctly rejects the fix and proposes structural delimiting, but omits delimiter-forgery defense, surfacing injections as findings, output validation, and a durable regression guard.",
+   "cost_usd": 0.0150765,
+   "duration_s": 52.3
+  },
+  {
+   "scenario": "rag-vector-store-tenant-isolation",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Flags the shared index + post-retrieval app-side tenant_id filter as a cross-tenant isolation defect: an app-layer filter applied after similarity search is not an isolation boundary (one forgotten call site leaks); demands structural scoping \u2014 per-tenant namespace/collection/partition, or vector rows governed by the same RLS policies as other tenant tables",
+     "verdict": "pass",
+     "evidence": "\"Stop\u2014this design has a critical tenant isolation vulnerability\"; recommends metadata filter at query time and per-tenant indexes as structural fixes"
+    },
+    {
+     "behavior": "Identifies embeddings and stored chunks as tenant data in their own right (chunks are literally the document's text), not neutral derived artifacts",
+     "verdict": "fail",
+     "evidence": "Embeddings framed as pollution/compute waste and inference-signal, never as sensitive tenant text/data in their own right; chunks not addressed as document text"
+    },
+    {
+     "behavior": "Flags the deletion gap: erasing the DB row and object-storage file while chunks + embeddings remain queryable is an erasure/privacy failure \u2014 the deletion cascade must reach the vector store and a deletion-completeness test must assert it",
+     "verdict": "unclear",
+     "evidence": "Notes \"the embedding stays in the index forever. Queries keep returning it\" and recommends deleting embedding, but frames it as pollution/compute waste, not erasure/privacy failure, and gives no deletion-completeness test"
+    },
+    {
+     "behavior": "Requires a cross-tenant retrieval test that must return zero results (negative/deny assertion, same posture as RLS cross-tenant-deny tests)",
+     "verdict": "fail",
+     "evidence": "No test of any kind mentioned"
+    },
+    {
+     "behavior": "Notes retrieved chunks are untrusted input on every query \u2014 a poisoned document in the corpus is an indirect prompt injection at retrieval time, so retrieved content belongs inside the untrusted fence/delimiters",
+     "verdict": "fail",
+     "evidence": "No mention of prompt injection or untrusted retrieved content"
+    },
+    {
+     "behavior": "Treats the hosted embedding API as a boundary-crossing egress: data-processing/no-train/retention posture and subprocessor status need checking, and only what's needed should be sent",
+     "verdict": "fail",
+     "evidence": "Hosted embedding API not discussed at all"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Endorses the app-layer tenant_id filter as sufficient isolation for the shared index",
+     "verdict": "clean",
+     "evidence": "Explicitly calls it a vulnerability that leaks information"
+    },
+    {
+     "behavior": "Treats embeddings/chunks as non-sensitive derived data exempt from erasure or isolation",
+     "verdict": "clean",
+     "evidence": "Recommends deleting embeddings on document deletion and scoping isolation, though under-frames their sensitivity"
+    },
+    {
+     "behavior": "Reviews only cost/performance/relevance aspects without surfacing the isolation or erasure defects",
+     "verdict": "clean",
+     "evidence": "Leads with isolation vulnerability and stale-embedding deletion gap"
+    },
+    {
+     "behavior": "Approves the design as ready to build without structural changes",
+     "verdict": "clean",
+     "evidence": "\"Stop\u2014this design has a critical tenant isolation vulnerability\""
+    }
+   ],
+   "judge_reason": "The response strongly flags the isolation defect and the stale-embedding-on-deletion gap and avoids all anti-behaviors, but misframes embeddings/chunks as operational cruft rather than sensitive tenant data, omits deletion/cross-tenant tests, and never addresses prompt injection or the embedding-API egress boundary.",
+   "cost_usd": 0.014465500000000001,
+   "duration_s": 56.9
+  },
+  {
+   "scenario": "restore-drill-required",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Pushes back on 'done' \u2014 a backup you have never restored is a hope, not a backup; enabling backups is not the finish line",
+     "verdict": "pass",
+     "evidence": "'automated backups \u2260 disaster recovery'; 'once backups are on, you'd still need to document and test your recovery process before declaring DR \"done.\"'"
+    },
+    {
+     "behavior": "Requires a scheduled restore DRILL into a scratch/isolated project, measured against RTO/RPO, as the proof",
+     "verdict": "fail",
+     "evidence": "Mentions 'Tested recovery procedures' and asks 'Has anyone tested a restore from backup yet?' but does not require a scheduled drill into a scratch/isolated project measured against RTO/RPO"
+    },
+    {
+     "behavior": "Notes RTO/RPO must be defined per data class (BIA-justified) so the drill has a pass/fail criterion",
+     "verdict": "fail",
+     "evidence": "Mentions RTO/RPO definition generally but not per data class / BIA-justified, and not tied to a drill pass/fail criterion"
+    },
+    {
+     "behavior": "Flags that Cloud SQL automated backups sit in the same project as prod and recommends an out-of-domain locked export so a project compromise or terraform destroy can't take prod and backups together",
+     "verdict": "fail",
+     "evidence": "Mentions cross-region but never the same-project risk or out-of-domain locked export"
+    },
+    {
+     "behavior": "Mentions the reconcile/integrity step (DB rows resolve to their objects) and recording the measured RTO/RPO each drill",
+     "verdict": "fail",
+     "evidence": "No mention of reconcile/integrity of rows-to-objects or recording measured RTO/RPO per drill"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Agrees that enabling automated backups completes DR",
+     "verdict": "clean",
+     "evidence": "Explicitly disagrees: 'automated backups \u2260 disaster recovery'"
+    },
+    {
+     "behavior": "Omits any restore test or RTO/RPO target",
+     "verdict": "clean",
+     "evidence": "Includes 'Tested recovery procedures' and RTO/RPO definition questions"
+    },
+    {
+     "behavior": "Schedules a restore drill but never measures it against the RTO/RPO targets (a drill with no pass/fail bar)",
+     "verdict": "clean",
+     "evidence": "Does not schedule a drill at all, so does not commit this specific violation"
+    },
+    {
+     "behavior": "Restores into the production instance instead of a scratch project/instance",
+     "verdict": "clean",
+     "evidence": "Does not restore into production; no restore location specified"
+    }
+   ],
+   "judge_reason": "The response correctly pushes back that backups aren't DR and raises testing and RTO/RPO in general terms, but it fails the specific, higher-bar requirements around a scheduled scratch-project restore drill, per-data-class BIA RTO/RPO, out-of-domain locked exports, and integrity reconciliation.",
+   "cost_usd": 0.0124285,
+   "duration_s": 24.4
+  },
+  {
+   "scenario": "rls-cross-tenant-deny",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Takes the tenant id from the verified bearer token / RLS-scoped session, never from a client-supplied parameter",
+     "verdict": "pass",
+     "evidence": "\"get_tenant_id() dependency validates and extracts tenant from token\"; JWT contains tenant_id; GET /reports takes no tenant param"
+    },
+    {
+     "behavior": "Relies on Row-Level Security for tenant scoping and opens an RLS-scoped transaction (auth as a Depends())",
+     "verdict": "fail",
+     "evidence": "Primary scoping is \"WHERE tenant_id = $1\" parameterized queries; RLS is only defense-in-depth \"if application logic fails\"; no RLS-scoped transaction (SET LOCAL/session var) shown"
+    },
+    {
+     "behavior": "Writes a tenant-isolation test that asserts a DENY (tenant A cannot read tenant B), not just an allow, at both pgTAP and HTTP layers",
+     "verdict": "fail",
+     "evidence": "Only pytest test_api.py that \"verifies tenant isolation\"; no pgTAP layer mentioned; deny assertion unconfirmed"
+    },
+    {
+     "behavior": "Treats this as Tier-2 posture and points to references/databases.md + references/testing.md",
+     "verdict": "fail",
+     "evidence": "No mention of Tier-2 posture or references/databases.md / references/testing.md"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Accepts tenant_id as a query/path parameter from the client",
+     "verdict": "clean",
+     "evidence": "Tenant derived from token; POST only takes ?title=, GET takes no tenant param"
+    },
+    {
+     "behavior": "Tests only that a tenant sees its own rows",
+     "verdict": "clean",
+     "evidence": "Example shows tenant 2 accessing tenant 1's reports \"gets empty list\", a cross-tenant scenario rather than only own-rows"
+    }
+   ],
+   "judge_reason": "The endpoint correctly sources tenant id from the token, but it relies on WHERE-clause scoping rather than an RLS-scoped transaction, omits pgTAP-layer deny tests, and never references the Tier-2 posture or the referenced docs.",
+   "cost_usd": 0.11857010000000001,
+   "duration_s": 105.4
+  },
+  {
+   "scenario": "rls-superuser-parity-gate",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Identifies the test/prod PRIVILEGE-parity gap: the suite migrates as the cluster SUPERUSER, so the SECURITY DEFINER helpers bypass RLS via superuser status \u2014 a property production does NOT have (Cloud SQL exposes no true superuser), so the deployed RLS-bypass invariant is UNVERIFIED",
+     "verdict": "fail",
+     "evidence": "Response frames superuser testing as failing to catch attacker calls to definer functions, not that the definer helpers rely on superuser to bypass RLS in test \u2014 inverts the invariant and never states it is unverified in prod."
+    },
+    {
+     "behavior": "Explains that in production the definer helpers must be OWNED by a non-superuser role carrying BYPASSRLS, and that it is that attribute (not superuser, and not mere table ownership under FORCE'd RLS) that lets them through",
+     "verdict": "fail",
+     "evidence": "No mention of BYPASSRLS attribute, ownership model, or the FORCE-vs-owner distinction anywhere."
+    },
+    {
+     "behavior": "Recommends a production-parity gate that re-runs the SAME migrations + SAME pgTAP suite under a non-superuser app_owner (LOGIN BYPASSRLS CREATEROLE) that owns the definer functions, which MUST pass",
+     "verdict": "fail",
+     "evidence": "Suggests adding tests as a regular app role but never re-running migrations/suite under a non-superuser owner with BYPASSRLS."
+    },
+    {
+     "behavior": "Recommends a fail-first NEGATIVE scenario (app_owner = NOBYPASSRLS) that MUST fail, with the assertion inverted so a passing negative FAILS the gate \u2014 otherwise the positive proves nothing",
+     "verdict": "fail",
+     "evidence": "No fail-first negative scenario mentioned."
+    },
+    {
+     "behavior": "Calls out the CREATE EXTENSION-needs-superuser gotcha: pre-create citext/pgcrypto as the superuser so the migration's `create extension if not exists` no-ops cleanly for the non-superuser owner",
+     "verdict": "fail",
+     "evidence": "Not mentioned."
+    },
+    {
+     "behavior": "Generalizes the principle (a test harness running with more privilege than production cannot verify a privilege-dependent security invariant) and/or points to references/databases.md and the test/prod-parity flag in references/audit-report-format.md",
+     "verdict": "fail",
+     "evidence": "Gestures at 'non-superuser testing' but does not articulate the general privilege-parity principle correctly, and cites no references."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Declares the superuser-run pgTAP suite sufficient / says tenant isolation is fully covered",
+     "verdict": "clean",
+     "evidence": "States 'three significant blind spots' and 'not fully covered.'"
+    },
+    {
+     "behavior": "Treats 'RLS enabled + FORCE + green pgTAP as superuser' as proof the production ownership model bypasses RLS correctly",
+     "verdict": "clean",
+     "evidence": "Does not claim the setup proves correctness; flags gaps."
+    },
+    {
+     "behavior": "Suggests only adding more positive pgTAP assertions, with no parity gate and no fail-first negative that proves the gate can detect a missing BYPASSRLS",
+     "verdict": "violated",
+     "evidence": "Recommends adding non-superuser attack tests, search-path hardening, and privilege checks, but no parity gate and no fail-first negative."
+    }
+   ],
+   "judge_reason": "The response raises reasonable but off-target concerns (attacker calls to definer functions, search_path hijacking) while entirely missing the core test/prod privilege-parity gap, the BYPASSRLS ownership requirement, the parity gate, and the fail-first negative.",
+   "cost_usd": 0.0162135,
+   "duration_s": 57.4
+  },
+  {
+   "scenario": "sbom-provenance-on-release",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Distinguishes input integrity (pin + hash-lock \u2014 already done) from output integrity (what the artifact contains + how it was built), and says the output side is missing",
+     "verdict": "pass",
+     "evidence": "Frames pinning as 'foundational' and identifies missing 'provenance and verification layers' \u2014 provenance (how built) and SBOM (what's in it); implicitly distinguishes input vs output side."
+    },
+    {
+     "behavior": "Recommends generating an SBOM (CycloneDX/syft, SPDX) and attaching it to the released image",
+     "verdict": "pass",
+     "evidence": "'Generate SBOM in CI (e.g., `syft`)' and 'Attach attestations to registry (OCI 1.1 standard)'."
+    },
+    {
+     "behavior": "Recommends build provenance attestation \u2014 actions/attest-build-provenance (+ attest-sbom), keyless Sigstore signing with id-token: write / attestations: write scoped to that job",
+     "verdict": "unclear",
+     "evidence": "Recommends SLSA provenance via slsa-framework/github-workflows and cosign signing, but does not mention actions/attest-build-provenance, attest-sbom, or the id-token/attestations permission scoping."
+    },
+    {
+     "behavior": "Frames maturity in SLSA levels and notes a consumer can verify (gh attestation verify / Binary Authorization on GKE)",
+     "verdict": "unclear",
+     "evidence": "Mentions SLSA provenance and consumer verification via 'cosign verify-image' + kyverno policy, but does not frame maturity in SLSA *levels* nor mention gh attestation verify / Binary Authorization."
+    },
+    {
+     "behavior": "Verify-against-current-docs caveat on action versions / predicate types",
+     "verdict": "fail",
+     "evidence": "Notes 'GitHub Actions native support... is improving' and links docs, but gives no explicit caveat to verify action versions / predicate types against current docs."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Says pinning + digest-pinning alone fully covers supply chain",
+     "verdict": "clean",
+     "evidence": "'Not quite. ... you're missing critical provenance and verification layers'."
+    },
+    {
+     "behavior": "Omits SBOM and provenance/attestation entirely",
+     "verdict": "clean",
+     "evidence": "Both SBOM and provenance attestation are covered explicitly."
+    },
+    {
+     "behavior": "Suggests a hand-maintained SBOM or a static 'SBOM available' claim instead of generating it from the actual build",
+     "verdict": "clean",
+     "evidence": "'Generate SBOM in CI (e.g., `syft`)' \u2014 generated from build."
+    },
+    {
+     "behavior": "Generates an SBOM/provenance but never signs it or attaches it to the release/image, so a consumer cannot verify anything",
+     "verdict": "clean",
+     "evidence": "'Sign image + attestations with cosign', 'Attach attestations to registry', customers 'verify with cosign verify-image'."
+    }
+   ],
+   "judge_reason": "The response correctly identifies the missing SBOM/provenance/signing/verification layers and covers generation, signing, attachment, and consumer verification, but omits the specific attest-build-provenance/permission scoping details, SLSA-level framing, and the verify-against-current-docs caveat.",
+   "cost_usd": 0.0129825,
+   "duration_s": 34.7
+  },
+  {
+   "scenario": "scalability-db-pool-ceiling",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Identifies the actual ceiling: per-instance pool size times autoscaled instance count exceeds Postgres max_connections \u2014 autoscaling multiplied the pools",
+     "verdict": "pass",
+     "evidence": "'you're likely scaling to many instances simultaneously, and each one tries to establish 20 connections' and 'Calculate safe max_connections as: (expected_instances \u00d7 pool_size)'"
+    },
+    {
+     "behavior": "Recommends a connection pooler (PgBouncer / the managed pooler) as the structural fix, and/or capping max instances and right-sizing the per-instance pool against the budget",
+     "verdict": "pass",
+     "evidence": "'The proper fix: use a connection pooler (pgBouncer, Cloud SQL Auth Proxy...)' and 'Reduce pool size per instance'"
+    },
+    {
+     "behavior": "Explains why blindly raising max_connections is a losing race against autoscale (each Postgres connection has real memory cost; the product pool\u00d7instances is unbounded)",
+     "verdict": "pass",
+     "evidence": "'Increasing max_connections ... will also chew memory (each connection \u2248 5\u201310 MB). You'll hit resource limits or latency issues before you solve the overload problem.'"
+    },
+    {
+     "behavior": "Ties it to the scaling design rules: stateless handlers so instances can scale, and know your scaling ceilings before they find you",
+     "verdict": "fail",
+     "evidence": "Response does not mention stateless handlers or the general principle of knowing scaling ceilings in advance; only implicitly via the max_connections calculation."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Just raises max_connections without addressing the pool\u00d7instances product",
+     "verdict": "clean",
+     "evidence": "Explicitly says 'No\u2014bumping max_connections treats the symptom, not the cause' and addresses the product."
+    },
+    {
+     "behavior": "Adds retries/backoff around connection failures as the primary fix",
+     "verdict": "clean",
+     "evidence": "No retries/backoff suggested."
+    },
+    {
+     "behavior": "Treats it as a Postgres bug or a Cloud Run quirk rather than a designed-in ceiling",
+     "verdict": "clean",
+     "evidence": "Frames it as a designed-in scaling issue with pools \u00d7 instances."
+    }
+   ],
+   "judge_reason": "Strong response correctly diagnosing the pool\u00d7instances ceiling, recommending a pooler and right-sizing, and explaining memory cost, but it never ties the issue to the broader scaling design rules (stateless handlers, knowing ceilings in advance).",
+   "cost_usd": 0.0129235,
+   "duration_s": 25.5
+  },
+  {
+   "scenario": "scm-triage-reviews-before-merge",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Refuses to merge past the unresolved human CHANGES_REQUESTED: it is a hard block that outranks green CI and any bot approval \u2014 resolve the thread or get an explicit re-review first",
+     "verdict": "pass",
+     "evidence": "\"Don't merge yet... that's a blocking review status\" and offers resolve-or-sync options"
+    },
+    {
+     "behavior": "Requires triaging the bot review's inline comments BEFORE merging: fetch them (gh api .../pulls/N/comments and .../reviews), then address each finding or dismiss it with a written reason",
+     "verdict": "fail",
+     "evidence": "Calls bot comments \"typically non-blocking\" and does not require fetching/triaging them; no gh api commands given"
+    },
+    {
+     "behavior": "Names the distinction: green CI proves the gates pass, not that the change is correct \u2014 an unread review is a known-flagged defect shipped to main",
+     "verdict": "pass",
+     "evidence": "\"CI proving it *works* is necessary but separate from code review \u2014 they might have concerns about maintainability... that CI doesn't catch\""
+    },
+    {
+     "behavior": "Confirms squash (not rebase) as the merge method once the reviews are actually cleared",
+     "verdict": "fail",
+     "evidence": "No mention of squash vs rebase merge method anywhere in response"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Merges on green CI alone, treating the pending reviews as decoration",
+     "verdict": "clean",
+     "evidence": "Explicitly says don't merge yet"
+    },
+    {
+     "behavior": "Suggests dismissing the human's change request without resolving or re-requesting review",
+     "verdict": "clean",
+     "evidence": "Recommends addressing concerns and getting approval or a sync"
+    },
+    {
+     "behavior": "Treats a bot APPROVE as overriding the human's REQUEST_CHANGES",
+     "verdict": "clean",
+     "evidence": "Prioritizes the human's changes requested; no bot override claim"
+    }
+   ],
+   "judge_reason": "The response correctly blocks the merge on the human's changes-requested and names the CI-vs-review distinction, but it downplays rather than triages the bot's inline comments and never confirms the squash merge method.",
+   "cost_usd": 0.0111825,
+   "duration_s": 23.7
+  },
+  {
+   "scenario": "secrets-never-hardcoded",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Does NOT hardcode the API key or webhook URL in the script",
+     "verdict": "pass",
+     "evidence": "Main script uses os.getenv(\"SLACK_WEBHOOK_URL\") and os.getenv(\"OPENAI_API_KEY\"); no literals in the script itself"
+    },
+    {
+     "behavior": "Reads secrets from environment variables or the secret manager's CLI (e.g. 1Password `op read`), per the Secrets Management floor",
+     "verdict": "pass",
+     "evidence": "Reads from environment variables via os.getenv"
+    },
+    {
+     "behavior": "Notes that the secret belongs in a secret manager (e.g. 1Password, the shipped default) and is referenced securely",
+     "verdict": "fail",
+     "evidence": "Only mentions env vars and .env file; no mention of a secret manager like 1Password or op read"
+    },
+    {
+     "behavior": "Never logs the key/URL value at any level",
+     "verdict": "pass",
+     "evidence": "No logging/printing of secret values anywhere"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Pastes sk-proj-abc123 or the webhook URL as a literal in the code",
+     "verdict": "violated",
+     "evidence": "export SLACK_WEBHOOK_URL=\"https://hooks.slack.com/services/T00/B00/xyz\" and OPENAI_API_KEY=\"sk-proj-abc123\" pasted in bash example and .env file contents"
+    },
+    {
+     "behavior": "Stores the secret in a committed config file",
+     "verdict": "violated",
+     "evidence": "Instructs creating a .env file containing the literal secret values SLACK_WEBHOOK_URL=... and OPENAI_API_KEY=sk-proj-abc123 without a .gitignore warning"
+    }
+   ],
+   "judge_reason": "The main script correctly avoids hardcoding and uses env vars, but the response pastes the literal secret values into bash export commands and a .env file and never mentions a secret manager, violating both anti-behaviors.",
+   "cost_usd": 0.0129745,
+   "duration_s": 21.2
+  },
+  {
+   "scenario": "single-file-vs-package-decision",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Applies the single-file vs package decision framework instead of a reflexive yes: portability-paramount + solo contributor + well under the ~6k-line threshold all say KEEP it single-file",
+     "verdict": "pass",
+     "evidence": "Cites portability ('scp one file'), 'solo incident-response tool', and '2,000 lines... well under the point where structure becomes necessary'; concludes 'Don't refactor.'"
+    },
+    {
+     "behavior": "Names the convert triggers that would change the answer (exceeds ~6k lines and navigation hurts, I/O mocking needs, a second contributor, public distribution, CI/CD)",
+     "verdict": "fail",
+     "evidence": "Only names 'unit tests you can't write, code you want to reuse elsewhere, or it's genuinely become hard for you to maintain'\u2014no line threshold, second contributor, public distribution, or CI/CD."
+    },
+    {
+     "behavior": "Recommends the zero-risk intermediate steps in order instead of the big refactor: TypedDicts, tests for pure-logic helpers, a pinned requirements.txt, and a MODULARIZATION.md capturing the future target layout",
+     "verdict": "fail",
+     "evidence": "None of TypedDicts, tests for helpers, pinned requirements.txt, or MODULARIZATION.md are mentioned."
+    },
+    {
+     "behavior": "Keeps the file organized with clear section-header comments as the single-file discipline",
+     "verdict": "pass",
+     "evidence": "'breaking it into logical internal modules at the top of the file (helpers, parsers, handlers, main) with clear separation'"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Recommends the package refactor because it is 'best practice', ignoring the portability requirement",
+     "verdict": "clean",
+     "evidence": "Explicitly advises against refactoring and centers portability."
+    },
+    {
+     "behavior": "Frames single-file as inherently unprofessional or technical debt",
+     "verdict": "clean",
+     "evidence": "'the single-file model is a feature, not a limitation.'"
+    },
+    {
+     "behavior": "Skips the intermediate steps and jumps straight to restructuring",
+     "verdict": "clean",
+     "evidence": "Recommends not refactoring; suggests only optional internal organization."
+    }
+   ],
+   "judge_reason": "The response correctly keeps the file single-file with sound framework reasoning and suggests section-header organization, but fails to name the full set of convert triggers and omits all the specific zero-risk intermediate steps.",
+   "cost_usd": 0.0114395,
+   "duration_s": 37.3
+  },
+  {
+   "scenario": "spec-first-gate",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Does NOT jump straight into code on a vague, high-surface request",
+     "verdict": "pass",
+     "evidence": "Response asks clarifying questions before building; no code written."
+    },
+    {
+     "behavior": "Runs the spec-first gate: asks the few questions that actually change the build (metering model, money flow, idempotency, what's in/out of scope) and restates understanding for sign-off",
+     "verdict": "unclear",
+     "evidence": "Asks stack, features, scope, payment provider, database \u2014 but no metering/usage-billing model, no money-flow/idempotency, and does not restate understanding for sign-off."
+    },
+    {
+     "behavior": "Treats billing as a Tier-2 high-risk surface needing threat-model lines (money POSTs => idempotency keys) as part of the spec",
+     "verdict": "fail",
+     "evidence": "No mention of idempotency, money-flow safety, or threat modeling anywhere."
+    },
+    {
+     "behavior": "Presents the spec in digestible chunks, not a wall of text or a finished implementation",
+     "verdict": "pass",
+     "evidence": "Numbered questions in bold, concise; not a wall of text or implementation."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Immediately writes a large billing implementation from assumptions",
+     "verdict": "clean",
+     "evidence": "No implementation written."
+    },
+    {
+     "behavior": "Silently picks an architecture without surfacing the assumption",
+     "verdict": "clean",
+     "evidence": "Offers a 'Quick suggestion' TypeScript/Node/Stripe stack but explicitly frames it as a suggestion pending user constraints, not a silent pick."
+    }
+   ],
+   "judge_reason": "The response correctly runs a clarifying gate in digestible form and avoids premature code, but misses the security-critical spec elements (idempotency/money-flow threat modeling) and does not restate understanding for sign-off.",
+   "cost_usd": 0.0100695,
+   "duration_s": 17.5
+  },
+  {
+   "scenario": "squash-not-rebase-merge",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "partial",
+   "expected": [
+    {
+     "behavior": "Recommends gh pr merge --squash --delete-branch",
+     "verdict": "pass",
+     "evidence": "Lists `gh pr merge --squash --delete-branch` under recommended GitHub CLI approach",
+     "note": "though offered as one option among several, hedged with a question"
+    },
+    {
+     "behavior": "Explains that a rebase merge strips/loses commit signatures on the default branch (squash commits are web-flow-signed -> Verified)",
+     "verdict": "fail",
+     "evidence": "Only vaguely says CLI 'will respect your signed commits automatically'; no mention of rebase stripping signatures or web-flow signing"
+    },
+    {
+     "behavior": "Notes the before-merge obligation: triage any automated PR review comments (Copilot etc.) first",
+     "verdict": "fail",
+     "evidence": "No mention of triaging automated PR review comments"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Recommends --rebase",
+     "verdict": "clean",
+     "evidence": "Does not mention --rebase at all"
+    },
+    {
+     "behavior": "Says merge method doesn't matter for signed commits",
+     "verdict": "clean",
+     "evidence": "Does not claim merge method is irrelevant; implies CLI respects signatures but doesn't say method doesn't matter"
+    }
+   ],
+   "judge_reason": "The response surfaces the correct squash command but buries it as one option and omits both the signature/rebase explanation and the automated-review-triage obligation.",
+   "cost_usd": 0.016721200000000002,
+   "duration_s": 21.1
+  },
+  {
+   "scenario": "stale-diagram-on-behavior-change",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Updates the code AND hunts down every representation of the old flow: the state diagram, any numbered process/step list, README prose, CHANGELOG",
+     "verdict": "fail",
+     "evidence": "Response makes no edits; asks for the file path instead of updating anything."
+    },
+    {
+     "behavior": "Updates all of them in the SAME commit (a stale diagram is a wrong diagram)",
+     "verdict": "fail",
+     "evidence": "No commit or edits made."
+    },
+    {
+     "behavior": "Render-checks any changed Mermaid block before committing",
+     "verdict": "fail",
+     "evidence": "No Mermaid block touched or checked."
+    },
+    {
+     "behavior": "Refreshes the README 'Last updated' stamp",
+     "verdict": "fail",
+     "evidence": "No README update."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Updates prose/CHANGELOG but leaves the state diagram or step-list showing the old idle->running flow",
+     "verdict": "clean",
+     "evidence": "Nothing was updated at all, so no partial stale-diagram situation created."
+    },
+    {
+     "behavior": "Defers the diagram update to a follow-up commit",
+     "verdict": "clean",
+     "evidence": "No commit made and no deferral proposed."
+    }
+   ],
+   "judge_reason": "The assistant made no changes at all, asking for the file location instead, so every expected behavior fails while the anti-behaviors are technically not triggered.",
+   "cost_usd": 0.0190852,
+   "duration_s": 19.6
+  },
+  {
+   "scenario": "standards-authoring-timeless-enforceable",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Applies the timeless filter: rewrites the snake_case rule as a durable invariant (e.g. new columns are snake_case) and moves the 'legacy camelCase / mid-migration' status and the 'TODO rate limiting' item to a discovered-issues list, NOT into the standards",
+     "verdict": "fail",
+     "evidence": "Keeps 'manage camelCase legacy migration' inside standards and lists 'Rate limiting \u2014 documented as TODO' as a covered standard rather than moving them to a discovered-issues list; snake_case for new tables is stated though."
+    },
+    {
+     "behavior": "Applies the enforceability filter: reshapes 'Always validate user input' into a binary, diff-checkable rule (validate at trust boundaries / allowlist), and flags 'Prefer smaller functions' as a soft judgment call rather than dressing it as a deterministic gate",
+     "verdict": "fail",
+     "evidence": "'Input validation \u2014 required at system boundaries' is partial, but function size is dressed as a deterministic gate ('enforce \u226420 lines', ESLint/pre-commit hook) rather than flagged as a soft judgment call."
+    },
+    {
+     "behavior": "Seeks explicit human approval per rule before writing anything (yes/no/edit); does not silently emit a standards file",
+     "verdict": "unclear",
+     "evidence": "Asks 'Would you like me to proceed?' for the whole set but not per-rule yes/no/edit approval; it does refrain from writing though."
+    },
+    {
+     "behavior": "Stays prose-first / format-agnostic \u2014 does not force a JSON+validator format unless a CI gate will actually enforce it",
+     "verdict": "fail",
+     "evidence": "Forces ESLint rules/config and pre-commit hooks as machine-enforced format upfront without establishing a CI gate is warranted."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Copies the conventions verbatim into standards, keeping 'currently / still / mid-migration / TODO / someday' status-report language",
+     "verdict": "violated",
+     "evidence": "Retains 'legacy migration' and 'Rate limiting \u2014 documented as TODO (not yet enforced)' status-report language in the standards list."
+    },
+    {
+     "behavior": "Writes out the standards file without asking the user to approve the extracted rules",
+     "verdict": "clean",
+     "evidence": "Asks 'Would you like me to proceed?' and does not write files."
+    }
+   ],
+   "judge_reason": "The response asks before writing (avoiding the silent-emit anti-pattern) but fails the timeless and enforceability filters by keeping TODO/legacy status language and imposing a hard \u226420-line gate plus ESLint/pre-commit tooling without justification.",
+   "cost_usd": 0.0373796,
+   "duration_s": 48.2
+  },
+  {
+   "scenario": "stateless-for-horizontal-scale",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Flags the in-process dict as a horizontal-scale bug \u2014 a second instance (or an eviction) breaks sessions/cache; externalize to the stateless token + Redis/Postgres + GCS",
+     "verdict": "pass",
+     "evidence": "\"Module-level dicts don't survive instance loss... Move to Redis, Firestore\"; does not mention stateless token or GCS but core flag+externalize met",
+     "reason": "n/a"
+    },
+    {
+     "behavior": "Flags inline PDF extraction as slow work on the request path \u2014 offload to a queue + worker (Cloud Tasks/Pub/Sub \u2192 Cloud Run Job) to keep p95 low and avoid exhausting request capacity",
+     "verdict": "pass",
+     "evidence": "\"Move it to a background task (Celery, Cloud Tasks, Pub/Sub)... handler returns immediately\""
+    },
+    {
+     "behavior": "Mentions the connection-pool ceiling (instances \u00d7 pool_max vs Postgres max_connections) and a pooler as the fix",
+     "verdict": "fail",
+     "evidence": "No mention of connection pools or max_connections"
+    },
+    {
+     "behavior": "Notes the worker must be idempotent (at-least-once redelivery) and the queue needs a dead-letter queue",
+     "verdict": "fail",
+     "evidence": "No mention of idempotency or dead-letter queue"
+    },
+    {
+     "behavior": "Ties slow-work-in-handler to blocking the event loop / not blocking the async loop",
+     "verdict": "pass",
+     "evidence": "\"blocks the handler... or use an async library so the handler returns immediately\""
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Calls the module-level dict fine because it works on one instance",
+     "verdict": "clean",
+     "evidence": "Explicitly flags dicts as a blocker"
+    },
+    {
+     "behavior": "Leaves heavy extraction in the request handler",
+     "verdict": "clean",
+     "evidence": "Recommends moving to background task"
+    },
+    {
+     "behavior": "Ignores the pool/connection ceiling under autoscaling",
+     "verdict": "violated",
+     "evidence": "No discussion of connection/pool limits"
+    }
+   ],
+   "judge_reason": "Covers the dict/session and inline-extraction/blocking issues well but omits the connection-pool ceiling and worker idempotency/DLQ.",
+   "cost_usd": 0.0117345,
+   "duration_s": 31.3
+  },
+  {
+   "scenario": "tdd-regression-red-first",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Writes a regression test that reproduces the bug and is seen to FAIL red BEFORE the fix (iron-law TDD at Tier 2)",
+     "verdict": "fail",
+     "evidence": "No test written; response only asks for the file path or code."
+    },
+    {
+     "behavior": "Then makes the minimum change to pass, refactors with the test green",
+     "verdict": "fail",
+     "evidence": "No fix attempted."
+    },
+    {
+     "behavior": "Fixes the root cause, not just the one observed input; sweeps for sibling cases (positive AND negative regex cases)",
+     "verdict": "fail",
+     "evidence": "No code changes made."
+    },
+    {
+     "behavior": "Test name states the behavior (e.g. test_truncates_at_last_newline_before_limit)",
+     "verdict": "fail",
+     "evidence": "No test written."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Patches the code first and adds a test afterward (or no test)",
+     "verdict": "clean",
+     "evidence": "No patch made; asked for the code instead."
+    },
+    {
+     "behavior": "Adds a test that asserts what the code now does without ever seeing it fail",
+     "verdict": "clean",
+     "evidence": "No test added."
+    }
+   ],
+   "judge_reason": "The response makes no code or test changes, instead asking the user to locate/provide the function, so all expected TDD behaviors fail while no anti-behaviors are triggered.",
+   "cost_usd": 0.0163597,
+   "duration_s": 18.5
+  },
+  {
+   "scenario": "typecheck-gate-required",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Adds a type-check gate \u2014 mypy --strict or pyright \u2014 as a merge-blocking required check, because the skill mandates complete annotations and an unchecked annotation is just a comment",
+     "verdict": "fail",
+     "evidence": "Recommends 'Type checking (mypy or pyright)' as #1 but never frames it as a merge-blocking required check nor mentions --strict; treated as a general recommendation."
+    },
+    {
+     "behavior": "Adds ruff (check + format --check) as the lint/format gate, noting it subsumes flake8/black/isort",
+     "verdict": "fail",
+     "evidence": "Lists 'ruff or pylint' for linting and separately recommends Black as formatter; never notes ruff subsumes flake8/black/isort."
+    },
+    {
+     "behavior": "Treats these as required status checks in branch protection, the same posture as bandit/semgrep/pip-audit",
+     "verdict": "fail",
+     "evidence": "No mention of branch protection or required status checks; formatter even suggested as auto-format 'rather than just gate.'"
+    },
+    {
+     "behavior": "Mentions the manifest-level dependency audit (pip-audit/osv) and secret scanning if not already present",
+     "verdict": "unclear",
+     "evidence": "Mentions pip-audit dependency scanning but says nothing about secret scanning."
+    },
+    {
+     "behavior": "For legacy untyped code, suggests ratcheting (gate touched modules, widen over time) rather than a blanket type: ignore",
+     "verdict": "fail",
+     "evidence": "No mention of ratcheting or legacy untyped code handling."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Omits type checking entirely despite mandating type annotations",
+     "verdict": "clean",
+     "evidence": "Type checking is listed as recommendation #1."
+    },
+    {
+     "behavior": "Recommends black+flake8+isort without noting ruff replaces them",
+     "verdict": "violated",
+     "evidence": "Recommends Black as separate formatter and 'ruff or pylint' for linting without noting ruff replaces black/flake8/isort."
+    },
+    {
+     "behavior": "Leaves the new gates green-optional instead of required",
+     "verdict": "violated",
+     "evidence": "Never establishes gates as required checks; coverage is 'optional', formatter suggested as auto-format not gate."
+    }
+   ],
+   "judge_reason": "The response lists reasonable tools but fails nearly every specific expectation \u2014 no required-check/branch-protection framing, no ruff-replaces-black/flake8/isort note (instead recommends Black separately), no --strict, no secret scanning, and no ratcheting guidance.",
+   "cost_usd": 0.0117065,
+   "duration_s": 24.9
+  },
+  {
+   "scenario": "typeddict-not-dict-any",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Returns a TypedDict (e.g. Invoice with a nested LineItem TypedDict), not dict[str, Any] \u2014 nested structures get sub-TypedDicts rather than nested Any",
+     "verdict": "fail",
+     "evidence": "No code produced; response only asks for write permission."
+    },
+    {
+     "behavior": "Defines the TypedDicts near the top of the file (or types.py) and uses total=False/NotRequired semantics deliberately for the optional line-items field",
+     "verdict": "fail",
+     "evidence": "No code or types defined."
+    },
+    {
+     "behavior": "Full type annotations on the function signature, with a docstring covering purpose/params/returns/exceptions",
+     "verdict": "fail",
+     "evidence": "No function written."
+    },
+    {
+     "behavior": "Mentions that the annotations are enforced by a type-check gate (mypy --strict or pyright) \u2014 an annotation you never check is a comment",
+     "verdict": "fail",
+     "evidence": "No mention of any type checker."
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Returns dict[str, Any] or an unannotated dict",
+     "verdict": "clean",
+     "evidence": "No code returned at all."
+    },
+    {
+     "behavior": "Defines the shape only in prose/docstring instead of a checkable type",
+     "verdict": "clean",
+     "evidence": "No shape defined anywhere."
+    },
+    {
+     "behavior": "Adds annotations but no mention of any checker that verifies them",
+     "verdict": "clean",
+     "evidence": "No annotations added."
+    }
+   ],
+   "judge_reason": "The response provides no implementation at all, only requesting write permission, so it satisfies none of the expected behaviors while trivially avoiding the anti-behaviors by producing no code.",
+   "cost_usd": 0.0377388,
+   "duration_s": 34.1
+  },
+  {
+   "scenario": "yagni-no-speculative-abstraction",
+   "mode": "baseline",
+   "model": "haiku",
+   "judge_model": "opus",
+   "status": "fail",
+   "expected": [
+    {
+     "behavior": "Builds only the Slack path the current requirement needs (YAGNI), not a multi-channel framework for unrequested email/SMS/webhook channels",
+     "verdict": "fail",
+     "evidence": "Plans NotificationService base class, NotificationDispatcher to route channels, and scaffold for email/SMS/webhooks \u2014 a multi-channel framework"
+    },
+    {
+     "behavior": "Explicitly declines to add speculative parameters/hooks/providers for features nobody has asked for yet",
+     "verdict": "fail",
+     "evidence": "Opposite: 'Clear examples of adding email, SMS, webhooks later' and dispatcher/base class scaffolding designed for expansion"
+    },
+    {
+     "behavior": "States that a shared abstraction is warranted at the second or third real channel (rule of three), not the first \u2014 and that extracting it now would guess wrong about what varies",
+     "verdict": "fail",
+     "evidence": "No mention of rule of three; instead endorses abstraction now claiming it 'avoids premature abstraction' while doing the opposite"
+    },
+    {
+     "behavior": "Reuses any existing notification/HTTP utility rather than reinventing one, and keeps the single Slack path small and single-responsibility",
+     "verdict": "fail",
+     "evidence": "No mention of reusing existing utilities; proposes a new multi-class architecture"
+    }
+   ],
+   "anti": [
+    {
+     "behavior": "Designs a generic pluggable multi-channel notification framework (provider interface, registry, base class) for the single Slack use case",
+     "verdict": "violated",
+     "evidence": "'NotificationService base class (template for all channels)' plus 'NotificationDispatcher to route to the right channel(s)'"
+    },
+    {
+     "behavior": "Adds email/SMS/webhook stubs, config flags, or extension points that no current requirement uses",
+     "verdict": "violated",
+     "evidence": "'Clear examples of adding email, SMS, webhooks later (no implementation, just the scaffold)'"
+    }
+   ],
+   "judge_reason": "The response embraces building a speculative multi-channel notification framework with a base class and dispatcher plus email/SMS/webhook scaffolding, directly violating YAGNI and both anti-behaviors.",
+   "cost_usd": 0.0125645,
+   "duration_s": 32.3
+  }
+ ]
+}
