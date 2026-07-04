@@ -17,6 +17,23 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.16.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.15.0...v1.16.0) (2026-07-04)
+
+
+### Features
+
+* per-model portability baselines, cross-CLI eval runner, and the tranche-4 rules-lossless core reduction ([#78](https://github.com/bjgreenberg/senior-engineering-partner/issues/78)) ([bb28ce1](https://github.com/bjgreenberg/senior-engineering-partner/commit/bb28ce118e792fd48c2d5df60262ff2a6d1cc23b))
+  * **"Does the skill work equally well across models?" is now a measurement, not an assumption.** Full baseline + with-skill sweeps on **Fable 5 / Sonnet 5 / Haiku 4.5** (opus judge) are recorded as `evals/baselines/2026-07-04-{fable,sonnet,haiku}/`. The headline: with identical skill text, with-skill fails run **16 (Haiku) → 7 (Sonnet) → 4 (Opus, older suite) → 3 (Fable)** — the content transfers down-model but enforcement reliability tracks model tier, and the skill's value *compounds* up-model (Fable: 22 of 45 improved, 0 regressed, the strongest profile on both curves). The shared durable-fail trio (`dependency-manifest-drift` · `stale-diagram-on-behavior-change` · `tdd-regression-red-first`) fails on *every* model — content gaps, not model gaps, and the standing sharpening target.
+  * **The scenario runner is pluggable; the judge is not** (`scripts/run-evals.py --runner generic`): the same 45 scenarios can now grade any agent CLI (Codex, Gemini CLI, …) via a `--runner-cmd` template — `{prompt}`/`{model}` substituted **after** shell-style tokenization so a hostile prompt stays one argv token — with the SKILL.md body materialized as the CLI's own instruction file (`AGENTS.md`/`GEMINI.md`) per scenario, and the judge pinned to the `claude` CLI so verdicts stay comparable. No foreign-CLI flags are hardcoded (this repo can't test them); the template is the operator's assertion, verified against their installed `--help`.
+  * **Tranche-4 token-mass reduction: the always-loaded core shrank ~18%** (~23.7k → ~19.4k tokens) **with zero enforceable rules dropped** — every section rewritten under a preserve-all-rules contract, approved by three adversarial verifier lenses per item (dropped-mandate / eval-anchoring / integrity, fallback-to-original on refutation), then a whole-file panel confirmed zero cross-section double-cuts. Displaced detail *moved* to `debugging.md`, `logging-and-monitoring.md`, and `github-teams.md` (incl. the 2026-06-10 squash-rule provenance), never silently deleted. Post-edit with-skill re-sweeps on all three models, with every drop single-probe re-run and adjudicated ([`2026-07-04-post-t4/`](evals/baselines/2026-07-04-post-t4/BASELINE.md)): **no drop traces to lost text**; Haiku fails 16→13, Sonnet passes 16→18, Fable within noise of its ceiling. Separately verified: the full body loads un-truncated via the real skill loader (`claude` CLI 2.1.201).
+  * **The validation surfaced and fixed an intra-skill tension:** the blanket `MODULARIZATION.md` mandate collided with YAGNI (a model dutifully speccing future channels got judged as speculative design). The spec is now warranted only under **concrete packaging pressure** (a convert-trigger from the Single-File vs. Package framework), and the `yagni-no-speculative-abstraction` scenario's anti-behavior targets *code* artifacts, excusing prose planning notes — verified clean on a live run.
+  * **Copilot-review catches folded** (same PR): `--runner-instructions-file` is validated to a bare filename so the skill-body write can't traverse out of the scenario scratch dir (two fixture tests prove the gate can fail); `run_generic()` trims only a trailing newline, keeping foreign-CLI transcripts faithful; results-dir docs name the `-generic` tag.
+
+
+### Bug Fixes
+
+* stop release-please from corrupting the CFF spec-version reference in SKILL.md ([#75](https://github.com/bjgreenberg/senior-engineering-partner/issues/75)) ([bd5b87c](https://github.com/bjgreenberg/senior-engineering-partner/commit/bd5b87c97ccaa97ad0bee10715d3cbfe98adf3fa))
+
 ## [1.15.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.14.0...v1.15.0) (2026-07-04)
 
 
