@@ -15,6 +15,15 @@ This project is maintained by:
   `main` even from unsigned feature branches — no commit-signing setup required to contribute.
 - Security reports go through **private advisories**, never public issues — see [SECURITY.md](SECURITY.md).
 
+### mermaid-cli re-pin cadence (docs-render gate)
+
+`scripts/render-diagrams.sh` runs mermaid-cli from a digest-pinned container image (`MMDC_IMAGE` — the single pin location; the docs-render workflow calls the script). The digest keeps the gate reproducible; it does not keep it current (SKILL.md *stay current, not just pinned* — a pin is for reproducibility, not a museum). **Re-pin quarterly**, or sooner when a Mermaid syntax feature or rendering fix we need ships:
+
+1. Read the mermaid-cli release notes for rendering changes that could alter committed diagrams.
+2. Resolve the new tag's digest: `docker buildx imagetools inspect ghcr.io/mermaid-js/mermaid-cli/mermaid-cli:<tag>`.
+3. Update `MMDC_IMAGE` in `scripts/render-diagrams.sh` (tag noted in the comment, digest in the pin).
+4. Prove it: run the render check over every diagram-bearing file locally, or let the `docs-render` gate do it on the PR — a digest bump that changes rendering behavior must fail there, not on `main`.
+
 ## Cutting a release
 
 Releases are **prepared by [release-please](https://github.com/googleapis/release-please) and

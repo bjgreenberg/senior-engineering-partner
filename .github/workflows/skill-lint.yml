@@ -1,0 +1,28 @@
+name: skill-lint
+
+# Validate SKILL.md against the Agent Skills packaging constraints: frontmatter present and
+# carrying name + description, name format/length + skill-directory match, and the 1024-char
+# description limit this repo has tripped over before (CHANGELOG v1.1.0). Stdlib-only Python,
+# so the local run and CI are byte-identical: scripts/skill-lint.py.
+#
+# GREEN-OPTIONAL by design (plan item C7): not in the ruleset's required checks — promotion
+# to required is the maintainer's explicit call, never a default.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  skill-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Lint SKILL.md packaging
+        run: |
+          set -euo pipefail
+          python3 scripts/skill-lint.py SKILL.md
