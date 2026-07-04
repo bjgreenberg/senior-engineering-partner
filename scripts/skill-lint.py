@@ -33,8 +33,9 @@ def parse_frontmatter(text: str) -> dict[str, str] | None:
     """Minimal single-level YAML frontmatter reader (stdlib-only).
 
     Handles the subset this repo uses: `key: value` lines with optional double-quoted
-    values. Multi-line/nested values are recorded with a sentinel so key presence still
-    registers without a YAML dependency.
+    values, plus indented continuation / block-scalar content (`>`/`|` styles), which is
+    ACCUMULATED into the key's value — so the description length check measures the real
+    content and cannot be bypassed by writing the description as a multi-line block.
     """
     m = re.match(r"^---\r?\n(.*?)\r?\n---\r?\n", text, re.S)
     if not m:
@@ -44,15 +45,17 @@ def parse_frontmatter(text: str) -> dict[str, str] | None:
     for line in m.group(1).splitlines():
         if not line.strip() or line.strip().startswith("#"):
             continue
-        if line[0] in " \t":  # continuation / nested value under the last key
+        if line[0] in " \t":  # continuation / block-scalar content under the last key
             if current_key:
-                fields[current_key] += " <nested>"
+                fields[current_key] = (fields[current_key] + " " + line.strip()).strip()
             continue
         km = re.match(r"^([A-Za-z0-9_-]+):\s*(.*)$", line)
         if not km:
             return None  # a top-level line that isn't key:value = malformed frontmatter
         key, value = km.group(1), km.group(2).strip()
-        if len(value) >= 2 and value[0] == '"' and value[-1] == '"':
+        if value in {">", "|", ">-", "|-", ">+", "|+"}:
+            value = ""  # block-scalar indicator — the real content follows indented
+        elif len(value) >= 2 and value[0] == '"' and value[-1] == '"':
             value = value[1:-1]
         fields[key] = value
         current_key = key

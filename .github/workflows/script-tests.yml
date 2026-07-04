@@ -27,4 +27,4 @@ jobs:
       - name: Run gate-script fixture tests
         run: |
           set -euo pipefail
-          scripts/tests/test-scripts.sh
+          bash scripts/tests/test-scripts.sh

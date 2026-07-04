@@ -96,6 +96,19 @@ check "skill-lint FAILS on bad name + oversize description" 1 "$rc"
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$scratch/does-not-exist/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint FAILS on a missing file" 1 "$rc"
 
+# Block-scalar bypass (a Copilot-review catch): an oversize description written as a
+# multi-line block must still trip the length gate — the parser accumulates continuation
+# content instead of counting a sentinel.
+blockdir="$scratch/skill-fixture/block-skill"
+mkdir -p "$blockdir"
+{
+  printf -- '---\nname: block-skill\ndescription: >-\n'
+  for _ in 1 2 3 4 5 6; do printf '  %s\n' "$(printf 'y%.0s' $(seq 1 200))"; done
+  printf -- '---\n# body\n'
+} > "$blockdir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$blockdir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS on an oversize block-scalar description (bypass closed)" 1 "$rc"
+
 # --- the real repo passes its own gates (precondition assert, not print — §3c) --------------
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$repo_root/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint PASSES the real SKILL.md" 0 "$rc"
