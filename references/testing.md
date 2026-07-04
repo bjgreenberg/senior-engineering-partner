@@ -4,7 +4,7 @@ Companion reference for the senior-engineering-partner skill.
 
 > **Rigor tier:** this is **Tier-2 (production/commercial) posture** from SKILL.md's *Project Phase & Rigor Ladder*. At Tier 0/1 (prototype/MVP) apply the lean baseline (critical-path/smoke tests, basic CI) and defer these heavy gates with explicit `TODO`s + promotion triggers — the security floor still holds at every tier.
 
-This is the umbrella standard. The specifics live in siblings: `testing-single-file.md` (the conftest argv-patch harness), `databases.md` (pgTAP RLS, the seed→`SET LOCAL ROLE`→GUC→assert→`ROLLBACK` pattern), `python-web-apis.md` (httpx auth/contract tests), `github-actions.md`/`github-teams.md` (how these become *required, merge-blocking* checks), and `ui-design-and-accessibility.md`/`frontend-web-security.md` (the a11y gate and the browser floor behaviors §8 turns into tests). The proving ground is `example-org/example-saas` — a commercial multi-tenant SaaS — so the posture is **strict, not aspirational: gates that FAIL CI, not advice that gets skipped.** A green-but-untested merge is the failure mode this file exists to prevent.
+This is the umbrella standard. The specifics live in siblings: `testing-single-file.md` (the conftest argv-patch harness), `databases.md` (pgTAP RLS, the seed→`SET LOCAL ROLE`→GUC→assert→`ROLLBACK` pattern), `python-web-apis.md` (httpx auth/contract tests), `github-actions.md`/`github-teams.md` (how these become *required, merge-blocking* checks), and `ui-design-and-accessibility.md`/`frontend-web-security.md` (the a11y gate and the browser-floor exemplars §8 turns into tests). The proving ground is `example-org/example-saas` — a commercial multi-tenant SaaS — so the posture is **strict, not aspirational: gates that FAIL CI, not advice that gets skipped.** A green-but-untested merge is the failure mode this file exists to prevent.
 
 The governing rule (from SKILL.md, restated because it is load-bearing here): **when a test reveals real behavior differing from expectation, fix the test AND comment WHY. Never delete a failing test, never retry it to green, never `xfail` it to unblock a merge.**
 
@@ -130,25 +130,31 @@ Security tests are first-class CI gates, not a manual pre-release pass.
 
 ## 8. Frontend testing — the browser half of the pyramid
 
-The taxonomy (§1) and the gates (§3) apply to the SPA/UI code unchanged; what changes is the
-tooling and the failure modes. Tool names below are example bindings (e.g. Vitest/Jest +
-Testing Library for components, Playwright for E2E; the example SaaS SPA is SvelteKit) — swap
-per your framework, the discipline is identical.
+The taxonomy (§1) and the gates (§3) apply to the SPA/UI code in full — rebind §3a's coverage
+mechanics to your JS runner's threshold config, floor highest on the route-guard/decision
+modules; what changes is the tooling and the failure modes. Tool names below are example
+bindings (e.g. Vitest/Jest + Testing Library for components, Playwright for E2E; the example
+SaaS SPA targets SvelteKit per its re-platform plan) — swap per your framework, the
+discipline is identical.
 
 - **Test user-visible behavior, not implementation.** Query the DOM the way a user (or a
   screen reader) finds things — by **role, label, and accessible name** (Testing Library
   semantics), never by CSS class, tag structure, or component internals. This survives
   refactors *and* doubles as an accessibility signal: an element your test can't find by role
-  is an element assistive tech can't find either (`ui-design-and-accessibility.md`).
+  is an element assistive tech can't identify or operate either
+  (`ui-design-and-accessibility.md`).
 - **Mock the API at the network boundary, with the producer's REAL responses.** The
   consumer-mock rule (§1) bites hardest in UI code: stub at the HTTP layer (e.g. MSW or the
   framework's fetch-mock) with the server's actual success shape **and its actual error
   statuses** — a UI coded against an assumed `200`-with-empty dead-ends real users when the
   server correctly returns `403` (the §1 textbook miss was exactly this). Every data-driven
   view gets its **error and empty states tested first** — that's where the branch decisions
-  (§1 "test the decision") live.
-- **E2E is a thin critical-path gate, not a second unit suite.** A handful of Playwright
-  journeys — sign in → the product's one core action → visible result, plus checkout/billing
+  (§1 "test the decision") live. And **pin the mocks to the contract**: validate the fixtures
+  against the producer's response schema (§1's contract models / the OpenAPI spec) or keep one
+  thin integration test across the seam, so a producer change goes red instead of leaving
+  stale handlers green.
+- **E2E is a thin critical-path gate, not a second unit suite.** A handful of E2E journeys
+  (Playwright or equivalent) — sign in → the product's one core action → visible result, plus checkout/billing
   if money moves — run headless in CI against an ephemeral stack (§4's throwaway-DB rule
   extends to the whole stack; never E2E against prod). Everything else belongs lower in the
   pyramid: an E2E suite that re-checks every component is slow, flaky, and soon ignored.
@@ -161,8 +167,9 @@ per your framework, the discipline is identical.
   assert it renders inert — `frontend-web-security.md`), and **a failed submit preserves the
   user's input** (fill the form, force the API error, assert values and any file selection
   survive — the SKILL.md preserve-input rule as a test, not a hope).
-- **Accessibility is a gate, not a review note.** Run axe (or an equivalent engine) against
-  the app's key states in CI and fail on violations; pair it with the manual keyboard +
+- **Accessibility is a gate, not a review note.** Run axe (or an equivalent engine) in CI
+  against, at minimum, the states the critical-path E2E journeys visit, and fail on
+  violations; pair it with the manual keyboard +
   screen-reader pass `ui-design-and-accessibility.md` mandates — automated checks cover only
   a fraction of WCAG criteria (the honest-caveat numbers live there), so the manual pass is
   load-bearing, not optional.
@@ -171,8 +178,10 @@ per your framework, the discipline is identical.
   becomes a reflex that rubber-stamps regressions. Snapshot small, stable units (a formatted
   date, an icon choice) where the serialized output IS the contract; for layout/visual
   claims, use targeted visual-regression screenshots on the few high-value pages, reviewed
-  like code. And remember what jsdom is: **jsdom renders no pixels** — layout, overflow,
-  contrast, and responsive claims need a real browser (Playwright), not a unit-test DOM.
+  like code — capturing their baselines in the same pinned browser/container the CI runs
+  (a baseline from a dev laptop is a flake generator). And remember what jsdom is:
+  **jsdom renders no pixels** — layout, overflow, contrast, and responsive claims need a
+  real browser (Playwright), not a unit-test DOM.
 
 ---
 
@@ -188,7 +197,8 @@ A change is not done until, against the **real package** (not the shim) on a fre
 - [ ] pgTAP RLS suite + HTTP isolation suite green (the un-skippable gate, §2).
 - [ ] `bandit`/secret-scan/dependency-scan green (`github-actions.md`).
 - [ ] No real PII/evidence in any fixture; no wall-clock/unseeded randomness; no quarantined test in the gating set.
-- [ ] UI change → behavior-level component tests (queried by role/label; error/empty states first), network-boundary mocks encoding the producer's real statuses, a11y gate green; the critical-path E2E journey updated if it changed (§8).
+- [ ] UI change → behavior-level component tests (queried by role/label; error/empty states first), contract-pinned network-boundary mocks, a11y gate green; the critical-path E2E journey updated if the change touches a critical-path flow (§8).
+- [ ] New render-untrusted or form surface → the §8 floor asserts: hostile content renders inert; input survives a failed submit.
 - [ ] A human reviewed the PR (CODEOWNER on sensitive paths) — not a blind agent self-merge (`github-teams.md`).
 
 If any box is unchecked, the work is not delivered — it is at risk.
