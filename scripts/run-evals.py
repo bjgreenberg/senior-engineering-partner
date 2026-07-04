@@ -37,6 +37,7 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import datetime
+import difflib
 import json
 import logging
 import re
@@ -91,6 +92,7 @@ class ScenarioResult(TypedDict, total=False):
     anti: list[ItemJudgment]
     judge_reason: str
     response: str
+    workspace_evidence: str
     duration_s: float
     cost_usd: float | None
     error: str
@@ -193,15 +195,85 @@ def materialize_files(name: str, files: list[str], workdir: Path) -> None:
         )
 
 
+def collect_workspace_evidence(
+    name: str, files: list[str], workdir: Path, limit_bytes: int = 60_000
+) -> str:
+    """Diff the post-run workspace against the fixtures so the judge grades real edits.
+
+    A model granted tools does the work in the workspace and often doesn't restate it in
+    prose — judging the response text alone under-credits exactly the scenarios the
+    fixtures exist to sharpen (e.g. a behavior-stating test *name* that only exists in the
+    written test file). Returns unified diffs for changed fixture files, full contents for
+    new files, and a marker for deletions; bounded by ``limit_bytes``.
+    """
+    fixture_root = FIXTURES_DIR / name
+    skip_dirs = {".git", "__pycache__", ".pytest_cache", "node_modules", ".venv"}
+    parts: list[str] = []
+    after = sorted(
+        p
+        for p in workdir.rglob("*")
+        if p.is_file()
+        and not any(seg in skip_dirs for seg in p.relative_to(workdir).parts)
+        and p.name != ".DS_Store"
+    )
+    listed = set(files)
+    for path in after:
+        rel = path.relative_to(workdir).as_posix()
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            parts.append(f"### {rel}: binary or unreadable ({path.stat().st_size} bytes)")
+            continue
+        if rel in listed:
+            before = (fixture_root / rel).read_text(encoding="utf-8")
+            if text == before:
+                continue
+            parts.append(
+                "".join(
+                    difflib.unified_diff(
+                        before.splitlines(keepends=True),
+                        text.splitlines(keepends=True),
+                        fromfile=f"a/{rel}",
+                        tofile=f"b/{rel}",
+                    )
+                )
+            )
+        else:
+            parts.append(f"### NEW FILE {rel}\n{text}")
+    for rel in sorted(listed - {p.relative_to(workdir).as_posix() for p in after}):
+        parts.append(f"### DELETED {rel}")
+    evidence = "\n".join(parts)
+    if not evidence:
+        return "(no workspace changes — the assistant edited nothing)"
+    if len(evidence) > limit_bytes:
+        evidence = evidence[:limit_bytes] + "\n… (truncated at limit)"
+    return evidence
+
+
 def judge_response(
-    scenario: Scenario, response: str, judge_model: str, timeout: int, cwd: Path
+    scenario: Scenario,
+    response: str,
+    judge_model: str,
+    timeout: int,
+    cwd: Path,
+    workspace_evidence: str | None = None,
 ) -> dict[str, Any]:
     """LLM-judge one response; returns the parsed judgment JSON."""
+    workspace_section = ""
+    if workspace_evidence is not None:
+        workspace_section = (
+            "\n\n## Workspace changes made by the assistant (harness-collected)\n"
+            "Unified diffs vs the fixture files the assistant was given; new files shown in "
+            "full. Treat these edits as actions the assistant actually performed, even where "
+            "the prose response does not restate them.\n"
+            f"<workspace_changes>\n{workspace_evidence}\n</workspace_changes>"
+        )
     prompt = (
         f"{JUDGE_INSTRUCTIONS}\n\n"
         f"## The user's query\n{scenario['query']}\n\n"
         f"## expected_behavior checklist\n{json.dumps(scenario.get('expected_behavior', []), indent=1)}\n\n"
-        f"## anti_behavior checklist\n{json.dumps(scenario.get('anti_behavior', []), indent=1)}\n\n"
+        f"## anti_behavior checklist\n{json.dumps(scenario.get('anti_behavior', []), indent=1)}"
+        f"{workspace_section}\n\n"
         f"## The assistant's response to grade\n<response>\n{response}\n</response>"
     )
     raw, _cost = run_claude(prompt, judge_model, timeout, cwd)
@@ -242,13 +314,18 @@ def run_scenario(
     try:
         with tempfile.TemporaryDirectory(prefix=f"eval-{name}-") as tmp:
             workdir = Path(tmp)
+            evidence: str | None = None
             if scenario.get("files"):
                 materialize_files(name, scenario["files"], workdir)
             response, cost = run_claude(
                 scenario["query"], model, timeout, workdir, system_prompt,
                 allowed_tools=SCENARIO_ALLOWED_TOOLS,
             )
-            judgment = judge_response(scenario, response, judge_model, timeout, workdir)
+            if scenario.get("files"):
+                evidence = collect_workspace_evidence(name, scenario["files"], workdir)
+            judgment = judge_response(
+                scenario, response, judge_model, timeout, workdir, evidence
+            )
         expected = list(judgment.get("expected", []))
         anti = list(judgment.get("anti", []))
         result.update(
@@ -259,6 +336,8 @@ def run_scenario(
             response=response,
             cost_usd=cost,
         )
+        if evidence is not None:
+            result["workspace_evidence"] = evidence
     except (RuntimeError, subprocess.TimeoutExpired, json.JSONDecodeError, OSError) as exc:
         result["error"] = f"{type(exc).__name__}: {exc}"
         log.error("[%s] %s", name, result["error"])
