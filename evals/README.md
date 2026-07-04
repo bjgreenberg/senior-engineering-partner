@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-02 10:17 PM CDT
+Last updated: 2026-07-04 06:35 PM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -73,6 +73,39 @@ scenario plus `summary.md`/`summary.json`. Curate a run worth keeping (e.g. the 
 baseline before a large `SKILL.md` restructuring) into `evals/baselines/`. Exit code is `0`
 only when every scenario passes, so the runner can gate.
 
+### Cross-CLI runs (`--runner generic`)
+
+The **scenario runner is pluggable; the judge is not.** `--runner generic` produces each
+scenario's response through any other agent CLI (Codex, Gemini CLI, …) so the same suite can
+measure the skill's content on a non-Claude harness:
+
+```bash
+scripts/run-evals.py --runner generic \
+  --runner-cmd 'codex exec --model {model} {prompt}' \
+  --runner-instructions-file AGENTS.md \
+  --model <that-cli's-model-name>
+```
+
+- **`--runner-cmd`** is a shell-style template; `{prompt}`/`{model}` are substituted **after**
+  tokenization, so a hostile prompt stays one argv token (no shell, no injection). The response
+  is the command's raw stdout. **Verify the template against your installed CLI's `--help`
+  first** — flags drift across versions, and this repo deliberately hardcodes no foreign-CLI
+  flags it cannot test.
+- **`--runner-instructions-file`** (required in with-skill mode) names the instruction file —
+  `AGENTS.md` for Codex, `GEMINI.md` for Gemini CLI — that the `SKILL.md` body is written to in
+  each scenario's scratch cwd, since foreign CLIs have no `--append-system-prompt`. A **bare
+  filename only** — paths/traversal are rejected at argparse so the write can't escape the
+  scratch dir. This tests
+  the skill's *content* on that harness; it does not exercise that platform's own skill-loading
+  mechanics.
+- **The judge always runs on the `claude` CLI** (so verdicts stay comparable across runners —
+  one grading instrument); `claude` must still be on PATH. Judge-model bias toward its own
+  family is an uncontrolled variable — note it when comparing cross-vendor numbers.
+- Output dirs gain a `-generic` tag so a foreign-CLI sweep can't be mistaken for a claude one.
+  A `pass`/`fail` from a generic sweep grades the *response text* only — a CLI that emits
+  progress noise into stdout will read worse than it is; check a transcript before trusting a
+  surprising number.
+
 ## Recorded baselines (`baselines/`)
 
 A committed baseline is a *slim* copy of a full sweep — statuses, per-item judgments, and
@@ -82,7 +115,24 @@ any large core edit** and validate the edit by re-running **both** modes under t
 harness afterward; a baseline only covers the scenarios that existed when it was taken
 (added/edited scenarios re-baseline on the next sweep). Current:
 [`baselines/2026-07-02-opus/`](baselines/2026-07-02-opus/BASELINE.md) — the skill improves
-20 of 38 scenarios over the bare model with zero regressions (fails 13→4). Superseded:
+20 of 38 scenarios over the bare model with zero regressions (fails 13→4) — plus the
+per-model portability sweeps of 2026-07-04:
+[`baselines/2026-07-04-fable/`](baselines/2026-07-04-fable/BASELINE.md) — 22 of 45
+improved, 0 regressed (fails 9→3, pass 8→28: the skill's value compounds up-model) —
+[`baselines/2026-07-04-sonnet/`](baselines/2026-07-04-sonnet/BASELINE.md) — 14 of 45
+improved, 0 regressed (fails 12→7; four of the seven remaining fails are the same durable
+fails Opus records, i.e. content gaps, not model gaps) — and
+[`baselines/2026-07-04-haiku/`](baselines/2026-07-04-haiku/BASELINE.md) — the skill improves
+15 of 45 scenarios on Haiku 4.5 (fails 23→16), but 15 scenarios stay failed with the skill
+loaded, where Opus left 4: the content transfers down-model, the enforcement reliability
+does not. Across the four recorded sweeps, with-skill fails run 16 (Haiku) → 7 (Sonnet) →
+4 (Opus, older suite) → 3 (Fable) with identical skill text — the shared durable-fail core
+(dependency-manifest-drift · stale-diagram-on-behavior-change · tdd-regression-red-first)
+is the standing sharpening target. The tranche-4 core compression (~18% of SKILL.md,
+rules-lossless) was validated against those pre-edit references the same day —
+[`baselines/2026-07-04-post-t4/`](baselines/2026-07-04-post-t4/BASELINE.md): no drop on any
+model traces to lost text; future core edits compare with-skill runs against the post-t4
+record. Superseded:
 [`baselines/2026-07-01-opus/`](baselines/2026-07-01-opus/BASELINE.md) (31 scenarios @ v1.8.0).
 
 The loop around the runner is unchanged:

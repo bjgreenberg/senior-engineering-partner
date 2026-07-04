@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-03 09:01 PM CDT
+Last updated: 2026-07-04 04:47 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -218,9 +218,10 @@ support directories:
   changelog as a checkable expectation, in Anthropic's evaluation shape. `evals/README.md`
   documents the baseline-then-iterate (Claude-A authors / Claude-B tests) loop, and
   **`scripts/run-evals.py` executes the suite**: it runs each `query` headlessly through the
-  `claude` CLI (with the skill injected, or bare for a baseline), LLM-judges the response
+  `claude` CLI (with the skill injected, or bare for a baseline) — or through any other agent
+  CLI via `--runner generic` — LLM-judges the response
   against `expected_behavior`/`anti_behavior`, and writes per-scenario verdicts + a summary
-  (see *How to run* in `evals/README.md`). **Add or
+  (see *How to run* and *Cross-CLI runs* in `evals/README.md`). **Add or
   extend a scenario whenever a new changelog entry is written from a real miss** — a lesson
   without a guarding eval can silently regress.
 
@@ -281,11 +282,14 @@ most to least faithful:
   degrades to advice. Usable for `EXPLAIN:`-style consultation; not equivalent. A research
   product without file or shell access (e.g. Perplexity) isn't a meaningful target.
 
-What stays Claude-specific, disclosed: the eval runner (`scripts/run-evals.py`) drives the
-`claude` CLI (the JSON scenarios themselves are runner-agnostic); the repo's CI gates are
-GitHub Actions; and how reliably a given model *follows* ~90 KB of discipline varies — the
-eval suite measures that for Claude, and this README makes no equivalent claim for other
-models.
+What stays Claude-specific, disclosed: the eval runner's **judge** drives the `claude` CLI
+(scenario responses are pluggable — `scripts/run-evals.py --runner generic` runs the same
+suite through any agent CLI via a command template + its instruction file; see *Cross-CLI
+runs* in `evals/README.md`); the repo's CI gates are GitHub Actions; and how reliably a
+given model *follows* ~80 KB of discipline varies **by model** — the recorded baselines in
+[`evals/baselines/`](evals/baselines/) measure it per swept Claude model (each records its
+own baseline-vs-with-skill gap), and this README makes no equivalent claim for any model
+the suite hasn't swept.
 
 ## Customize for your environment (`my-environment.md`)
 

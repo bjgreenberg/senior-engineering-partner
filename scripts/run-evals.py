@@ -18,12 +18,30 @@ Two run modes:
 Requires: the ``claude`` CLI on PATH, authenticated. No API key and no third-party deps
 (stdlib only) — the runner rides the existing CLI auth.
 
+Scenario runner is pluggable; the judge is not. ``--runner claude`` (default) is the
+fully-supported path above. ``--runner generic`` runs each scenario through any other
+agent CLI via a ``--runner-cmd`` template ("{prompt}"/"{model}" placeholders, substituted
+AFTER shell-style tokenization so a hostile prompt can never inject extra arguments), with
+the response taken as the command's raw stdout. In with-skill mode the generic runner
+materializes the SKILL.md body as ``--runner-instructions-file <name>`` (e.g. AGENTS.md
+for Codex, GEMINI.md for Gemini CLI) in the scenario's scratch cwd — the instruction-file
+mechanism those CLIs already read — since foreign CLIs have no --append-system-prompt.
+The JUDGE always runs on the ``claude`` CLI regardless of runner, so verdicts stay
+comparable across runners; a cross-CLI sweep still requires ``claude`` on PATH. Verify the
+template against your installed CLI's --help before a sweep — flags drift across versions,
+and this repo deliberately ships no hardcoded foreign-CLI flags it cannot test.
+
 Usage examples:
   scripts/run-evals.py --filter spec-first-gate            # one scenario, quick check
   scripts/run-evals.py --mode baseline --model opus        # full baseline sweep
   scripts/run-evals.py --model opus --judge-model opus     # full with-skill sweep
+  scripts/run-evals.py --runner generic \\
+      --runner-cmd 'codex exec --model {model} {prompt}' \\
+      --runner-instructions-file AGENTS.md                 # cross-CLI sweep (verify flags!)
 
-Results land under evals/results/<UTC-stamp>-<mode>-<model>/ (git-ignored): one JSON per
+Results land under evals/results/<UTC-stamp>-<mode>-<model>/ — a non-claude runner appends
+its tag (…-<model>-generic) so foreign-CLI sweeps can't be mistaken for claude ones
+(git-ignored): one JSON per
 scenario plus summary.md / summary.json. Curate a run worth keeping into evals/baselines/.
 """
 
@@ -35,6 +53,7 @@ import datetime
 import json
 import logging
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -67,12 +86,22 @@ class ItemJudgment(TypedDict, total=False):
     evidence: str
 
 
+class RunnerSpec(TypedDict, total=False):
+    """How scenario responses are produced. kind='claude' is the default first-class path;
+    kind='generic' shells out to any agent CLI via cmd_template (see the module docstring)."""
+
+    kind: str  # "claude" | "generic"
+    cmd_template: str  # generic only: shell-style template with {prompt}/{model} placeholders
+    instructions_file: str  # generic only: with-skill body lands here in the scenario cwd
+
+
 class ScenarioResult(TypedDict, total=False):
     """Everything recorded for one scenario run."""
 
     scenario: str
     mode: str
     model: str
+    runner: str
     judge_model: str
     status: str  # "pass" | "partial" | "fail" | "error"
     expected: list[ItemJudgment]
@@ -133,6 +162,59 @@ def run_claude(
     return str(wrapper.get("result", "")), wrapper.get("total_cost_usd")
 
 
+def build_runner_cmd(template: str, prompt: str, model: str) -> list[str]:
+    """Tokenize the --runner-cmd template shell-style, THEN substitute placeholders.
+
+    Order matters for safety: because {prompt} lands inside an already-split argv token
+    and the command runs without a shell, a prompt containing quotes, `;`, `$(...)`, or
+    spaces stays one argument — it can never grow extra flags or commands (the same
+    no-string-interpolation rule the skill's Bash injection discipline mandates)."""
+    tokens = shlex.split(template)
+    if not any("{prompt}" in t for t in tokens):
+        raise ValueError("--runner-cmd template must contain a {prompt} placeholder")
+    return [t.replace("{model}", model).replace("{prompt}", prompt) for t in tokens]
+
+
+def run_generic(
+    prompt: str, model: str, timeout: int, cwd: Path, cmd_template: str
+) -> tuple[str, float | None]:
+    """One headless run through a foreign agent CLI; response = stdout, faithful except a
+    single trailing newline (a full strip would eat code indentation and make cross-runner
+    transcripts non-faithful). No cost data — there is no cross-CLI cost envelope to parse,
+    so cost_usd is honestly None."""
+    cmd = build_runner_cmd(cmd_template, prompt, model)
+    proc = subprocess.run(
+        cmd, capture_output=True, text=True, timeout=timeout, cwd=cwd, check=False
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"{cmd[0]} exited {proc.returncode}: {proc.stderr.strip()[:500]}"
+        )
+    return proc.stdout.removesuffix("\n"), None
+
+
+def run_scenario_prompt(
+    runner: RunnerSpec,
+    prompt: str,
+    model: str,
+    timeout: int,
+    cwd: Path,
+    system_prompt: str | None,
+) -> tuple[str, float | None]:
+    """Produce one scenario response via the selected runner.
+
+    claude: system_prompt rides --append-system-prompt (unchanged legacy path).
+    generic: system_prompt is materialized as the CLI's instruction file (AGENTS.md /
+    GEMINI.md / ...) in the scenario's scratch cwd before the run — the mechanism those
+    CLIs already read project guidance from. main() has already validated that with-skill
+    + generic carries an instructions_file, so a missing one here is a programming error."""
+    if runner.get("kind", "claude") == "claude":
+        return run_claude(prompt, model, timeout, cwd, system_prompt)
+    if system_prompt is not None:
+        (cwd / runner["instructions_file"]).write_text(system_prompt, encoding="utf-8")
+    return run_generic(prompt, model, timeout, cwd, runner["cmd_template"])
+
+
 JUDGE_INSTRUCTIONS = """You are grading an AI assistant's response against a checklist. Be strict and literal:
 grade only what the response actually does, not what it gestures at.
 
@@ -178,7 +260,13 @@ def overall_status(expected: list[ItemJudgment], anti: list[ItemJudgment]) -> st
 
 
 def run_scenario(
-    path: Path, mode: str, model: str, judge_model: str, timeout: int, system_prompt: str | None
+    path: Path,
+    mode: str,
+    model: str,
+    judge_model: str,
+    timeout: int,
+    system_prompt: str | None,
+    runner: RunnerSpec,
 ) -> ScenarioResult:
     """Execute + judge one scenario file; never raises (errors land in the result)."""
     name = path.stem
@@ -188,6 +276,7 @@ def run_scenario(
         "scenario": name,
         "mode": mode,
         "model": model,
+        "runner": runner.get("kind", "claude"),
         "judge_model": judge_model,
         "status": "error",
     }
@@ -197,9 +286,11 @@ def run_scenario(
             raise RuntimeError("scenario declares 'files' — materialization not implemented")
         with tempfile.TemporaryDirectory(prefix=f"eval-{name}-") as tmp:
             workdir = Path(tmp)
-            response, cost = run_claude(
-                scenario["query"], model, timeout, workdir, system_prompt
+            response, cost = run_scenario_prompt(
+                runner, scenario["query"], model, timeout, workdir, system_prompt
             )
+            # The judge deliberately stays on the claude CLI for every runner, so
+            # cross-runner verdicts are graded by the same instrument.
             judgment = judge_response(scenario, response, judge_model, timeout, workdir)
         expected = list(judgment.get("expected", []))
         anti = list(judgment.get("anti", []))
@@ -244,30 +335,75 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--mode", choices=["with-skill", "baseline"], default="with-skill")
     parser.add_argument("--model", default="opus", help="model for the scenario runs")
-    parser.add_argument("--judge-model", default="opus", help="model for the judge runs")
+    parser.add_argument("--judge-model", default="opus", help="model for the judge runs (always the claude CLI)")
     parser.add_argument("--filter", default="", help="substring filter on scenario filenames")
     parser.add_argument("--jobs", type=int, default=2, help="concurrent scenarios")
     parser.add_argument("--timeout", type=int, default=600, help="seconds per claude run")
     parser.add_argument("--out", default="", help="output dir (default: evals/results/<stamp>)")
+    parser.add_argument(
+        "--runner", choices=["claude", "generic"], default="claude",
+        help="scenario-response producer; the judge always runs on the claude CLI",
+    )
+    parser.add_argument(
+        "--runner-cmd", default="",
+        help="generic runner command template with {prompt} (required) and {model} "
+             "placeholders, e.g. 'codex exec --model {model} {prompt}' — verify against "
+             "your installed CLI's --help",
+    )
+    parser.add_argument(
+        "--runner-instructions-file", default="",
+        help="generic runner + with-skill mode: filename (e.g. AGENTS.md, GEMINI.md) the "
+             "SKILL.md body is written to in each scenario's scratch cwd",
+    )
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s", stream=sys.stderr)
+
+    runner: RunnerSpec = {"kind": args.runner}
+    if args.runner == "generic":
+        if not args.runner_cmd:
+            parser.error("--runner generic requires --runner-cmd")
+        try:
+            build_runner_cmd(args.runner_cmd, "probe", args.model)  # fail fast on a bad template
+        except ValueError as exc:
+            parser.error(str(exc))
+        if args.mode == "with-skill" and not args.runner_instructions_file:
+            parser.error(
+                "--runner generic in with-skill mode requires --runner-instructions-file "
+                "(the CLI's instruction file, e.g. AGENTS.md) — foreign CLIs have no "
+                "--append-system-prompt"
+            )
+        name = args.runner_instructions_file
+        # A bare filename only: it is joined onto each scenario's scratch cwd, where an
+        # absolute path or a ../ segment would write the skill body outside the sandbox
+        # (Path's `/` treats an absolute right-hand side as a replacement — input
+        # validation at the trust boundary, per the skill's own floor).
+        if name and (Path(name).name != name or name in (".", "..")):
+            parser.error(
+                "--runner-instructions-file must be a bare filename (e.g. AGENTS.md), "
+                "not a path"
+            )
+        runner["cmd_template"] = args.runner_cmd
+        runner["instructions_file"] = args.runner_instructions_file
 
     paths = sorted(p for p in SCENARIOS_DIR.glob("*.json") if args.filter in p.name)
     if not paths:
         log.error("no scenarios match filter %r under %s", args.filter, SCENARIOS_DIR)
         return 2
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    out_dir = Path(args.out) if args.out else RESULTS_DIR / f"{stamp}-{args.mode}-{args.model}"
+    # Legacy dir naming is preserved for the default runner; a generic run is tagged so a
+    # foreign-CLI sweep can never be mistaken for (or overwrite) a claude one.
+    runner_tag = "" if args.runner == "claude" else f"-{args.runner}"
+    out_dir = Path(args.out) if args.out else RESULTS_DIR / f"{stamp}-{args.mode}-{args.model}{runner_tag}"
     out_dir.mkdir(parents=True, exist_ok=True)
     system_prompt = build_skill_system_prompt() if args.mode == "with-skill" else None
-    log.info("%d scenario(s) → %s (mode=%s model=%s judge=%s jobs=%d)",
-             len(paths), out_dir, args.mode, args.model, args.judge_model, args.jobs)
+    log.info("%d scenario(s) → %s (mode=%s model=%s runner=%s judge=%s jobs=%d)",
+             len(paths), out_dir, args.mode, args.model, args.runner, args.judge_model, args.jobs)
 
     results: list[ScenarioResult] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
         futures = {
             pool.submit(run_scenario, p, args.mode, args.model, args.judge_model,
-                        args.timeout, system_prompt): p
+                        args.timeout, system_prompt, runner): p
             for p in paths
         }
         for future in concurrent.futures.as_completed(futures):
