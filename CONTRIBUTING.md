@@ -44,7 +44,8 @@ regular collaborators use a branch on the repo. Either way:
    write the changelog entry yourself —
    [release-please](https://github.com/googleapis/release-please) does that from your
    Conventional-Commit PR title: it opens a release PR that bumps the `Version` in `SKILL.md`'s
-   metadata table and prepends the entry to [`CHANGELOG.md`](CHANGELOG.md), which a maintainer then
+   metadata table (and `version`/`date-released` in `CITATION.cff`) and prepends the entry to
+   [`CHANGELOG.md`](CHANGELOG.md), which a maintainer then
    enriches with the curated "what + why" narrative before cutting the signed release (see
    [`MAINTAINERS.md`](MAINTAINERS.md)). So when you change a **discipline**, write a clean
    `feat:`/`fix:` title and describe the *why* in the PR body — that becomes the changelog line.
