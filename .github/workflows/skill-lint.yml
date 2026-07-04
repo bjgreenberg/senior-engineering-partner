@@ -5,8 +5,8 @@ name: skill-lint
 # description limit this repo has tripped over before (CHANGELOG v1.1.0). Stdlib-only Python,
 # so the local run and CI are byte-identical: scripts/skill-lint.py.
 #
-# GREEN-OPTIONAL by design (plan item C7): not in the ruleset's required checks — promotion
-# to required is the maintainer's explicit call, never a default.
+# REQUIRED status check since 2026-07-04 (promoted from green-optional, plan item C7, on the
+# maintainer's explicit call — promotion to required is never a default).
 
 on:
   push:
