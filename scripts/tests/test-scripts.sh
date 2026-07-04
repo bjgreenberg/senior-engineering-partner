@@ -8,10 +8,11 @@
 # exact failure mode C6 names for leakage-guard) goes red here instead of shipping.
 #
 # Scope: leakage-guard.sh (Tier 1 — the generic class-patterns; the Tier-2 .local file is
-# per-machine and deliberately untested here) and skill-lint.py. render-diagrams.sh is NOT
-# fixture-tested here: it needs the docker mermaid-cli image, and the docs-render CI job
-# already exercises both its pass path (every committed diagram) and its fail path was proven
-# at introduction; a docker pull in this quick suite would slow every run for little signal.
+# per-machine and deliberately untested here) and skill-lint.py. render-diagrams.sh and
+# validate-citation.sh are NOT fixture-tested here: they need their docker images
+# (mermaid-cli / cffconvert), and their CI jobs (docs-render / citation-validate) already
+# exercise the pass path on every run while each fail path was proven at introduction; a
+# docker pull in this quick suite would slow every run for little signal.
 #
 # Runs on stock bash 3.2 (no mapfile/associative arrays). No network, no docker.
 # Usage: scripts/tests/test-scripts.sh   (exit 0 = all pass)

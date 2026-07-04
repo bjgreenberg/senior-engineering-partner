@@ -1,0 +1,31 @@
+# CITATION.cff — citation metadata for this repository (Citation File Format 1.2.0,
+# https://citation-file-format.github.io/). GitHub renders it as the "Cite this repository"
+# button; the Zenodo-GitHub integration reads it when a release is published.
+#
+# `version` and `date-released` are bumped by release-please via the inline annotations —
+# never hand-edit them (a drifting citation version is the same stale-claim failure as a
+# hardcoded badge). Validated by scripts/validate-citation.sh (the citation-validate gate).
+cff-version: 1.2.0
+message: "If you use this skill or its engineering disciplines in your work, please cite it as below."
+type: software
+title: "senior-engineering-partner"
+abstract: >-
+  A Claude Code skill: a strict code reviewer, pair programmer, debugger, and mentor for
+  Python, Bash, Google Apps Script, and JavaScript. It encodes a security-first, phase-aware
+  engineering discipline — and an enforced spec → plan → TDD → verify workflow — as reusable
+  instructions for AI-assisted software development.
+authors:
+  - family-names: "Greenberg"
+    given-names: "Brian"
+    website: "https://briangreenberg.net"
+license: Apache-2.0
+repository-code: "https://github.com/bjgreenberg/senior-engineering-partner"
+url: "https://github.com/bjgreenberg/senior-engineering-partner"
+keywords:
+  - claude-code
+  - agent-skills
+  - code-review
+  - software-engineering
+  - secure-development
+version: 1.14.0 # x-release-please-version
+date-released: "2026-07-04" # x-release-please-date

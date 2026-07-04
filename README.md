@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-03 07:04 PM CDT
+Last updated: 2026-07-03 09:01 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -83,7 +83,7 @@ flowchart TD
     U["/senior-engineering-partner"] --> C
     C["SKILL.md — universal core<br/>modes · epistemic discipline · engineering workflow · rigor ladder<br/>security floor · coding standards · toolchain triggers"]
     C -->|"progressive disclosure: read a reference only when relevant"| R[(references/)]
-    C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · run-evals · skill-lint · self-review · fixture tests)<br/>evals/ (regression scenarios)"]
+    C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · validate-citation · run-evals · skill-lint · self-review · fixture tests)<br/>evals/ (regression scenarios)"]
     R --> P["Environment profile<br/>my-environment.md (swap to re-home the skill)"]
     R --> W["Engineering process (4)<br/>engineering-workflow · debugging · audit-report-format · standards-authoring"]
     R --> S["Security, privacy and compliance (6)"]
@@ -210,7 +210,8 @@ support directories:
 
 - **`scripts/`** — the utility scripts the disciplines reference, shipped so they're
   *executed*, not regenerated: `audit.sh` (manifest-level dependency-audit gate),
-  `render-diagrams.sh` (the `docs-render` Mermaid render-check), `run-evals.py` (the
+  `render-diagrams.sh` (the `docs-render` Mermaid render-check), `validate-citation.sh`
+  (the `citation-validate` CFF schema check), `run-evals.py` (the
   eval-suite runner — below), and `self-review.md` (the verify-before-done checklist).
   Pin `render-diagrams.sh`'s `MMDC_IMAGE` to a digest before relying on it.
 - **`evals/`** — a regression suite. Each `scenarios/*.json` encodes a real miss from the
@@ -307,6 +308,7 @@ environment-specific claim**, so the more complete it is, the more grounded the 
 - **Versioning + releases are automated** with
   [release-please](https://github.com/googleapis/release-please): it reads the Conventional
   Commits on `main`, opens a release PR that bumps the `Version` in `SKILL.md`'s metadata table
+  (and `version`/`date-released` in [`CITATION.cff`](CITATION.cff))
   and prepends the entry to [`CHANGELOG.md`](CHANGELOG.md). A maintainer enriches that entry's
   narrative, then cuts the **signed** tag + GitHub Release — the repo's `tag-protection` ruleset
   requires signed tags, so that final step is a deliberate manual one (see
@@ -328,6 +330,22 @@ environment-specific claim**, so the more complete it is, the more grounded the 
   the universal core universal; anything specific belongs in your (un-committed) `my-environment.md`.
 - **Add or extend an `evals/` scenario** whenever you add a load-bearing rule — a lesson
   without a guarding eval can silently regress.
+
+## Citing this repository
+
+The repo ships a [`CITATION.cff`](CITATION.cff)
+([Citation File Format](https://citation-file-format.github.io/) 1.2.0), so GitHub shows a
+**Cite this repository** button (APA/BibTeX) and the
+[Zenodo–GitHub integration](https://help.zenodo.org/docs/github/describe-software/citation-file/)
+can populate a DOI record from it on release. Two rules keep it honest — the same
+stale-claim discipline as the badge row:
+
+- **`version` and `date-released` are bumped by release-please, never by hand** — the
+  `x-release-please-version` / `x-release-please-date` annotations in the file mark the
+  lines it rewrites in each release PR (the same mechanism as `SKILL.md`'s version stamp).
+- **The file is schema-validated as a gate**: `scripts/validate-citation.sh` (digest-pinned
+  `cffconvert` container) runs verbatim locally and as the green-optional
+  `citation-validate` CI check.
 
 ## License
 

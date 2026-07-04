@@ -8,7 +8,8 @@
       "changelog-path": "CHANGELOG.md",
       "skip-github-release": true,
       "extra-files": [
-        "SKILL.md"
+        "SKILL.md",
+        "CITATION.cff"
       ]
     }
   }

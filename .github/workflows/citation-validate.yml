@@ -1,0 +1,31 @@
+name: citation-validate
+
+# Validate CITATION.cff against the Citation File Format schema, via
+# scripts/validate-citation.sh (digest-pinned cffconvert container — the same script a
+# maintainer runs locally). An invalid citation file silently breaks GitHub's "Cite this
+# repository" button and the Zenodo release integration — a broken deliverable, like a
+# failing test. It also guards the release-please in-place bumps of version/date-released
+# (x-release-please annotations in CITATION.cff): a bump that breaks the schema fails here,
+# not on a reader's citation.
+#
+# GREEN-OPTIONAL by design: not in the ruleset's required checks — promotion to required is
+# the maintainer's explicit call, never a default.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  citation-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Validate CITATION.cff
+        run: |
+          set -euo pipefail
+          bash scripts/validate-citation.sh CITATION.cff
