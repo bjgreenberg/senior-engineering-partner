@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.15.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.14.0...v1.15.0) (2026-07-04)
+
+
+### Features
+
+* add CITATION.cff with a validation gate, release-please auto-bump, and the discipline in the skill core ([#73](https://github.com/bjgreenberg/senior-engineering-partner/issues/73)) ([b99b624](https://github.com/bjgreenberg/senior-engineering-partner/commit/b99b624c57301573a06b0ef48f8a73dd2c2c6cf6))
+
 ## [1.14.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.13.0...v1.14.0) (2026-07-04)
 
 ### Features
