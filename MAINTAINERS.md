@@ -35,6 +35,16 @@ bumps the `Version` in [`SKILL.md`](SKILL.md) (and `version`/`date-released` in
 `tag-protection` ruleset requires **signed** tags, and a bot tagging via the API produces an
 *unsigned* tag the ruleset would reject — so a maintainer cuts the signed tag and Release by hand.
 
+> **Reviewing the release PR — watch the `extra-files` diff.** release-please scans **every
+> line** of an `extra-files` doc (`SKILL.md`, `CITATION.cff`) for its `x-release-please-*`
+> marker and bumps the first semver on any line that carries one. So a line that merely
+> *quotes* a complete marker as documentation gets its semver rewritten too — the v1.15.0
+> release did exactly this, silently changing a "CFF 1.2.0" spec reference to "CFF 1.15.0"
+> (corrected by the follow-up fix, which ships as the v1.15.1 patch). The release PR's
+> `SKILL.md`/`CITATION.cff` diff should only ever touch
+> the intended version stamp; any *other* changed line is this bug — reject and fix the prose
+> to name the marker family (`x-release-please`), not the literal complete tokens.
+
 1. **Enrich the changelog.** In the open release PR, edit the new `CHANGELOG.md` section to add the
    curated "what + **why**" narrative (the prose this skill values), then mark the PR ready.
 2. **Merge the release PR.** Because release-please authored it with `GITHUB_TOKEN`, the
