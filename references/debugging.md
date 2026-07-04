@@ -31,6 +31,7 @@ You cannot fix what you cannot reproduce, and you cannot prove a fix against a b
 
 - **Halve the problem repeatedly.** Is the bad value already wrong when it enters this function, or does this function corrupt it? Each answer eliminates half the code path. Binary search beats linear scanning.
 - **Use the tools that collapse the space:** `git bisect` to find the introducing commit (then read *that* diff — the bug is usually in it); a debugger/breakpoint or a logged correlation id (`observability-and-incident-response.md`) to watch state flow; comment-out / feature-flag to confirm which layer owns the fault.
+- **Prefer `git grep` for a tree-wide search:** it is fast, respects tracked files, and needs no path-list plumbing (no `--include` glob to mis-quote) — the shape of search that produces the false-negative "verified absent" the epistemic discipline warns about (SKILL.md).
 - **Check your assumptions explicitly.** The bug is most often in the thing you were *sure* was correct — the "obviously fine" config, the library you trust, the value you "know" is set. Verify it rather than skipping past it.
 
 ### 4. Fix the root cause — and prove it

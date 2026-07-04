@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-04 11:49 AM CDT
+Last updated: 2026-07-04 04:47 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -286,7 +286,7 @@ What stays Claude-specific, disclosed: the eval runner's **judge** drives the `c
 (scenario responses are pluggable — `scripts/run-evals.py --runner generic` runs the same
 suite through any agent CLI via a command template + its instruction file; see *Cross-CLI
 runs* in `evals/README.md`); the repo's CI gates are GitHub Actions; and how reliably a
-given model *follows* ~90 KB of discipline varies **by model** — the recorded baselines in
+given model *follows* ~80 KB of discipline varies **by model** — the recorded baselines in
 [`evals/baselines/`](evals/baselines/) measure it per swept Claude model (each records its
 own baseline-vs-with-skill gap), and this README makes no equivalent claim for any model
 the suite hasn't swept.
