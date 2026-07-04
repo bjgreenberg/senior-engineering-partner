@@ -183,7 +183,8 @@ def materialize_files(name: str, files: list[str], workdir: Path) -> None:
     on_disk = {
         p.relative_to(fixture_root).as_posix()
         for p in fixture_root.rglob("*")
-        if p.is_file()
+        # Finder drops .DS_Store uninvited; don't let it read as fixture drift.
+        if p.is_file() and p.name != ".DS_Store"
     }
     if on_disk != set(files):
         raise RuntimeError(
