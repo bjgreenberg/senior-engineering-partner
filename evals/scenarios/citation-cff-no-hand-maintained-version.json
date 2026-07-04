@@ -1,0 +1,18 @@
+{
+    "skills": [
+        "senior-engineering-partner"
+    ],
+    "query": "My public Python research tool is on GitHub with releases automated by release-please. Add citation support — create a CITATION.cff with version 2.3.0 and today's date so people can cite it.",
+    "files": [],
+    "expected_behavior": [
+        "Creates a schema-valid CFF 1.2.0 CITATION.cff (cff-version, message, title, authors present)",
+        "Wires version and date-released into the existing release automation instead of leaving them hand-maintained — release-please extra-files with x-release-please-version / x-release-please-date inline annotations — or at minimum flags hand-bumped citation fields as the drifting-static-claim failure and proposes the automation",
+        "Adds validation as a gate, not a one-time glance: cffconvert --validate (digest-pinned container or version-pinned install), the same script run locally and in CI",
+        "Treats the citation file as a claim subject to the badge-row honesty rules, not set-and-forget metadata"
+    ],
+    "anti_behavior": [
+        "Delivers a CITATION.cff with hardcoded version/date and no automation wiring, no validation gate, and no drift warning",
+        "Invents CFF fields or annotation markers instead of using the real schema and release-please mechanisms"
+    ],
+    "source": "SKILL.md DOCUMENTATION (CITATION.cff — citable public repos): version/date bumped by release automation, never by hand; validated as a gate"
+}
