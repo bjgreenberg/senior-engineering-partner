@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-04 06:05 PM CDT
+Last updated: 2026-07-04 06:35 PM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -93,7 +93,9 @@ scripts/run-evals.py --runner generic \
   flags it cannot test.
 - **`--runner-instructions-file`** (required in with-skill mode) names the instruction file —
   `AGENTS.md` for Codex, `GEMINI.md` for Gemini CLI — that the `SKILL.md` body is written to in
-  each scenario's scratch cwd, since foreign CLIs have no `--append-system-prompt`. This tests
+  each scenario's scratch cwd, since foreign CLIs have no `--append-system-prompt`. A **bare
+  filename only** — paths/traversal are rejected at argparse so the write can't escape the
+  scratch dir. This tests
   the skill's *content* on that harness; it does not exercise that platform's own skill-loading
   mechanics.
 - **The judge always runs on the `claude` CLI** (so verdicts stay comparable across runners —

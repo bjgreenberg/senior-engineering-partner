@@ -39,7 +39,9 @@ Usage examples:
       --runner-cmd 'codex exec --model {model} {prompt}' \\
       --runner-instructions-file AGENTS.md                 # cross-CLI sweep (verify flags!)
 
-Results land under evals/results/<UTC-stamp>-<mode>-<model>/ (git-ignored): one JSON per
+Results land under evals/results/<UTC-stamp>-<mode>-<model>/ — a non-claude runner appends
+its tag (…-<model>-generic) so foreign-CLI sweeps can't be mistaken for claude ones
+(git-ignored): one JSON per
 scenario plus summary.md / summary.json. Curate a run worth keeping into evals/baselines/.
 """
 
@@ -176,8 +178,10 @@ def build_runner_cmd(template: str, prompt: str, model: str) -> list[str]:
 def run_generic(
     prompt: str, model: str, timeout: int, cwd: Path, cmd_template: str
 ) -> tuple[str, float | None]:
-    """One headless run through a foreign agent CLI; response = raw stdout. No cost data —
-    there is no cross-CLI cost envelope to parse, so cost_usd is honestly None."""
+    """One headless run through a foreign agent CLI; response = stdout, faithful except a
+    single trailing newline (a full strip would eat code indentation and make cross-runner
+    transcripts non-faithful). No cost data — there is no cross-CLI cost envelope to parse,
+    so cost_usd is honestly None."""
     cmd = build_runner_cmd(cmd_template, prompt, model)
     proc = subprocess.run(
         cmd, capture_output=True, text=True, timeout=timeout, cwd=cwd, check=False
@@ -186,7 +190,7 @@ def run_generic(
         raise RuntimeError(
             f"{cmd[0]} exited {proc.returncode}: {proc.stderr.strip()[:500]}"
         )
-    return proc.stdout.strip(), None
+    return proc.stdout.removesuffix("\n"), None
 
 
 def run_scenario_prompt(
@@ -367,6 +371,16 @@ def main() -> int:
                 "--runner generic in with-skill mode requires --runner-instructions-file "
                 "(the CLI's instruction file, e.g. AGENTS.md) — foreign CLIs have no "
                 "--append-system-prompt"
+            )
+        name = args.runner_instructions_file
+        # A bare filename only: it is joined onto each scenario's scratch cwd, where an
+        # absolute path or a ../ segment would write the skill body outside the sandbox
+        # (Path's `/` treats an absolute right-hand side as a replacement — input
+        # validation at the trust boundary, per the skill's own floor).
+        if name and (Path(name).name != name or name in (".", "..")):
+            parser.error(
+                "--runner-instructions-file must be a bare filename (e.g. AGENTS.md), "
+                "not a path"
             )
         runner["cmd_template"] = args.runner_cmd
         runner["instructions_file"] = args.runner_instructions_file

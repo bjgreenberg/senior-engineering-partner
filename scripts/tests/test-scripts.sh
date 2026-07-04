@@ -145,6 +145,12 @@ check "run-evals FAILS fast: --runner-cmd missing {prompt}" 2 "$rc"
 rc=0; python3 "$repo_root/scripts/run-evals.py" --runner generic --runner-cmd 'x {prompt}' \
   --mode with-skill --filter zz >/dev/null 2>&1 || rc=$?
 check "run-evals FAILS fast: generic with-skill without --runner-instructions-file" 2 "$rc"
+rc=0; python3 "$repo_root/scripts/run-evals.py" --runner generic --runner-cmd 'x {prompt}' \
+  --mode with-skill --runner-instructions-file '../escape.md' --filter zz >/dev/null 2>&1 || rc=$?
+check "run-evals FAILS fast: --runner-instructions-file with a traversal path" 2 "$rc"
+rc=0; python3 "$repo_root/scripts/run-evals.py" --runner generic --runner-cmd 'x {prompt}' \
+  --mode with-skill --runner-instructions-file '/tmp/abs.md' --filter zz >/dev/null 2>&1 || rc=$?
+check "run-evals FAILS fast: --runner-instructions-file with an absolute path" 2 "$rc"
 
 # --- the real repo passes its own gates (precondition assert, not print — §3c) --------------
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$repo_root/SKILL.md" >/dev/null 2>&1 || rc=$?
