@@ -79,7 +79,11 @@ run, so a user-level install can't auto-activate and contaminate either mode):
 Scenario runs in **both** modes are granted `Bash,Edit,Write` (the judge gets no tool grants) —
 headless `claude -p` denies those tools by default, which silently converted every
 act-on-the-workspace expectation into "described a plan, did nothing." Scenario `query`s are
-first-party fixtures, and each run's cwd is a throwaway temp dir.
+first-party fixtures, and each run's cwd is a throwaway temp dir. The judge receives
+**harness-collected workspace evidence** for every scenario (unified diffs vs the fixtures, new
+files in full, "edited nothing" when untouched): a tool-granted model does the work in the
+workspace and its prose under-credits it, so judging the response text alone misgrades exactly
+the behaviors the fixtures exist to test.
 
 Results land in `evals/results/<UTC-stamp>-<mode>-<model>/` (git-ignored): one JSON per
 scenario plus `summary.md`/`summary.json`. Curate a run worth keeping (e.g. the pre-edit

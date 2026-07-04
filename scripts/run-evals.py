@@ -314,15 +314,17 @@ def run_scenario(
     try:
         with tempfile.TemporaryDirectory(prefix=f"eval-{name}-") as tmp:
             workdir = Path(tmp)
-            evidence: str | None = None
             if scenario.get("files"):
                 materialize_files(name, scenario["files"], workdir)
             response, cost = run_claude(
                 scenario["query"], model, timeout, workdir, system_prompt,
                 allowed_tools=SCENARIO_ALLOWED_TOOLS,
             )
-            if scenario.get("files"):
-                evidence = collect_workspace_evidence(name, scenario["files"], workdir)
+            # Every scenario gets workspace evidence — a tool-granted model can act in an
+            # empty workspace too, and "edited nothing" is itself gradeable information.
+            evidence = collect_workspace_evidence(
+                name, list(scenario.get("files", [])), workdir
+            )
             judgment = judge_response(
                 scenario, response, judge_model, timeout, workdir, evidence
             )
@@ -335,9 +337,8 @@ def run_scenario(
             judge_reason=str(judgment.get("reason", "")),
             response=response,
             cost_usd=cost,
+            workspace_evidence=evidence,
         )
-        if evidence is not None:
-            result["workspace_evidence"] = evidence
     except (RuntimeError, subprocess.TimeoutExpired, json.JSONDecodeError, OSError) as exc:
         result["error"] = f"{type(exc).__name__}: {exc}"
         log.error("[%s] %s", name, result["error"])
