@@ -17,6 +17,21 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.14.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.13.0...v1.14.0) (2026-07-04)
+
+### Features
+
+* **B2 coverage complete — the three disclosed gaps are closed.** ([#66](https://github.com/bjgreenberg/senior-engineering-partner/pull/66), [#69](https://github.com/bjgreenberg/senior-engineering-partner/pull/69), [#70](https://github.com/bjgreenberg/senior-engineering-partner/pull/70))
+  * **RAG + a prompt-injection worked example** ([#66](https://github.com/bjgreenberg/senior-engineering-partner/pull/66)): `llm-apps.md` gains §7 — RAG as rung 1 of the escalation ladder, not an agent pattern (escalate into retrieval only past in-context limits; pin the embedding model — a silent swap invalidates the index; eval the retriever separately from the generator; the index is a derived cache whose **erasure reaches the vector store**). `secure-data-processing.md` gains the **two-zone structural fence** worked example in §2 (zone membership decided by who *controls* the text; planted-delimiter neutralization; an embedded directive is **reported as a finding, never obeyed**; residuals named) and a new §4 — **the vector store is a tenant-data store** (an app-side filter after similarity search is not a boundary; per-tenant namespaces flatten document ACLs; a seeded poisoned-corpus test proves the fence on the *retrieval* path; the embedding call is an egress). The OWASP LLM Top-10 mapping was made honest along the way: LLM08 is mapped *scoped to the slices actually covered* with named residuals, LLM09 (Misinformation) gets a real mapping to §7's grounding controls, and the old "LLM07/LLM09 bite when you fine-tune" claim — which was factually wrong — is corrected.
+  * **Bash gets its deep reference** ([#69](https://github.com/bjgreenberg/senior-engineering-partner/pull/69)): `references/bash-scripting.md` — where `set -e` *doesn't* fire (condition contexts; the `local x=$(cmd)` masking), cleanup/atomic-output/locks **with corrected trap semantics** (bash fires `EXIT` on fatal INT/TERM already; a bare `trap cleanup INT TERM` lets a killed script report success — every claim empirically verified on stock bash 3.2.57), `curl -f`, the stock-macOS-3.2 portability floor, and BATS with the source-guard pattern. Load-bearing claims were probe-tested, not asserted.
+  * **Frontend testing** ([#70](https://github.com/bjgreenberg/senior-engineering-partner/pull/70)): folded into `testing.md` as §8 (the domain stayed coherent — no new file): query by role/label, **contract-pinned network-boundary mocks** (the §1 consumer-mock rule where it bites hardest), thin critical-path E2E, browser flakiness under the zero-tolerance policy, the two floor behaviors as tests (inert render; preserved input), the axe + manual a11y gate, and snapshot discipline. The pre-merge checklist gains two UI lines.
+  * Every slice shipped with its SKILL.md trigger + eval scenario per house doctrine — the suite grows 40 → **44**, and all four new scenarios proof-ran PASS (opus + opus judge).
+
+### Chores
+
+* **Phase-4 smalls** ([#71](https://github.com/bjgreenberg/senior-engineering-partner/pull/71)): a quarterly **mermaid-cli re-pin cadence** in MAINTAINERS.md; **fixture regression tests for the shipped gate scripts** (`scripts/tests/test-scripts.sh` — the guard must FAIL on a planted violation and PASS clean, per testing.md §3c); and a **green-optional `skill-lint`** (`scripts/skill-lint.py` + workflow) validating the Agent-Skills packaging incl. the 1024-char description limit — with a Copilot-review catch folded: block-scalar descriptions can no longer bypass the length check (regression fixture added). Neither new CI job is required — promotion is the maintainer's call.
+* `scripts/run-evals.py` is executable ([#65](https://github.com/bjgreenberg/senior-engineering-partner/pull/65)) — the mode-644/exit-126 gotcha is dead.
+
 ## [1.13.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.12.0...v1.13.0) (2026-07-03)
 
 The Phase-3 portability pass (audit finding B1): the universal core no longer bakes the
