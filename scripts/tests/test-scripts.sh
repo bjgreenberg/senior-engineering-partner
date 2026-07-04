@@ -110,6 +110,42 @@ mkdir -p "$blockdir"
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$blockdir/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint FAILS on an oversize block-scalar description (bypass closed)" 1 "$rc"
 
+# --- run-evals.py runner plumbing (offline: pure logic + argparse fail-fast; no model runs) --
+# build_runner_cmd is the injection boundary for --runner generic: placeholders substitute
+# AFTER shell-style tokenization, so a hostile prompt must stay ONE argv token.
+rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+cmd = m.build_runner_cmd("codex exec --model {model} {prompt}", 'a b; rm -rf $(x) "q"', "m1")
+assert cmd == ["codex", "exec", "--model", "m1", 'a b; rm -rf $(x) "q"'], cmd
+assert m.build_runner_cmd("mycli --system 'be brief' {prompt}", "hi", "m") == \
+    ["mycli", "--system", "be brief", "hi"]
+PYEOF
+check "run-evals build_runner_cmd keeps a hostile prompt one argv token" 0 "$rc"
+
+rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+try:
+    m.build_runner_cmd("codex exec --model {model}", "p", "m")
+except ValueError:
+    sys.exit(0)
+sys.exit(1)
+PYEOF
+check "run-evals build_runner_cmd REJECTS a template without {prompt}" 0 "$rc"
+
+# The generic runner's misuse paths must fail fast at argparse (exit 2), before any run.
+rc=0; python3 "$repo_root/scripts/run-evals.py" --runner generic --filter zz >/dev/null 2>&1 || rc=$?
+check "run-evals FAILS fast: --runner generic without --runner-cmd" 2 "$rc"
+rc=0; python3 "$repo_root/scripts/run-evals.py" --runner generic --runner-cmd 'x --model {model}' \
+  --filter zz >/dev/null 2>&1 || rc=$?
+check "run-evals FAILS fast: --runner-cmd missing {prompt}" 2 "$rc"
+rc=0; python3 "$repo_root/scripts/run-evals.py" --runner generic --runner-cmd 'x {prompt}' \
+  --mode with-skill --filter zz >/dev/null 2>&1 || rc=$?
+check "run-evals FAILS fast: generic with-skill without --runner-instructions-file" 2 "$rc"
+
 # --- the real repo passes its own gates (precondition assert, not print — §3c) --------------
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$repo_root/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint PASSES the real SKILL.md" 0 "$rc"

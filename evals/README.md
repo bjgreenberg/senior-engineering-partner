@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-02 10:17 PM CDT
+Last updated: 2026-07-04 11:49 AM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -72,6 +72,37 @@ Results land in `evals/results/<UTC-stamp>-<mode>-<model>/` (git-ignored): one J
 scenario plus `summary.md`/`summary.json`. Curate a run worth keeping (e.g. the pre-edit
 baseline before a large `SKILL.md` restructuring) into `evals/baselines/`. Exit code is `0`
 only when every scenario passes, so the runner can gate.
+
+### Cross-CLI runs (`--runner generic`)
+
+The **scenario runner is pluggable; the judge is not.** `--runner generic` produces each
+scenario's response through any other agent CLI (Codex, Gemini CLI, …) so the same suite can
+measure the skill's content on a non-Claude harness:
+
+```bash
+scripts/run-evals.py --runner generic \
+  --runner-cmd 'codex exec --model {model} {prompt}' \
+  --runner-instructions-file AGENTS.md \
+  --model <that-cli's-model-name>
+```
+
+- **`--runner-cmd`** is a shell-style template; `{prompt}`/`{model}` are substituted **after**
+  tokenization, so a hostile prompt stays one argv token (no shell, no injection). The response
+  is the command's raw stdout. **Verify the template against your installed CLI's `--help`
+  first** — flags drift across versions, and this repo deliberately hardcodes no foreign-CLI
+  flags it cannot test.
+- **`--runner-instructions-file`** (required in with-skill mode) names the instruction file —
+  `AGENTS.md` for Codex, `GEMINI.md` for Gemini CLI — that the `SKILL.md` body is written to in
+  each scenario's scratch cwd, since foreign CLIs have no `--append-system-prompt`. This tests
+  the skill's *content* on that harness; it does not exercise that platform's own skill-loading
+  mechanics.
+- **The judge always runs on the `claude` CLI** (so verdicts stay comparable across runners —
+  one grading instrument); `claude` must still be on PATH. Judge-model bias toward its own
+  family is an uncontrolled variable — note it when comparing cross-vendor numbers.
+- Output dirs gain a `-generic` tag so a foreign-CLI sweep can't be mistaken for a claude one.
+  A `pass`/`fail` from a generic sweep grades the *response text* only — a CLI that emits
+  progress noise into stdout will read worse than it is; check a transcript before trusting a
+  surprising number.
 
 ## Recorded baselines (`baselines/`)
 
