@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-02 10:17 PM CDT
+Last updated: 2026-07-04 05:00 PM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -36,6 +36,14 @@ the matching scenario catches it instead of a production incident re-teaching th
 `expected_behavior`); they make the "never do this again" framing explicit and trace each scenario to its
 origin.
 
+**`files` — fixture workspaces.** A scenario whose query demands work on real code (an edit, a
+red-first regression test, a doc sweep) lists workspace-relative paths in `files`; the runner
+materializes each from `evals/fixtures/<scenario>/<path>` into the scratch cwd before the run.
+Without a fixture, an act-on-the-workspace scenario doesn't test its discipline at all — the model
+(correctly, per the skill's own never-fabricate floor) refuses to invent code against an empty
+directory, and the judge grades the refusal. The runner fails loudly on manifest/fixture-dir drift:
+every listed file must exist under the fixture dir, and every fixture file must be listed.
+
 > **Note on the `source` version tokens.** Some `source` fields cite internal pre-release revisions
 > (e.g. `v4.0`, `v5.4`) that predate the public `v1.0.0` release and intentionally do **not** appear in
 > the SKILL.md changelog — treat them as provenance notes, not resolvable versions.
@@ -67,6 +75,11 @@ run, so a user-level install can't auto-activate and contaminate either mode):
   with the skill's base directory pinned so read-on-demand references still resolve.
 - **`--mode baseline`** runs the bare model. The baseline-vs-with-skill gap is what the skill
   must close (Anthropic: measure the baseline before writing/justifying content).
+
+Scenario runs in **both** modes are granted `Bash,Edit,Write` (the judge gets no tool grants) —
+headless `claude -p` denies those tools by default, which silently converted every
+act-on-the-workspace expectation into "described a plan, did nothing." Scenario `query`s are
+first-party fixtures, and each run's cwd is a throwaway temp dir.
 
 Results land in `evals/results/<UTC-stamp>-<mode>-<model>/` (git-ignored): one JSON per
 scenario plus `summary.md`/`summary.json`. Curate a run worth keeping (e.g. the pre-edit

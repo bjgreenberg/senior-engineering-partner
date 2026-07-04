@@ -15,6 +15,11 @@ Two run modes:
                       BOTH modes so a user-level skill install cannot auto-activate and
                       contaminate either run.
 
+A scenario may declare ``files``: workspace-relative paths materialized from
+``evals/fixtures/<scenario>/`` into the scratch cwd before the run, so a scenario can
+demand real edits against real code instead of grading a refusal to fabricate. Scenario
+runs (both modes) are granted ``Bash,Edit,Write``; the judge gets no tool grants.
+
 Requires: the ``claude`` CLI on PATH, authenticated. No API key and no third-party deps
 (stdlib only) — the runner rides the existing CLI auth.
 
@@ -46,6 +51,13 @@ log = logging.getLogger("run-evals")
 SKILL_DIR = Path(__file__).resolve().parent.parent
 SCENARIOS_DIR = SKILL_DIR / "evals" / "scenarios"
 RESULTS_DIR = SKILL_DIR / "evals" / "results"
+FIXTURES_DIR = SKILL_DIR / "evals" / "fixtures"
+
+# Tools granted to SCENARIO runs only (never the judge): a scenario whose expected_behavior
+# demands real edits or a test seen to fail red needs Write/Edit/Bash — headless `claude -p`
+# denies them by default, which made every act-on-the-workspace scenario grade as "described
+# a plan, did nothing." The Skill tool stays disallowed in both modes regardless.
+SCENARIO_ALLOWED_TOOLS = "Bash,Edit,Write"
 
 
 class Scenario(TypedDict, total=False):
@@ -103,6 +115,7 @@ def run_claude(
     timeout: int,
     cwd: Path,
     system_prompt: str | None = None,
+    allowed_tools: str | None = None,
 ) -> tuple[str, float | None]:
     """One headless claude run; returns (response_text, cost_usd). Raises on failure."""
     cmd = [
@@ -118,6 +131,8 @@ def run_claude(
         "--disallowedTools",
         "Skill",
     ]
+    if allowed_tools is not None:
+        cmd += ["--allowedTools", allowed_tools]
     if system_prompt is not None:
         cmd += ["--append-system-prompt", system_prompt]
     proc = subprocess.run(
@@ -143,6 +158,38 @@ Return ONLY a JSON object (no markdown fence, no prose) with this exact shape:
   "reason": "<one-sentence overall summary>"
 }
 Include every expected_behavior and every anti_behavior item exactly once, in order."""
+
+
+def materialize_files(name: str, files: list[str], workdir: Path) -> None:
+    """Copy a scenario's fixture tree into the scratch workspace.
+
+    Each ``files`` entry is a workspace-relative path, sourced from
+    ``evals/fixtures/<scenario>/<path>`` — the JSON manifest documents the workspace
+    layout and the fixture dir mirrors it. Fails loudly on an unsafe path, a missing
+    fixture, or manifest/fixture-dir drift (a fixture file nobody lists, or a listed
+    file that doesn't exist, would silently change what the scenario tests).
+    """
+    fixture_root = FIXTURES_DIR / name
+    for rel in files:
+        rel_path = Path(rel)
+        if rel_path.is_absolute() or ".." in rel_path.parts:
+            raise RuntimeError(f"unsafe fixture path {rel!r} in scenario {name}")
+        src = fixture_root / rel_path
+        if not src.is_file():
+            raise RuntimeError(f"fixture missing for scenario {name}: {src}")
+        dst = workdir / rel_path
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_bytes(src.read_bytes())
+    on_disk = {
+        p.relative_to(fixture_root).as_posix()
+        for p in fixture_root.rglob("*")
+        if p.is_file()
+    }
+    if on_disk != set(files):
+        raise RuntimeError(
+            f"fixture drift for scenario {name}: on disk but unlisted "
+            f"{sorted(on_disk - set(files))}, listed but missing {sorted(set(files) - on_disk)}"
+        )
 
 
 def judge_response(
@@ -192,13 +239,13 @@ def run_scenario(
         "status": "error",
     }
     try:
-        if scenario.get("files"):
-            # No scenario ships files today; fail loudly rather than half-support it.
-            raise RuntimeError("scenario declares 'files' — materialization not implemented")
         with tempfile.TemporaryDirectory(prefix=f"eval-{name}-") as tmp:
             workdir = Path(tmp)
+            if scenario.get("files"):
+                materialize_files(name, scenario["files"], workdir)
             response, cost = run_claude(
-                scenario["query"], model, timeout, workdir, system_prompt
+                scenario["query"], model, timeout, workdir, system_prompt,
+                allowed_tools=SCENARIO_ALLOWED_TOOLS,
             )
             judgment = judge_response(scenario, response, judge_model, timeout, workdir)
         expected = list(judgment.get("expected", []))

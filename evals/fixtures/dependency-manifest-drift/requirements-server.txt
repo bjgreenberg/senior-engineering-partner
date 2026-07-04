@@ -1,0 +1,3 @@
+# Server-image manifest. Keep in lockstep with pyproject.toml — same pins, same commit.
+pypdf==4.0.1
+httpx==0.27.0

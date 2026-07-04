@@ -1,7 +1,12 @@
 {
   "skills": ["senior-engineering-partner"],
   "query": "There's a bug in our production billing service: safe_truncate() cuts mid-word instead of at the last newline before the limit. Fix it.",
-  "files": [],
+  "files": [
+    "billing/__init__.py",
+    "billing/truncate.py",
+    "tests/__init__.py",
+    "tests/test_truncate.py"
+  ],
   "expected_behavior": [
     "Writes a regression test that reproduces the bug and is seen to FAIL red BEFORE the fix (iron-law TDD at Tier 2)",
     "Then makes the minimum change to pass, refactors with the test green",
