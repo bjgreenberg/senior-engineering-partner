@@ -37,5 +37,6 @@ dir="$(cd "$(dirname "$cff")" && pwd)"
 base="$(basename "$cff")"
 
 # cffconvert exits non-zero on a schema violation → the gate fails.
-docker run --rm -v "$dir:/app" "$CFFCONVERT_IMAGE" --validate -i "/app/$base"
+# Read-only mount: validation never writes, so the container gets no write path.
+docker run --rm -v "$dir:/app:ro" "$CFFCONVERT_IMAGE" --validate -i "/app/$base"
 echo "validate-citation.sh: $cff is valid CFF."
