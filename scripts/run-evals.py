@@ -209,6 +209,7 @@ def _run_cli(cmd: list[str], timeout: int, cwd: Path, label: str = "claude") -> 
     """
     proc = subprocess.Popen(
         cmd,
+        stdin=subprocess.DEVNULL,  # a CLI polling the terminal would SIGTTIN-stop here
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -224,7 +225,9 @@ def _run_cli(cmd: list[str], timeout: int, cwd: Path, label: str = "claude") -> 
         else:
             # Non-POSIX has no setsid process groups — best-effort direct kill.
             proc.kill()
-        proc.wait()
+        # Drain the pipes after the kill (docs pattern) so FDs don't linger to GC.
+        with contextlib.suppress(Exception):
+            proc.communicate()
         raise
     if proc.returncode != 0:
         raise RuntimeError(f"{label} exited {proc.returncode}: {stderr.strip()[:500]}")
@@ -290,7 +293,7 @@ def run_scenario_claude(
     if system_prompt is not None:
         cmd += ["--append-system-prompt", system_prompt]
     stdout = _run_cli(cmd, timeout, cwd)
-    response, cost, saw_success = "", None, False
+    response, cost, saw_success, subtype = "", None, False, ""
     trail: list[str] = []
     for line in stdout.splitlines():
         line = line.strip()
@@ -324,11 +327,14 @@ def run_scenario_claude(
                     if text:
                         trail.append(f"  -> {text[:TRAIL_RESULT_CHARS]}")
         elif etype == "result":
-            saw_success = event.get("subtype") == "success"
+            subtype = str(event.get("subtype", ""))
+            saw_success = subtype == "success"
             response = str(event.get("result", ""))
             cost = event.get("total_cost_usd")
     if not saw_success:
-        raise RuntimeError("scenario run produced no successful result event")
+        raise RuntimeError(
+            f"scenario run result subtype={subtype or 'missing'} (no successful result event)"
+        )
     trail_text = "\n".join(trail)
     raw = trail_text.encode("utf-8")
     if len(raw) > TRAIL_LIMIT_BYTES:
@@ -447,19 +453,35 @@ def materialize_files(name: str, files: list[str], workdir: Path) -> None:
         )
 
 
-def check_fixture_manifests() -> list[str]:
+def check_fixture_manifests(reserved_filenames: frozenset[str] = frozenset()) -> list[str]:
     """Suite-level fixture/manifest cross-check; returns problems (empty = clean).
 
-    Runs against ALL scenarios regardless of --filter: the dangerous drift is a fixture
-    dir whose scenario forgot (or mistyped) its ``files`` list — that scenario would
-    silently run against an empty workspace, grading a refusal again, which is exactly
-    the failure the fixtures exist to kill.
+    Runs against ALL scenarios regardless of --filter, on every invocation. Dir level:
+    the dangerous drift is a fixture dir whose scenario forgot (or mistyped) its
+    ``files`` list — that scenario would silently run against an empty workspace,
+    grading a refusal again, which is exactly the failure the fixtures exist to kill.
+    File level: the scanner-neutrality suffix and listed↔on-disk drift are enforced
+    here too — an unsuffixed manifest is a scanner-visible harm on disk in the repo
+    whether or not its owning scenario ever runs. ``reserved_filenames`` (the generic
+    runner's instructions file) must not appear in any ``files`` list — the harness
+    would overwrite the fixture.
     """
     problems: list[str] = []
     declared: dict[str, list[str]] = {}
     for path in SCENARIOS_DIR.glob("*.json"):
-        scenario: Scenario = json.loads(path.read_text(encoding="utf-8"))
+        try:
+            scenario: Scenario = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as exc:
+            problems.append(f"scenario {path.name} is unreadable/malformed: {exc}")
+            continue
         declared[path.stem] = list(scenario.get("files") or [])
+        for rel in declared[path.stem]:
+            if rel in reserved_filenames:
+                problems.append(
+                    f"scenario {path.stem} lists {rel!r}, which collides with the "
+                    f"generic runner's --runner-instructions-file (the harness would "
+                    f"overwrite the fixture)"
+                )
     fixture_dirs = (
         {d.name for d in FIXTURES_DIR.iterdir() if d.is_dir()}
         if FIXTURES_DIR.is_dir()
@@ -474,6 +496,29 @@ def check_fixture_manifests() -> list[str]:
     for stem, files in sorted(declared.items()):
         if files and stem not in fixture_dirs:
             problems.append(f"scenario {stem} declares files but has no fixture dir")
+    for dirname in sorted(fixture_dirs):
+        files = declared.get(dirname) or []
+        if not files:
+            continue  # already reported as an orphan above
+        root = FIXTURES_DIR / dirname
+        on_disk: set[str] = set()
+        for path in root.rglob("*"):
+            if not path.is_file() or path.name == ".DS_Store":
+                continue
+            rel_disk = path.relative_to(root).as_posix()
+            if not rel_disk.endswith(FIXTURE_SUFFIX):
+                problems.append(
+                    f"fixture file missing the {FIXTURE_SUFFIX} suffix "
+                    f"(scanner-neutrality rule): {path}"
+                )
+                continue
+            on_disk.add(rel_disk[: -len(FIXTURE_SUFFIX)])
+        missing = sorted(set(files) - on_disk)
+        unlisted = sorted(on_disk - set(files))
+        if missing:
+            problems.append(f"scenario {dirname}: listed but missing on disk: {missing}")
+        if unlisted:
+            problems.append(f"scenario {dirname}: on disk but unlisted: {unlisted}")
     return problems
 
 
@@ -500,18 +545,26 @@ def collect_workspace_evidence(
     new_files: list[str] = []
     listed = set(files)
     seen: set[str] = set()
-    entries = sorted(
-        p
-        for p in workdir.rglob("*")
-        if (p.is_file() or p.is_symlink())
-        and not any(seg in SKIP_DIRS for seg in p.relative_to(workdir).parts)
-        and p.name != ".DS_Store"
-    )
-    for path in entries:
-        rel = path.relative_to(workdir).as_posix()
+    entries: list[tuple[str, Path]] = []
+    for candidate in sorted(workdir.rglob("*")):
+        if not (candidate.is_file() or candidate.is_symlink()):
+            continue
+        rel_parts = candidate.relative_to(workdir).parts
+        rel_candidate = "/".join(rel_parts)
+        # SKIP_DIRS filters tool-artifact DIRECTORIES only — never a listed fixture file
+        # and never a plain file that happens to share a name (a new file named `build`
+        # is evidence; a listed `build/gen.py` must not read as DELETED).
+        if rel_candidate not in listed and (
+            any(seg in SKIP_DIRS for seg in rel_parts[:-1])
+            or candidate.name == ".DS_Store"
+        ):
+            continue
+        entries.append((rel_candidate, candidate))
+    for rel, path in entries:
+        # Mark seen BEFORE the exclude skip: an excluded file must never read as DELETED.
+        seen.add(rel)
         if rel in exclude:
             continue
-        seen.add(rel)
         if path.is_symlink():
             # Never follow: a symlink could pull arbitrary host files into the judge prompt.
             new_files.append(f"### SYMLINK {rel} -> {os.readlink(path)} (not followed)")
@@ -532,16 +585,19 @@ def collect_workspace_evidence(
                 continue
             if text == before:
                 continue
-            diffs.append(
-                "".join(
-                    difflib.unified_diff(
-                        before.splitlines(keepends=True),
-                        text.splitlines(keepends=True),
-                        fromfile=f"a/{rel}",
-                        tofile=f"b/{rel}",
-                    )
+            diff_text = "".join(
+                difflib.unified_diff(
+                    before.splitlines(keepends=True),
+                    text.splitlines(keepends=True),
+                    fromfile=f"a/{rel}",
+                    tofile=f"b/{rel}",
                 )
             )
+            # Per-file cap on diffs too — one wholesale rewrite must not evict the other
+            # listed files' diffs that the expected behaviors grade on.
+            if len(diff_text) > NEW_FILE_CAP_CHARS:
+                diff_text = diff_text[:NEW_FILE_CAP_CHARS] + "\n… (diff truncated)"
+            diffs.append(diff_text)
         else:
             body = (
                 text
@@ -557,10 +613,20 @@ def collect_workspace_evidence(
     return evidence
 
 
-def _neutralize(text: str, tag: str) -> str:
-    """Defang a planted closing tag inside model-authored text embedded in the judge
-    prompt, so it can't forge the block boundary (kept visible for the judge)."""
-    return re.sub(rf"<(\s*/\s*{tag}\s*)>", r"‹\1›", text, flags=re.IGNORECASE)
+_EMBED_TAGS = ("workspace_changes", "tool_trail", "response")
+
+
+def _neutralize(text: str) -> str:
+    """Defang ANY open/close of the judge-prompt block tags inside model-authored text —
+    a planted close could forge a block boundary, and a planted complete
+    ``<response>…</response>`` could fake the graded response — kept visible for the
+    judge (the ‹›-bracketed form)."""
+    return re.sub(
+        rf"<(\s*/?\s*(?:{'|'.join(_EMBED_TAGS)})\b[^>]*)>",
+        r"‹\1›",
+        text,
+        flags=re.IGNORECASE,
+    )
 
 
 def judge_response(
@@ -591,7 +657,7 @@ def judge_response(
             "\n\n## Workspace changes made by the assistant (harness-collected)\n"
             f"{header} Treat these edits as actions the assistant actually performed, even "
             "where the prose response does not restate them.\n"
-            f"<workspace_changes>\n{_neutralize(workspace_evidence, 'workspace_changes')}\n</workspace_changes>"
+            f"<workspace_changes>\n{_neutralize(workspace_evidence)}\n</workspace_changes>"
         )
     elif has_fixture:
         sections += (
@@ -603,7 +669,7 @@ def judge_response(
             "\n\n## Ordered tool-call trail (harness-collected)\n"
             "Commands and edits in execution order, with truncated outputs — use this for "
             "ORDER properties (e.g. a test run seen failing BEFORE the fix was applied).\n"
-            f"<tool_trail>\n{_neutralize(tool_trail, 'tool_trail')}\n</tool_trail>"
+            f"<tool_trail>\n{_neutralize(tool_trail)}\n</tool_trail>"
         )
     prompt = (
         f"{JUDGE_INSTRUCTIONS}\n\n"
@@ -611,7 +677,7 @@ def judge_response(
         f"## expected_behavior checklist\n{json.dumps(scenario.get('expected_behavior', []), indent=1)}\n\n"
         f"## anti_behavior checklist\n{json.dumps(scenario.get('anti_behavior', []), indent=1)}"
         f"{sections}\n\n"
-        f"## The assistant's response to grade\n<response>\n{_neutralize(response, 'response')}\n</response>"
+        f"## The assistant's response to grade\n<response>\n{_neutralize(response)}\n</response>"
     )
     raw, _cost = run_claude(prompt, judge_model, timeout, cwd)
     # Defensive extraction: the judge is told "JSON only," but don't trust it blindly.
@@ -668,9 +734,15 @@ def run_scenario(
             # empty workspace too, and "edited nothing" is itself gradeable information.
             # The generic runner's harness-written instructions file is excluded: it is
             # not the assistant's work and its body would consume the evidence budget.
+            # Only when the harness actually wrote it (with-skill) — in baseline mode a
+            # CLI that creates the same filename did real work that must stay visible.
             harness_files = frozenset(
                 {runner["instructions_file"]}
-                if runner.get("kind") == "generic" and runner.get("instructions_file")
+                if (
+                    runner.get("kind") == "generic"
+                    and runner.get("instructions_file")
+                    and system_prompt is not None
+                )
                 else ()
             )
             evidence = collect_workspace_evidence(
@@ -688,6 +760,15 @@ def run_scenario(
             )
         expected = list(judgment.get("expected", []))
         anti = list(judgment.get("anti", []))
+        want_expected = len(scenario.get("expected_behavior") or [])
+        want_anti = len(scenario.get("anti_behavior") or [])
+        if len(expected) != want_expected or len(anti) != want_anti:
+            # A judge that drops items would otherwise yield a vacuous "pass" (all() on
+            # an empty list is True) — refuse the verdict loudly instead.
+            raise RuntimeError(
+                f"judge returned {len(expected)}/{want_expected} expected and "
+                f"{len(anti)}/{want_anti} anti items — refusing a vacuous verdict"
+            )
         result.update(
             status=overall_status(expected, anti),
             expected=expected,
@@ -781,7 +862,11 @@ def main() -> int:
         runner["cmd_template"] = args.runner_cmd
         runner["instructions_file"] = args.runner_instructions_file
 
-    problems = check_fixture_manifests()
+    problems = check_fixture_manifests(
+        frozenset({runner["instructions_file"]})
+        if runner.get("instructions_file")
+        else frozenset()
+    )
     if problems:
         for problem in problems:
             log.error("fixture/manifest drift: %s", problem)

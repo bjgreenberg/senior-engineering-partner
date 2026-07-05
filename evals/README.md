@@ -54,11 +54,14 @@ honest:
   would read them as *this repo's own* manifests and flood the alert wall the repo keeps at
   zero. For the same reason `evals/fixtures/**` is exempt from the repo's quality gates by
   design: fixtures are scenario *inputs*, sometimes deliberately imperfect, not shipped code.
-- **Drift fails loudly, at two levels.** Per scenario: every listed file must exist under the
-  fixture dir and every fixture file must be listed. Per suite (checked at startup, regardless
-  of `--filter`): every fixture dir must belong to a scenario that declares a non-empty `files`
-  list, and vice versa — otherwise a forgotten/mistyped `files` list would silently put that
-  scenario back to grading inaction against an empty workspace.
+- **Drift fails loudly, at two levels.** Per scenario run: every listed file must exist under
+  the fixture dir and every fixture file must be listed. Per suite (checked at startup on
+  every invocation, regardless of `--filter`): every fixture dir must belong to a scenario
+  that declares a non-empty `files` list and vice versa — otherwise a forgotten/mistyped
+  `files` list would silently put that scenario back to grading inaction against an empty
+  workspace — **and** the suffix + listed↔on-disk rules are enforced file-by-file across
+  every fixture dir, because an unsuffixed manifest is a scanner-visible harm on disk whether
+  or not its owning scenario ever runs.
 
 ## How to run
 
@@ -148,7 +151,10 @@ scripts/run-evals.py --runner generic \
   **no tool-call trail** (there is no cross-CLI transcript envelope to parse — order
   properties like red-first grade from the response and final diffs only, a disclosed
   degradation) and **no tool grants from this runner** — the foreign CLI's own permission
-  model governs what it may execute; configure that in the `--runner-cmd` template.
+  model governs what it may execute; configure that in the `--runner-cmd` template. The
+  harness-written instructions file is excluded from workspace evidence in with-skill mode
+  (it is not the assistant's work), and no scenario may list that filename as a fixture —
+  the startup check rejects the collision.
 
 ## Recorded baselines (`baselines/`)
 
