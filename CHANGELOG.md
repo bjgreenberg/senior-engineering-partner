@@ -19,6 +19,13 @@ in your own `references/my-environment.md`.
 
 ## [1.16.2](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.16.1...v1.16.2) (2026-07-05)
 
+The Claude-A loop's honest close on the one standing eval residual: the core render-check
+mandate gains the reference's genuinely-tool-less fallback (do the static pass, name the
+unrun check — never skip silently), and the stale-diagram scenario now grades the silent
+skip as a hard fail (a new anti-behavior) with the render item evidence-anchored. Shipped
+with a disclosed negative result: six with-skill samples across three content states show
+the model never renders or names — a durable enforcement gap now measured precisely, not a
+regression. Details in [#83](https://github.com/bjgreenberg/senior-engineering-partner/pull/83).
 
 ### Bug Fixes
 
