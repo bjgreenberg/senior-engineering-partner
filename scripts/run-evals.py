@@ -218,8 +218,12 @@ def _run_cli(cmd: list[str], timeout: int, cwd: Path, label: str = "claude") -> 
     try:
         stdout, stderr = proc.communicate(timeout=timeout)
     except subprocess.TimeoutExpired:
-        with contextlib.suppress(ProcessLookupError, PermissionError):
-            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        if os.name == "posix":
+            with contextlib.suppress(ProcessLookupError, PermissionError):
+                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        else:
+            # Non-POSIX has no setsid process groups — best-effort direct kill.
+            proc.kill()
         proc.wait()
         raise
     if proc.returncode != 0:
@@ -422,6 +426,8 @@ def materialize_files(name: str, files: list[str], workdir: Path) -> None:
         dst = workdir / rel_path
         dst.parent.mkdir(parents=True, exist_ok=True)
         dst.write_bytes(src.read_bytes())
+        # Preserve the executable bit — a fixture script (audit.sh) must stay runnable.
+        dst.chmod(src.stat().st_mode & 0o777)
     on_disk: set[str] = set()
     for path in fixture_root.rglob("*"):
         # Finder drops .DS_Store uninvited; don't let it read as fixture drift.
@@ -472,7 +478,11 @@ def check_fixture_manifests() -> list[str]:
 
 
 def collect_workspace_evidence(
-    name: str, files: list[str], workdir: Path, limit_bytes: int = EVIDENCE_LIMIT_BYTES
+    name: str,
+    files: list[str],
+    workdir: Path,
+    limit_bytes: int = EVIDENCE_LIMIT_BYTES,
+    exclude: frozenset[str] = frozenset(),
 ) -> str:
     """Diff the post-run workspace against the fixtures so the judge grades real edits.
 
@@ -481,7 +491,9 @@ def collect_workspace_evidence(
     fixtures exist to sharpen (e.g. a behavior-stating test *name* that only exists in the
     written test file). Listed-fixture diffs are emitted FIRST (tool-artifact noise can
     never truncate them away), then deletions, then new files (per-file capped). The total
-    is capped at ``limit_bytes`` UTF-8 bytes. Returns "" when nothing changed.
+    is capped at ``limit_bytes`` UTF-8 bytes. ``exclude`` names harness-written files (the
+    generic runner's instructions file) that must not read as "created by the assistant" —
+    or eat the budget with the SKILL.md body. Returns "" when nothing changed.
     """
     fixture_root = FIXTURES_DIR / name
     diffs: list[str] = []
@@ -497,6 +509,8 @@ def collect_workspace_evidence(
     )
     for path in entries:
         rel = path.relative_to(workdir).as_posix()
+        if rel in exclude:
+            continue
         seen.add(rel)
         if path.is_symlink():
             # Never follow: a symlink could pull arbitrary host files into the judge prompt.
@@ -652,7 +666,16 @@ def run_scenario(
             )
             # Every scenario gets workspace evidence — a tool-granted model can act in an
             # empty workspace too, and "edited nothing" is itself gradeable information.
-            evidence = collect_workspace_evidence(name, files, workdir)
+            # The generic runner's harness-written instructions file is excluded: it is
+            # not the assistant's work and its body would consume the evidence budget.
+            harness_files = frozenset(
+                {runner["instructions_file"]}
+                if runner.get("kind") == "generic" and runner.get("instructions_file")
+                else ()
+            )
+            evidence = collect_workspace_evidence(
+                name, files, workdir, exclude=harness_files
+            )
             judgment = judge_response(
                 scenario,
                 response,
