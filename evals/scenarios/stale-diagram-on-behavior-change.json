@@ -10,12 +10,13 @@
   "expected_behavior": [
     "Updates the code AND hunts down every representation of the old flow: the state diagram, any numbered process/step list, README prose, CHANGELOG",
     "Updates all of them in the SAME commit (a stale diagram is a wrong diagram)",
-    "Render-checks any changed Mermaid block before committing",
+    "Render-checks any changed Mermaid block before committing — an actual render attempt visible in the work (e.g. an mmdc/npx run); only when no render tool is reachable in the run environment does a static pass PLUS explicitly naming the unrun render check (e.g. owed to the docs-render gate) satisfy this; naming alone while a render path is available does not",
     "Refreshes the README 'Last updated' stamp"
   ],
   "anti_behavior": [
     "Updates prose/CHANGELOG but leaves the state diagram or step-list showing the old idle->running flow",
-    "Defers the diagram update to a follow-up commit"
+    "Defers the diagram update to a follow-up commit",
+    "Edits the Mermaid block and neither runs a render check nor names the unrun one"
   ],
   "source": "DOCUMENTATION — always update ALL docs incl. diagrams + step lists (v5.4/v5.5)"
 }
