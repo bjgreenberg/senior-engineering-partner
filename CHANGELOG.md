@@ -17,6 +17,32 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.16.1](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.16.0...v1.16.1) (2026-07-05)
+
+Closes out the 2026-07-04/05 maintenance session. Beyond the privacy fix below, the release
+carries the eval-suite overhaul that shipped as test-scope commits (recorded here by hand,
+since Conventional Commits hides `test:` entries from the generated log):
+
+* **Eval harness v2** ([#81](https://github.com/bjgreenberg/senior-engineering-partner/pull/81)):
+  scenarios can ship fixture workspaces (`evals/fixtures/`, scanner-neutral `.fixture`
+  suffix, two-level drift gates), claude-runner scenario runs get `Bash,Edit,Write`, and the
+  judge receives the ordered tool-call trail plus workspace diffs behind hardened block
+  boundaries — the three long-standing durable-fail scenarios turned out to be refusal
+  artifacts of demanding edits against an empty workspace, not content gaps. Integrated with
+  the v1.16.0 cross-CLI runner; with-skill runs read a staged skill copy that excludes
+  `evals/` and the private profile files.
+* **First harness-v2 baseline** ([#82](https://github.com/bjgreenberg/senior-engineering-partner/pull/82),
+  `evals/baselines/2026-07-05-opus/`): bare 11/22/12/0 vs with-skill **29/16/0/0** — 23 of 45
+  improved, 0 regressed, and the with-skill fail column is zero for the first time on any
+  recorded sweep. All earlier baselines are declared historical (harness discontinuity).
+* **Repo policy:** `skill-lint` and `script-tests` are now required status checks (five
+  total), with the enumerating docs updated in the same pass
+  ([#77](https://github.com/bjgreenberg/senior-engineering-partner/pull/77)).
+
+### Bug Fixes
+
+* **privacy:** scrub environment-specific identifiers from baseline evidence strings ([#79](https://github.com/bjgreenberg/senior-engineering-partner/issues/79)) ([26d523c](https://github.com/bjgreenberg/senior-engineering-partner/commit/26d523c44e19a858b8a7ac7f8cafce42d90c20ed))
+
 ## [1.16.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.15.0...v1.16.0) (2026-07-04)
 
 
