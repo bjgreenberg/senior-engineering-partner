@@ -348,8 +348,8 @@ stale-claim discipline as the badge row:
   `x-release-please-version` / `x-release-please-date` annotations in the file mark the
   lines it rewrites in each release PR (the same mechanism as `SKILL.md`'s version stamp).
 - **The file is schema-validated as a gate**: `scripts/validate-citation.sh` (digest-pinned
-  `cffconvert` container) runs verbatim locally and as the green-optional
-  `citation-validate` CI check.
+  `cffconvert` container) runs verbatim locally and as the **required** `citation-validate`
+  CI check — an invalid citation file cannot merge.
 
 ## License
 
