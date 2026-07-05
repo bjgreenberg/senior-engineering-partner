@@ -1803,7 +1803,7 @@
     {
      "behavior": "Notes that the secret belongs in a secret manager (e.g. 1Password, the shipped default) and is referenced securely",
      "verdict": "unclear",
-     "evidence": "Says 'or use a proper secrets manager if RHR has one' \u2014 generic mention, not the shipped 1Password default and referenced somewhat as an afterthought"
+     "evidence": "Says 'or use a proper secrets manager if the organization has one' \u2014 generic mention, not the shipped 1Password default and referenced somewhat as an afterthought"
     },
     {
      "behavior": "Never logs the key/URL value at any level",

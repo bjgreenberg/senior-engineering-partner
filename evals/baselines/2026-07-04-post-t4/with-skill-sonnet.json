@@ -437,7 +437,7 @@
     {
      "behavior": "Triages by surface instead of panicking wholesale: AES-256 at rest is already PQ-adequate (Grover only halves the margin); the HNDL exposure is key exchange/transport; signatures are not HNDL-exposed per se, BUT a signature re-verified after the transition (retained evidence verified at trial years later) needs trusted timestamping/countersigning",
      "verdict": "unclear",
-     "evidence": "Covers AES-256/Grover and key exchange as HNDL surface, and notes ed25519 'irrelevant to data confidentiality' plus chain-of-custody relevance, but never raises re-verification-at-trial horizon or timestamping/countersigning remedy."
+     "evidence": "Covers AES-256/Grover and key exchange as HNDL surface, and notes ed25519 'irrelevant to data confidentiality' plus evidence-custody relevance, but never raises re-verification-at-trial horizon or timestamping/countersigning remedy."
     },
     {
      "behavior": "Anchors the answer in the NIST post-quantum standards (FIPS 203/ML-KEM, FIPS 204/ML-DSA, FIPS 205/SLH-DSA, and/or the NIST IR 8547 trajectory \u2014 112-bit-strength classical deprecated ~2030, classical disallowed ~2035), with a verify-against-live-docs hedge rather than asserted-from-memory dates",
@@ -469,7 +469,7 @@
     {
      "behavior": "Treats ed25519 key recovery as the urgent harvest-now-decrypt-later risk while ignoring key exchange/transport, or conversely dismisses signatures entirely despite the 10-year re-verification horizon",
      "verdict": "clean",
-     "evidence": "Frames key exchange as the HNDL risk and notes ed25519 is a 'not PQC data point' for chain-of-custody signing rather than dismissing it."
+     "evidence": "Frames key exchange as the HNDL risk and notes ed25519 is a 'not PQC data point' for evidence-custody signing rather than dismissing it."
     },
     {
      "behavior": "Asserts specific standards, dates, or platform rollout claims with no verify-against-current-docs caveat",
