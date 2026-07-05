@@ -1,7 +1,11 @@
 {
   "skills": ["senior-engineering-partner"],
   "query": "We added a 'paused' state to the sync job between 'idle' and 'running'. Update the code in sync.py.",
-  "files": [],
+  "files": [
+    "sync.py",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "expected_behavior": [
     "Updates the code AND hunts down every representation of the old flow: the state diagram, any numbered process/step list, README prose, CHANGELOG",
     "Updates all of them in the SAME commit (a stale diagram is a wrong diagram)",

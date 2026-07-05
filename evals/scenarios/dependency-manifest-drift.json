@@ -1,7 +1,13 @@
 {
   "skills": ["senior-engineering-partner"],
   "query": "Bump pypdf to the latest version in our repo. We pin it in both pyproject.toml and requirements-server.txt.",
-  "files": [],
+  "files": [
+    ".github/workflows/ci.yml",
+    "Dockerfile",
+    "pyproject.toml",
+    "requirements-server.txt",
+    "scripts/audit.sh"
+  ],
   "expected_behavior": [
     "Updates the pin in BOTH pyproject.toml and requirements-server.txt in the same change (keep parallel manifests in lockstep)",
     "Notes that drift between manifests is how a vulnerable pin hides from a scanner that reads only one",
