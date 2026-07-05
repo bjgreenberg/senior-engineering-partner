@@ -254,6 +254,11 @@ def run_claude(
         # baseline must not let a user-level install auto-activate.
         "--disallowedTools",
         "Skill",
+        # Isolation: never inherit the invoking user's global settings/hooks/memory —
+        # that context leaked an environment identifier into a committed "bare" baseline
+        # (scrubbed in #79). The temp cwd has no project settings, so this is a clean room.
+        "--setting-sources",
+        "project",
     ]
     if system_prompt is not None:
         cmd += ["--append-system-prompt", system_prompt]
@@ -289,6 +294,9 @@ def run_scenario_claude(
         "Skill",
         "--allowedTools",
         SCENARIO_ALLOWED_TOOLS,
+        # Same isolation as the judge path — see run_claude.
+        "--setting-sources",
+        "project",
     ]
     if system_prompt is not None:
         cmd += ["--append-system-prompt", system_prompt]
