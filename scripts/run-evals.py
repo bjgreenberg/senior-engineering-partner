@@ -685,16 +685,19 @@ def judge_response(
     # that appends prose (or a second object) after its verdict no longer errors the
     # scenario (a greedy first-{-to-last-} span did, reproducibly, on outputs with a
     # stray brace in the trailer).
-    start = raw.find("{")
-    if start == -1:
-        raise RuntimeError(f"judge returned no JSON object: {raw[:300]}")
-    try:
-        parsed, _end = json.JSONDecoder().raw_decode(raw, start)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"judge JSON unparseable: {exc}: {raw[start:start+300]}") from exc
-    if not isinstance(parsed, dict):
-        raise RuntimeError(f"judge returned non-object JSON: {raw[start:start+200]}")
-    return parsed
+    decoder = json.JSONDecoder()
+    idx = raw.find("{")
+    while idx != -1:
+        # Try each '{' until one opens a complete JSON OBJECT — a brace inside prose
+        # preamble (or a non-object literal) just advances the scan.
+        try:
+            candidate, _end = decoder.raw_decode(raw, idx)
+        except json.JSONDecodeError:
+            candidate = None
+        if isinstance(candidate, dict):
+            return candidate
+        idx = raw.find("{", idx + 1)
+    raise RuntimeError(f"judge returned no parseable JSON object: {raw[:300]}")
 
 
 def overall_status(expected: list[ItemJudgment], anti: list[ItemJudgment]) -> str:

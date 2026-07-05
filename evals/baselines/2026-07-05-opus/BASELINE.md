@@ -42,7 +42,7 @@ with-skill fail column is zero for the first time on any recorded sweep.**
 |---|---|---|---|
 | tdd-regression-red-first | partial | **pass** | the old durable fail; red-first now proven in the tool trail |
 | dependency-manifest-drift | partial | **pass** | incl. the image-scan blind-spot item this sweep |
-| stale-diagram-on-behavior-change | partial | partial | every representation updated; the un-named render-check remains the one standing content target |
+| stale-diagram-on-behavior-change | partial | partial | every representation updated; the unnamed render-check remains the one standing content target |
 
 ## Gap table (bare → with-skill)
 
