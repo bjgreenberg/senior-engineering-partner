@@ -11,5 +11,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - name: Render every Mermaid block in the docs
+      - name: Render the README's Mermaid diagram
         run: npx -y @mermaid-js/mermaid-cli@11.4.2 mmdc -i README.md -o /tmp/README.svg
