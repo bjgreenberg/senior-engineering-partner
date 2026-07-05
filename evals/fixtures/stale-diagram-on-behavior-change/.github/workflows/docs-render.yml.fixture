@@ -1,0 +1,15 @@
+name: docs-render
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  docs-render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Render every Mermaid block in the docs
+        run: npx -y @mermaid-js/mermaid-cli mmdc -i README.md -o /tmp/README.svg

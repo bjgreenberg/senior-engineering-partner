@@ -2,6 +2,7 @@
   "skills": ["senior-engineering-partner"],
   "query": "We added a 'paused' state to the sync job between 'idle' and 'running'. Update the code in sync.py.",
   "files": [
+    ".github/workflows/docs-render.yml",
     "sync.py",
     "README.md",
     "CHANGELOG.md"
