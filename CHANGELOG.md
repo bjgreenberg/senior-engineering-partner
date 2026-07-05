@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.16.2](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.16.1...v1.16.2) (2026-07-05)
+
+
+### Bug Fixes
+
+* **skill:** render-check fallback in the core + an honest hard-fail guard on the silent skip ([#83](https://github.com/bjgreenberg/senior-engineering-partner/issues/83)) ([edb3a46](https://github.com/bjgreenberg/senior-engineering-partner/commit/edb3a46af3c8825cb5f7f3b179a52d77c3e2b17c))
+
 ## [1.16.1](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.16.0...v1.16.1) (2026-07-05)
 
 Closes out the 2026-07-04/05 maintenance session. Beyond the privacy fix below, the release
