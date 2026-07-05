@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.16.1](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.16.0...v1.16.1) (2026-07-05)
+
+
+### Bug Fixes
+
+* **privacy:** scrub environment-specific identifiers from baseline evidence strings ([#79](https://github.com/bjgreenberg/senior-engineering-partner/issues/79)) ([26d523c](https://github.com/bjgreenberg/senior-engineering-partner/commit/26d523c44e19a858b8a7ac7f8cafce42d90c20ed))
+
 ## [1.16.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.15.0...v1.16.0) (2026-07-04)
 
 
