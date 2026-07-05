@@ -681,10 +681,19 @@ def judge_response(
     )
     raw, _cost = run_claude(prompt, judge_model, timeout, cwd)
     # Defensive extraction: the judge is told "JSON only," but don't trust it blindly.
-    match = re.search(r"\{.*\}", raw, re.DOTALL)
-    if not match:
+    # raw_decode parses the FIRST complete object and ignores trailing data — a judge
+    # that appends prose (or a second object) after its verdict no longer errors the
+    # scenario (a greedy first-{-to-last-} span did, reproducibly, on outputs with a
+    # stray brace in the trailer).
+    start = raw.find("{")
+    if start == -1:
         raise RuntimeError(f"judge returned no JSON object: {raw[:300]}")
-    parsed: dict[str, Any] = json.loads(match.group(0))
+    try:
+        parsed, _end = json.JSONDecoder().raw_decode(raw, start)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"judge JSON unparseable: {exc}: {raw[start:start+300]}") from exc
+    if not isinstance(parsed, dict):
+        raise RuntimeError(f"judge returned non-object JSON: {raw[start:start+200]}")
     return parsed
 
 
