@@ -283,6 +283,15 @@ for f in /tmp/mmd_*.mmd; do npx -y @mermaid-js/mermaid-cli mmdc -i "$f" -o "${f%
 Wire this into CI for any repo whose docs carry Mermaid, so a diagram that fails to render
 can't merge — exactly the bug this discipline exists to catch.
 
+**No render tool reachable (no `mmdc` and no network to fetch it, no container runtime, no
+preview surface)? Say so — never skip silently.** Headless alone is no excuse — the `mmdc`
+recipe above *is* the headless path. When genuinely tool-less, do the best-effort static pass
+you can (block fences intact, diagram-type keyword valid, brackets/quotes balanced, arrows
+well-formed) and **name the unrun render check** in the commit/PR/handoff — "Mermaid edited;
+render-check still owed to `docs-render`/mmdc" — so the CI gate, not silence, closes the gap.
+A diagram edit delivered without either a render or a named unrun check reads as verified when
+it never was: the *cite uncertainty honestly* rule, applied to diagrams.
+
 **Make `docs-render` a REQUIRED status check** (branch protection / ruleset), not a green-optional
 job. The same logic that gates merges on a failing test applies here: an unrenderable diagram is a
 broken deliverable, the render is cheap (a digest-pinned `mermaid-cli` container, ~tens of seconds,

@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-04 06:35 PM CDT
+Last updated: 2026-07-04 09:31 PM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -40,6 +40,26 @@ origin.
 > (e.g. `v4.0`, `v5.4`) that predate the public `v1.0.0` release and intentionally do **not** appear in
 > the SKILL.md changelog — treat them as provenance notes, not resolvable versions.
 
+**`files` — fixture workspaces.** A scenario whose query demands work on real code (an edit, a
+red-first regression test, a doc sweep) lists workspace-relative paths in `files`; the runner
+materializes each from `evals/fixtures/<scenario>/<path>.fixture` into the scratch cwd (suffix
+stripped) before the run. Without a fixture, an act-on-the-workspace scenario doesn't test its
+discipline at all — the model (correctly, per the skill's own never-fabricate floor) refuses to
+invent code against an empty directory, and the judge grades the refusal. Two rules keep this
+honest:
+
+- **Scanner neutrality: every fixture file on disk carries the `.fixture` suffix** (enforced by
+  the runner). Fixtures deliberately depict imperfect repos — stale drifted pins, an unpinned
+  base image — and under their real names GitHub's dependency graph, Dependabot, and Scorecard
+  would read them as *this repo's own* manifests and flood the alert wall the repo keeps at
+  zero. For the same reason `evals/fixtures/**` is exempt from the repo's quality gates by
+  design: fixtures are scenario *inputs*, sometimes deliberately imperfect, not shipped code.
+- **Drift fails loudly, at two levels.** Per scenario: every listed file must exist under the
+  fixture dir and every fixture file must be listed. Per suite (checked at startup, regardless
+  of `--filter`): every fixture dir must belong to a scenario that declares a non-empty `files`
+  list, and vice versa — otherwise a forgotten/mistyped `files` list would silently put that
+  scenario back to grading inaction against an empty workspace.
+
 ## How to run
 
 **`scripts/run-evals.py` executes the suite.** It needs only the `claude` CLI on PATH
@@ -67,6 +87,25 @@ run, so a user-level install can't auto-activate and contaminate either mode):
   with the skill's base directory pinned so read-on-demand references still resolve.
 - **`--mode baseline`** runs the bare model. The baseline-vs-with-skill gap is what the skill
   must close (Anthropic: measure the baseline before writing/justifying content).
+
+Claude-runner scenario runs in **both** modes are granted `Bash,Edit,Write` (the judge gets no
+tool grants) — headless `claude -p` denies those tools by default, which silently converted
+every act-on-the-workspace expectation into "described a plan, did nothing." **Know what that
+grant means:** a scenario run executes model-chosen shell commands as *your user, with no
+sandbox* — the throwaway temp cwd bounds the default working directory, not what Bash can
+reach. Scenario `query`s are first-party fixtures, but run sweeps only on a machine and account
+you trust with that. With-skill runs read a **staged copy** of the skill tree that excludes
+`evals/` (a run must never be able to read its own grading criteria) and the private,
+uncommitted files.
+
+The judge receives two pieces of **harness-collected evidence** alongside the response text:
+the post-run **workspace evidence** (unified diffs vs the fixtures first, then new files —
+per-file capped, 60 KB total) and, on the claude runner, the **ordered tool-call trail**
+(commands and edits in execution order with truncated outputs) — order properties like
+"regression test seen to fail red *before* the fix" need sequencing, which a final diff can't
+prove. A tool-granted model does the work in the workspace and its prose under-credits it, so
+judging the response text alone misgrades exactly the behaviors the fixtures exist to test.
+Both blocks are boundary-neutralized and the judge is told they are data, never instructions.
 
 Results land in `evals/results/<UTC-stamp>-<mode>-<model>/` (git-ignored): one JSON per
 scenario plus `summary.md`/`summary.json`. Curate a run worth keeping (e.g. the pre-edit
@@ -102,9 +141,14 @@ scripts/run-evals.py --runner generic \
   one grading instrument); `claude` must still be on PATH. Judge-model bias toward its own
   family is an uncontrolled variable — note it when comparing cross-vendor numbers.
 - Output dirs gain a `-generic` tag so a foreign-CLI sweep can't be mistaken for a claude one.
-  A `pass`/`fail` from a generic sweep grades the *response text* only — a CLI that emits
-  progress noise into stdout will read worse than it is; check a transcript before trusting a
-  surprising number.
+  A `pass`/`fail` from a generic sweep grades the *response text plus workspace evidence* —
+  a CLI that emits progress noise into stdout will read worse than it is; check a transcript
+  before trusting a surprising number.
+- Generic runs get fixture materialization and workspace evidence (both runner-agnostic) but
+  **no tool-call trail** (there is no cross-CLI transcript envelope to parse — order
+  properties like red-first grade from the response and final diffs only, a disclosed
+  degradation) and **no tool grants from this runner** — the foreign CLI's own permission
+  model governs what it may execute; configure that in the `--runner-cmd` template.
 
 ## Recorded baselines (`baselines/`)
 
@@ -134,6 +178,13 @@ rules-lossless) was validated against those pre-edit references the same day —
 model traces to lost text; future core edits compare with-skill runs against the post-t4
 record. Superseded:
 [`baselines/2026-07-01-opus/`](baselines/2026-07-01-opus/BASELINE.md) (31 scenarios @ v1.8.0).
+
+> **Harness discontinuity (2026-07-04, the fixture/tool-grant change).** Every baseline above —
+> including the four 2026-07-04 per-model sweeps — was recorded under the prose-only harness
+> (no tool grants, no fixture workspaces, judge sees response text only). Sweeps run after the
+> fixture + tool-grant + evidence-to-the-judge change measure a different thing and are **not
+> comparable** to them. Re-record both modes under the new harness before reading any gap
+> against a recorded baseline.
 
 The loop around the runner is unchanged:
 
