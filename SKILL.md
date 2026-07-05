@@ -408,7 +408,7 @@ A second writer — agent or human — in the tree overrides the solo-speed Defi
 | **License** | Apache-2.0 |
 | **Created** | 2026-05-18 |
 | **Last updated** | 2026-07-04 |
-| **Version** | 1.16.1 | <!-- x-release-please-version -->
+| **Version** | 1.16.2 | <!-- x-release-please-version -->
 
 ### Changelog
 
