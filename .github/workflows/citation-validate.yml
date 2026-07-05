@@ -8,8 +8,8 @@ name: citation-validate
 # (x-release-please annotations in CITATION.cff): a bump that breaks the schema fails here,
 # not on a reader's citation.
 #
-# GREEN-OPTIONAL by design: not in the ruleset's required checks — promotion to required is
-# the maintainer's explicit call, never a default.
+# REQUIRED status check since 2026-07-05 (promoted from green-optional on the maintainer's
+# explicit call — promotion to required is never a default).
 
 on:
   push:
