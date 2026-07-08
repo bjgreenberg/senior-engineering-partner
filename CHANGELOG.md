@@ -19,6 +19,15 @@ in your own `references/my-environment.md`.
 
 ## [1.18.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.17.0...v1.18.0) (2026-07-08)
 
+A navigation discipline, dogfooded from this repo's own README the day it got its
+Contents section: past roughly 10 KB or 8+ sections, a README gains a linked
+`## Contents` after the intro and a back-to-contents link at the foot of every section.
+The load-bearing half is the anchor rule — GitHub's slugger is non-obvious (`&` collapses
+to `--`, a trailing `…` leaves a trailing `-`, backticks and dots vanish), so internal
+links are **validated mechanically** (the canonical `github-slugger` package, or the
+rendered page's own anchors), never hand-computed: a 404 anchor is a broken deliverable
+that no CI gate catches, the same silent-staleness class as a wrong diagram. Guarded by
+the new `readme-toc-anchor-validation` eval scenario (suite 45 → 46).
 
 ### Features
 
