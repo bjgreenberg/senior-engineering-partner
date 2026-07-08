@@ -1,0 +1,29 @@
+{
+  "name": "bjgreenberg",
+  "owner": {
+    "name": "Brian Greenberg"
+  },
+  "description": "Claude Code plugins by Brian Greenberg",
+  "plugins": [
+    {
+      "name": "senior-engineering-partner",
+      "source": "./",
+      "description": "A strict code reviewer, pair programmer, debugger, and mentor for Python, Bash, Google Apps Script, and JavaScript — a security-first, phase-aware engineering discipline with an enforced spec → plan → TDD → verify workflow.",
+      "category": "engineering",
+      "keywords": [
+        "code-review",
+        "security",
+        "tdd",
+        "debugging",
+        "python",
+        "bash"
+      ],
+      "author": {
+        "name": "Brian Greenberg"
+      },
+      "homepage": "https://github.com/bjgreenberg/senior-engineering-partner",
+      "repository": "https://github.com/bjgreenberg/senior-engineering-partner",
+      "license": "Apache-2.0"
+    }
+  ]
+}

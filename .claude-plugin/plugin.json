@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "senior-engineering-partner",
+  "displayName": "Senior Engineering Partner",
+  "description": "A strict code reviewer, pair programmer, debugger, and mentor for Python, Bash, Google Apps Script, and JavaScript — a security-first, phase-aware engineering discipline with an enforced spec → plan → TDD → verify workflow.",
+  "version": "1.16.2",
+  "author": {
+    "name": "Brian Greenberg",
+    "url": "https://briangreenberg.net"
+  },
+  "homepage": "https://github.com/bjgreenberg/senior-engineering-partner",
+  "repository": "https://github.com/bjgreenberg/senior-engineering-partner",
+  "license": "Apache-2.0",
+  "keywords": [
+    "code-review",
+    "security",
+    "tdd",
+    "debugging",
+    "engineering-discipline",
+    "python",
+    "bash",
+    "apps-script",
+    "javascript"
+  ],
+  "skills": ["./"]
+}

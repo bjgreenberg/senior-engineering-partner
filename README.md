@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-04 04:47 PM CDT
+Last updated: 2026-07-07 09:54 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -229,7 +229,33 @@ support directories:
 
 ## Install
 
-Claude Code loads skills from `~/.claude/skills/`. Install by cloning this repo into that
+Two ways into Claude Code — pick **one** (a side-by-side plugin install and skill clone
+would load the skill twice):
+
+### As a plugin (quickest)
+
+The repo doubles as its own single-plugin marketplace
+([`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json)), so two commands
+inside Claude Code install it:
+
+```
+/plugin marketplace add bjgreenberg/senior-engineering-partner
+/plugin install senior-engineering-partner@bjgreenberg
+```
+
+Updates track the versioned
+[Releases](https://github.com/bjgreenberg/senior-engineering-partner/releases): refresh
+with `/plugin marketplace update bjgreenberg` and Claude Code offers the new version.
+**Trade-off:** plugin installs are copied into Claude Code's plugin cache and replaced
+wholesale on every update, so the per-user environment profile
+(`references/my-environment.md`, [next section](#customize-for-your-environment-my-environmentmd))
+cannot persist there — a plugin install always runs the universal core against the assumed
+baseline (macOS, Bash, GitHub, a secret manager, a scale-to-zero cloud target). That is the
+right default for most users; to customize the profile, use the clone install instead.
+
+### As a skill clone (customizable)
+
+Claude Code also loads skills from `~/.claude/skills/`. Clone this repo into that
 directory under the skill's own name:
 
 ```bash
@@ -237,11 +263,12 @@ git clone https://github.com/bjgreenberg/senior-engineering-partner \
   ~/.claude/skills/senior-engineering-partner
 ```
 
-Then **customize it for your environment** (next section) and invoke it with
-`/senior-engineering-partner` (optionally prefixed with a mode trigger word). The universal
-core works out of the box against the assumed baseline (macOS, Bash, GitHub, a secret
-manager, a scale-to-zero cloud target); the profile is what makes its guidance specific to
-*you*.
+Then **customize it for your environment** (next section); update with a plain `git pull`
+in the clone.
+
+Either way, invoke it with `/senior-engineering-partner` (optionally prefixed with a mode
+trigger word). The universal core works out of the box against the assumed baseline; the
+profile is what makes its guidance specific to *you*.
 
 ## Using it with other AI tools (Codex, Gemini CLI, …)
 
