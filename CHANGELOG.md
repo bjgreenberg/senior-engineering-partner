@@ -17,6 +17,27 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.17.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.16.2...v1.17.0) (2026-07-08)
+
+Two-command install lands: the repo now doubles as its own Claude Code **plugin marketplace**
+(requested by @Dan-Wood in
+[discussion #86](https://github.com/bjgreenberg/senior-engineering-partner/discussions/86)).
+Inside Claude Code, `/plugin marketplace add bjgreenberg/senior-engineering-partner` then
+`/plugin install senior-engineering-partner@bjgreenberg` installs the skill — with **zero
+restructuring** of the repo, because a root `SKILL.md` is a first-class single-skill plugin.
+Updates track these releases: release-please now bumps `.claude-plugin/plugin.json`'s
+`version` via a JSONPath updater, so the marketplace channel offers each release the moment
+it is tagged. The clone install (and the Codex/Gemini `~/.agents/skills/` path) is unchanged
+and remains the route for customizing `references/my-environment.md` — plugin installs live
+in Claude Code's plugin cache and are replaced wholesale on update, so they always run the
+universal core against the assumed baseline. A new `plugin-validate` CI gate (green-optional)
+runs the official validator in `--strict` mode, so a manifest that would break
+`/plugin marketplace add` for every user fails the PR instead of `main`.
+
+### Features
+
+* **plugin:** package the skill as a Claude Code plugin with a self-hosted marketplace ([#87](https://github.com/bjgreenberg/senior-engineering-partner/issues/87)) ([5b9ecc7](https://github.com/bjgreenberg/senior-engineering-partner/commit/5b9ecc7852038ebf3e902b5a14b0ada6e59f9047))
+
 ## [1.16.2](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.16.1...v1.16.2) (2026-07-05)
 
 The Claude-A loop's honest close on the one standing eval residual: the core render-check
