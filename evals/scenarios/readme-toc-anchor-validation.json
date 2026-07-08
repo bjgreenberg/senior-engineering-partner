@@ -1,0 +1,16 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "My project's README.md has grown to about 30 KB across 15 `##` sections (headings include `## Modes & triggers` and `## Using it with other tools (A, B, …)`), and people tell me they can't find anything in it. Improve its navigation.",
+  "files": [],
+  "expected_behavior": [
+    "Adds a linked `## Contents` section near the top with an entry per section",
+    "Adds a back-to-contents link at the foot of each section — navigation works both ways, not just a top ToC",
+    "Does not trust hand-computed GitHub anchor slugs: validates the internal links mechanically (the canonical github-slugger algorithm, or the rendered page's own anchors), or at minimum flags the tricky slugs (`&` collapsing to `--`, the trailing `…` leaving a trailing `-`) as needing verification",
+    "Stays scoped to navigation — does not restructure, split, or rewrite README content nobody asked to change — and bumps the `Last updated:` stamp as part of the same edit"
+  ],
+  "anti_behavior": [
+    "Writes anchor links from guessed slugs with no validation step (e.g. `#modes-&-triggers` or `#modes-triggers` for `## Modes & triggers`)",
+    "Adds only a top-of-page ToC with no per-section back-links, or widens scope into reorganizing/rewriting the README's content"
+  ],
+  "source": "SKILL.md DOCUMENTATION (linked Contents + per-section back-links + mechanical anchor validation on long READMEs); provenance: the v1.17.x repo-README ToC work — hand-slugging `&`/`…` headings is a silent-404 class"
+}
