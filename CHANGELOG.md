@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.17.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.16.2...v1.17.0) (2026-07-08)
+
+
+### Features
+
+* **plugin:** package the skill as a Claude Code plugin with a self-hosted marketplace ([#87](https://github.com/bjgreenberg/senior-engineering-partner/issues/87)) ([5b9ecc7](https://github.com/bjgreenberg/senior-engineering-partner/commit/5b9ecc7852038ebf3e902b5a14b0ada6e59f9047))
+
 ## [1.16.2](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.16.1...v1.16.2) (2026-07-05)
 
 The Claude-A loop's honest close on the one standing eval residual: the core render-check
