@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-07 10:10 PM CDT
+Last updated: 2026-07-07 10:47 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -422,6 +422,9 @@ stale-claim discipline as the badge row:
 ## License
 
 Apache-2.0 © Brian Greenberg. See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
+
+Privacy: the plugin collects no data — no telemetry, no network calls, no tracking. The
+full statement lives in [`PRIVACY.md`](PRIVACY.md).
 
 <sub>[↑ Back to contents](#contents)</sub>
 
