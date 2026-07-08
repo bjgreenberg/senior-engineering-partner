@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.18.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.17.0...v1.18.0) (2026-07-08)
+
+
+### Features
+
+* **skill:** linked Contents + back-links + mechanical anchor validation on long READMEs ([#91](https://github.com/bjgreenberg/senior-engineering-partner/issues/91)) ([aa1058b](https://github.com/bjgreenberg/senior-engineering-partner/commit/aa1058b626a37a16533fcdaacc98c36de703bddb))
+
 ## [1.17.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.16.2...v1.17.0) (2026-07-08)
 
 Two-command install lands: the repo now doubles as its own Claude Code **plugin marketplace**

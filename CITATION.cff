@@ -27,5 +27,5 @@ keywords:
   - code-review
   - software-engineering
   - secure-development
-version: 1.17.0 # x-release-please-version
+version: 1.18.0 # x-release-please-version
 date-released: "2026-07-08" # x-release-please-date
