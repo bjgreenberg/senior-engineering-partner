@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-07 09:54 PM CDT
+Last updated: 2026-07-07 10:10 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -29,6 +29,23 @@ any Claude Code session.
 - **Invoke:** `/senior-engineering-partner` in Claude Code, optionally prefixed with a
   mode trigger word (see [Modes](#modes--triggers)).
 
+## Contents
+
+- [What it is](#what-it-is)
+- [What it governs](#what-it-governs)
+- [Architecture](#architecture)
+- [Modes & triggers](#modes--triggers)
+- [The rigor ladder](#the-rigor-ladder)
+- [Reference catalog](#reference-catalog)
+- [Shipped helpers & evals](#shipped-helpers--evals)
+- [Install](#install)
+- [Using it with other AI tools (Codex, Gemini CLI, …)](#using-it-with-other-ai-tools-codex-gemini-cli-)
+- [Customize for your environment (my-environment.md)](#customize-for-your-environment-my-environmentmd)
+- [Maintaining / contributing](#maintaining--contributing)
+- [Citing this repository](#citing-this-repository)
+- [License](#license)
+- [Disclaimer](#disclaimer)
+
 ---
 
 ## What it is
@@ -49,6 +66,8 @@ Three ideas run through everything:
   before building it) → **plan** in verifiable steps → **tier-aware iron-law TDD** →
   **verify-before-done self-review**. Depth scales with the rigor tier; the loop does not.
 
+<sub>[↑ Back to contents](#contents)</sub>
+
 ---
 
 ## What it governs
@@ -67,6 +86,8 @@ carries standards for:
 
 Each binds to a deep, **read-on-demand** reference (see the [catalog](#reference-catalog) below); your
 concrete hosts, projects, and stack live only in the private, un-committed `references/my-environment.md`.
+
+<sub>[↑ Back to contents](#contents)</sub>
 
 ---
 
@@ -99,6 +120,8 @@ trigger paragraph per toolchain). Each trigger paragraph states the non-negotiab
 points at the reference to **read before** doing related work — so the expensive detail
 is loaded only when it earns its place in the context window.
 
+<sub>[↑ Back to contents](#contents)</sub>
+
 ---
 
 ## Modes & triggers
@@ -126,6 +149,8 @@ flowchart TD
 | `DEBUG:` | **Systematic debugger** | Reproduce → hypothesize → isolate/bisect → fix the root cause (not the symptom) → prove with a regression test seen to fail red first. |
 | `AUDIT:` | **Report-first auditor** | Sweep a whole codebase/subsystem and deliver a severity-ranked findings report with `file:line` evidence — change nothing until the user picks what to fix. |
 
+<sub>[↑ Back to contents](#contents)</sub>
+
 ---
 
 ## The rigor ladder
@@ -149,6 +174,8 @@ flowchart LR
 Crossing any promotion trigger (real customer/tenant data, money changing hands,
 multi-tenant isolation, regulated/PII data, a second contributor, public internet
 exposure) re-rates the project up a tier — it is not optional polish.
+
+<sub>[↑ Back to contents](#contents)</sub>
 
 ---
 
@@ -201,6 +228,8 @@ version-specific commands.
 | | `llm-apps.md` | Building software that contains model calls: the five workflow patterns, evaluator-optimizer preconditions, the agent loop (verify every iteration), stopping criteria + cost budgets, RAG as architecture (retriever evals, index as derived cache), evals as the outer loop |
 | | `macos-app-bundles.md` | LaunchAgent `.app` bundles, TCC/FDA, the compiled-launcher requirement |
 
+<sub>[↑ Back to contents](#contents)</sub>
+
 ---
 
 ## Shipped helpers & evals
@@ -224,6 +253,8 @@ support directories:
   (see *How to run* and *Cross-CLI runs* in `evals/README.md`). **Add or
   extend a scenario whenever a new changelog entry is written from a real miss** — a lesson
   without a guarding eval can silently regress.
+
+<sub>[↑ Back to contents](#contents)</sub>
 
 ---
 
@@ -269,6 +300,8 @@ in the clone.
 Either way, invoke it with `/senior-engineering-partner` (optionally prefixed with a mode
 trigger word). The universal core works out of the box against the assumed baseline; the
 profile is what makes its guidance specific to *you*.
+
+<sub>[↑ Back to contents](#contents)</sub>
 
 ## Using it with other AI tools (Codex, Gemini CLI, …)
 
@@ -318,6 +351,8 @@ given model *follows* ~80 KB of discipline varies **by model** — the recorded 
 own baseline-vs-with-skill gap), and this README makes no equivalent claim for any model
 the suite hasn't swept.
 
+<sub>[↑ Back to contents](#contents)</sub>
+
 ## Customize for your environment (`my-environment.md`)
 
 The core is deliberately **stack-agnostic** — it carries no hosts, repos, employer, or
@@ -333,6 +368,8 @@ $EDITOR references/my-environment.md   # fill in your stack/hosts/Git standards/
 you can keep your fork's core in sync with this repo (`git pull`) without ever exposing your
 profile. The core instructs the assistant to **read `my-environment.md` early and for any
 environment-specific claim**, so the more complete it is, the more grounded the guidance.
+
+<sub>[↑ Back to contents](#contents)</sub>
 
 ## Maintaining / contributing
 
@@ -362,6 +399,8 @@ environment-specific claim**, so the more complete it is, the more grounded the 
 - **Add or extend an `evals/` scenario** whenever you add a load-bearing rule — a lesson
   without a guarding eval can silently regress.
 
+<sub>[↑ Back to contents](#contents)</sub>
+
 ## Citing this repository
 
 The repo ships a [`CITATION.cff`](CITATION.cff)
@@ -378,9 +417,13 @@ stale-claim discipline as the badge row:
   `cffconvert` container) runs verbatim locally and as the **required** `citation-validate`
   CI check — an invalid citation file cannot merge.
 
+<sub>[↑ Back to contents](#contents)</sub>
+
 ## License
 
 Apache-2.0 © Brian Greenberg. See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
+
+<sub>[↑ Back to contents](#contents)</sub>
 
 ## Disclaimer
 
@@ -389,3 +432,5 @@ see the *Disclaimer of Warranty* (§7) and *Limitation of Liability* (§8) secti
 [`LICENSE`](LICENSE). It offers **engineering guidance, not professional security, legal, or
 compliance advice**. Review and validate any code, configuration, or security decision it
 influences before relying on it — you are responsible for what you ship.
+
+<sub>[↑ Back to contents](#contents)</sub>
