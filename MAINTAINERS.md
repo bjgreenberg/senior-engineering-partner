@@ -29,8 +29,11 @@ This project is maintained by:
 Releases are **prepared by [release-please](https://github.com/googleapis/release-please) and
 finished by a maintainer.** release-please watches `main`, derives the next version from the
 [Conventional Commits](https://www.conventionalcommits.org/), and keeps an open *release PR* that
-bumps the `Version` in [`SKILL.md`](SKILL.md) (and `version`/`date-released` in
-[`CITATION.cff`](CITATION.cff)) and prepends the new section to
+bumps the `Version` in [`SKILL.md`](SKILL.md) (plus `version`/`date-released` in
+[`CITATION.cff`](CITATION.cff) and `version` in
+[`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) — the latter via a JSONPath
+updater, so the plugin-marketplace install channel offers the update the moment the release
+lands) and prepends the new section to
 [`CHANGELOG.md`](CHANGELOG.md). It deliberately stops there (`skip-github-release: true`): the
 `tag-protection` ruleset requires **signed** tags, and a bot tagging via the API produces an
 *unsigned* tag the ruleset would reject — so a maintainer cuts the signed tag and Release by hand.

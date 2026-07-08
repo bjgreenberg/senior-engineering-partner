@@ -9,7 +9,12 @@
       "skip-github-release": true,
       "extra-files": [
         "SKILL.md",
-        "CITATION.cff"
+        "CITATION.cff",
+        {
+          "type": "json",
+          "path": ".claude-plugin/plugin.json",
+          "jsonpath": "$.version"
+        }
       ]
     }
   }
