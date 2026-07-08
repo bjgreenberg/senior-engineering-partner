@@ -9,16 +9,18 @@ Companion reference for the senior-engineering-partner skill. The **rules** live
 Every log a script or daemon writes **must** have a size/retention cap unless the user explicitly opts out — unbounded logs are a disk-exhaustion and log-noise liability.
 
 - **Location (macOS).** Write logs to `~/Library/Logs/` — the idiomatic macOS location (Console.app reads it; keeps `$HOME` clean). Do not scatter logs in `$HOME` root or invent `~/logs` / XDG-style dirs. One flat file per tool (`~/Library/Logs/<tool>.log`); the plist `StandardOutPath`/`StandardErrorPath` and the script's `$LOG` must agree on that path. Corollary: keep the log path out of any **compiled** launcher — hardcoding it there means a recompile + re-sign + re-grant FDA just to move a file. Do logging in the script the launcher `exec`s, so paths stay editable.
-- **Cap it.** House pattern for shell scripts: keep the most recent N lines at the start of each run (`N=500` is the default house value) —
+- **Cap it — by size, not lines.** House default: **1 MB per log file**. Shell scripts truncate to the most recent bytes at the start of each run —
   ```bash
-  if [[ -f "$LOG" ]]; then
-    tmp=$(mktemp) && tail -n "$LOG_MAX_LINES" "$LOG" > "$tmp" && command mv -f "$tmp" "$LOG" || true
+  readonly LOG_MAX_BYTES=$((1024 * 1024))   # 1 MB house default
+  if [[ -f "$LOG" && $(wc -c < "$LOG") -gt "$LOG_MAX_BYTES" ]]; then
+    tmp=$(mktemp) && tail -c "$LOG_MAX_BYTES" "$LOG" > "$tmp" && command mv -f "$tmp" "$LOG" || true
   fi
   ```
-  For long-lived Python processes, prefer `logging.handlers.RotatingFileHandler(maxBytes=…, backupCount=…)`.
+  (The `wc -c` guard skips the copy while under the cap; `wc -c`/`tail -c` are portable where `stat -f%z` vs `stat -c%s` are not; after a truncation the first line may be partial — cosmetic.) For long-lived Python processes, prefer `logging.handlers.RotatingFileHandler(maxBytes=1_048_576, backupCount=1)`.
+  *Why bytes, not a line count:* both things the cap protects — disk and the incident-evidence window — are byte-denominated, and a line cap fails worst exactly when the log matters most: multi-line tracebacks burn a line-capped window fastest, so an incident evicts its own evidence. A 500-line cap is ~5 hours of history at a 15-minute polling cadence (less during a crash loop); 1 MB is weeks.
 - **The launchd `StandardOutPath`/`StandardErrorPath` gotcha.** launchd holds an open fd to those files for the entire run, so a bare `mv` rotation leaves all subsequent writes going to the stale, unlinked inode (silently lost). Rotate at the very top, THEN rebind your own descriptors so they point at the fresh inode:
   ```bash
-  cap_log "$LOG"            # tail -n N + mv, as above
+  cap_log "$LOG"            # size-guarded tail -c + mv, as above
   exec >> "$LOG" 2>&1       # abandons the stale launchd fd; writes hit the new inode
   ```
 - **Permissions.** Create/keep logs `chmod 600` — they routinely capture hostnames, paths, package names, and occasionally tokens; never world-readable.
