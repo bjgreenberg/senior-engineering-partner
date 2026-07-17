@@ -17,6 +17,36 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.19.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.18.0...v1.19.0) (2026-07-17)
+
+Two disciplines, one origin story — a real fleet miss, caught the same day it cost
+something. Four automations shared two org API keys; when per-app cost attribution was
+asked for, the billing surface had nothing to attribute (cost reporting groups by
+credential scope, and nothing else) — everything billed before the fix is unattributable
+forever. The missing rule is now in the security floor: **one credential per
+app/workload, provisioned at creation**, in its own provider scope named after the app's
+repo (#95). Least-privilege blast radius is the classic half; the non-obvious half is
+that billing, usage reports, rate limits, and audit trails all attach to the credential
+boundary and are **never retroactive** — which makes this a day-one provisioning
+decision, not a later cleanup. It generalizes the per-repo deploy-key rule from git
+transport to every external service.
+
+Then the process that codified that rule became a rule itself: the **skill
+self-improvement loop** (#97) — active, consent-gated. The model running the skill now
+checks at natural closure points (task done, session end, gate failure, human
+correction) whether the session taught something the skill should encode, and when it
+did, *proposes* — never silently edits — the codified rule with its authoring-tests
+wording, guarding eval, and origin story. Consent is structural, not prose: changes ship
+only through branch → gates → PR → a human approval the proposing agent cannot grant
+itself. The loop may add or sharpen rules, never relax them — loosening a discipline is
+human-initiated by definition, so self-improvement can't become a drift vector. Both
+rules land with guarding eval scenarios (suite 46 → 48).
+
+### Features
+
+* **skill:** active, consent-gated self-improvement loop ([#97](https://github.com/bjgreenberg/senior-engineering-partner/issues/97)) ([b521dcc](https://github.com/bjgreenberg/senior-engineering-partner/commit/b521dcc52f2f39fb663f5e7d5f902d99d968cf55))
+* **skill:** one credential per app/workload, provisioned at creation ([#95](https://github.com/bjgreenberg/senior-engineering-partner/issues/95)) ([5cb2aab](https://github.com/bjgreenberg/senior-engineering-partner/commit/5cb2aab0cf49644b9eb8363934b6c55d9113f9de))
+
 ## [1.18.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.17.0...v1.18.0) (2026-07-08)
 
 A navigation discipline, dogfooded from this repo's own README the day it got its
