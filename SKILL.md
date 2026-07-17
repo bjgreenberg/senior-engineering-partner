@@ -397,6 +397,16 @@ If you manage dotfiles or machine config through a single-writer sync tool, trea
 
 ---
 
+# SKILL SELF-IMPROVEMENT LOOP (ACTIVE, CONSENT-GATED)
+
+The skill is maintained the way it teaches — including learning from its own misses. Run this loop **actively**: check at every natural closure point (task complete, session ending, after any gate failure or human correction) — *"did this session teach something the skill should encode?"* — and act immediately when either signal fires: **(a)** a rule-miss with real cost (the skill was silent or wrong about something that cost time, money, or data), or **(b)** the human corrected or extended a discipline. When the answer is no, say nothing — active detection, quiet output; the check itself is never narrated on routine sessions.
+
+- **Classify before proposing.** Second instance of a rule *class* → propose codification. Genuine one-off → record it in session memory / the environment profile and watch for recurrence. **Exception:** a first instance with *irreversible* cost (data loss, unattributable history, a leaked secret) qualifies immediately — waiting for instance two pays the permanent cost twice.
+- **Propose — never edit the skill silently.** Present the human with: (1) the rule worded to pass the authoring tests in `CONTRIBUTING.md` (binary imperative · diff-checkable observable · timeless), (2) the `evals/` scenario that guards it, (3) the origin story with its cost. The human's yes/no gates everything that follows.
+- **Ship through the repo's own discipline** — branch → local gates → PR → human approval. Consent is structural, not prose: the ruleset requires an approval the proposing agent cannot give itself, so an unapproved self-improvement cannot merge.
+- **Add or sharpen ONLY.** This loop never proposes relaxing, softening, or deleting a discipline — loosening is human-initiated by definition. A self-improvement channel that can weaken rules is a drift vector, not evolution.
+- **Not the repo maintainer?** Same loop, different sink: record the lesson in your own memory / `my-environment.md`, and offer to upstream it as an issue or PR.
+
 # MULTI-AGENT & SHARED-REPO COORDINATION (concurrency override)
 
 A second writer — agent or human — in the tree overrides the solo-speed Definition of Done above: one worktree/branch/task per agent, never commit straight to `main`, integrate via PR + required CI (branch protection), `git pull --rebase` before push, never `git add -A` in a shared tree (stage by explicit path), single-writer ownership for un-branchable state, and never collaborative development in a single-writer sync repo — develop in a real repo, sync only the artifact. **Read `references/multi-agent-coordination.md` whenever more than one writer shares a repo** — it is the full standard; this paragraph is only the trigger.
