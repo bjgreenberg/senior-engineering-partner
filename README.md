@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-17 10:59 AM CDT
+Last updated: 2026-07-17 12:14 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -106,7 +106,7 @@ flowchart TD
     C -->|"progressive disclosure: read a reference only when relevant"| R[(references/)]
     C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · validate-citation · run-evals · skill-lint · self-review · fixture tests)<br/>evals/ (regression scenarios)"]
     R --> P["Environment profile<br/>my-environment.md (swap to re-home the skill)"]
-    R --> W["Engineering process (4)<br/>engineering-workflow · debugging · audit-report-format · standards-authoring"]
+    R --> W["Engineering process (5)<br/>engineering-workflow · debugging · audit-report-format · standards-authoring · skill-self-improvement"]
     R --> S["Security, privacy and compliance (6)"]
     R --> T["Testing and QA (2)"]
     R --> I["Cloud, infra and ops (9) + data (2)"]
@@ -191,6 +191,7 @@ version-specific commands.
 | | `debugging.md` | Systematic root-cause method (the `DEBUG:` mode): reproduce → hypothesize → isolate → fix cause → red-first regression test |
 | | `audit-report-format.md` | The `AUDIT:` mode deliverable: a severity-ranked findings report (finding schema, severity taxonomy, mechanize-the-checkable, lead-with-verified-strengths) |
 | | `standards-authoring.md` | Distill sprawling project conventions into a checkable standards set (extract → filter → human-approve → classify floor-vs-overridable); prose-first, format-agnostic |
+| | `skill-self-improvement.md` | The consent-gated loop's full procedure: classify (pattern / one-off / irreversible-cost), the three-part proposal package (rule + guarding eval + origin story), ship-through-PR, never-relax, the non-maintainer path |
 | **Security, privacy & compliance** | `threat-modeling-and-api-design.md` | In-PR STRIDE threat models + attack-surface-shrinking API design |
 | | `secure-data-processing.md` | Hostile-file parsing, prompt-injection fencing (two-zone worked example), RAG/vector-store isolation, multi-tenant data handling |
 | | `frontend-web-security.md` | Token storage, CSP, output sanitization, security headers |
@@ -398,12 +399,14 @@ environment-specific claim**, so the more complete it is, the more grounded the 
   the universal core universal; anything specific belongs in your (un-committed) `my-environment.md`.
 - **Add or extend an `evals/` scenario** whenever you add a load-bearing rule — a lesson
   without a guarding eval can silently regress.
-- **The skill improves itself — with consent.** `SKILL.md` carries an active, consent-gated
-  self-improvement loop: when a session surfaces a rule-miss with real cost or a correction
-  from the human, the model running the skill *proposes* the codified rule (worded to the
-  authoring tests, with its guarding eval and origin story) and ships it only through this
-  repo's normal PR + human-approval flow. It may add or sharpen rules, never relax them —
-  loosening a discipline is human-initiated by definition.
+- **The skill improves itself — with consent.** `SKILL.md` carries the always-loaded trigger
+  of an active, consent-gated self-improvement loop (full procedure:
+  [`references/skill-self-improvement.md`](references/skill-self-improvement.md)): when a
+  session surfaces a rule-miss with real cost or a correction from the human, the model
+  running the skill *proposes* the codified rule (worded to the authoring tests, with its
+  guarding eval and origin story) and ships it only through this repo's normal PR +
+  human-approval flow. It may add or sharpen rules, never relax them — loosening a
+  discipline is human-initiated by definition.
 
 <sub>[↑ Back to contents](#contents)</sub>
 
