@@ -398,6 +398,12 @@ environment-specific claim**, so the more complete it is, the more grounded the 
   the universal core universal; anything specific belongs in your (un-committed) `my-environment.md`.
 - **Add or extend an `evals/` scenario** whenever you add a load-bearing rule — a lesson
   without a guarding eval can silently regress.
+- **The skill improves itself — with consent.** `SKILL.md` carries an active, consent-gated
+  self-improvement loop: when a session surfaces a rule-miss with real cost or a correction
+  from the human, the model running the skill *proposes* the codified rule (worded to the
+  authoring tests, with its guarding eval and origin story) and ships it only through this
+  repo's normal PR + human-approval flow. It may add or sharpen rules, never relax them —
+  loosening a discipline is human-initiated by definition.
 
 <sub>[↑ Back to contents](#contents)</sub>
 
