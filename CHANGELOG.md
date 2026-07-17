@@ -17,6 +17,14 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.19.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.18.0...v1.19.0) (2026-07-17)
+
+
+### Features
+
+* **skill:** active, consent-gated self-improvement loop ([#97](https://github.com/bjgreenberg/senior-engineering-partner/issues/97)) ([b521dcc](https://github.com/bjgreenberg/senior-engineering-partner/commit/b521dcc52f2f39fb663f5e7d5f902d99d968cf55))
+* **skill:** one credential per app/workload, provisioned at creation ([#95](https://github.com/bjgreenberg/senior-engineering-partner/issues/95)) ([5cb2aab](https://github.com/bjgreenberg/senior-engineering-partner/commit/5cb2aab0cf49644b9eb8363934b6c55d9113f9de))
+
 ## [1.18.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.17.0...v1.18.0) (2026-07-08)
 
 A navigation discipline, dogfooded from this repo's own README the day it got its
