@@ -1,0 +1,20 @@
+{
+  "skills": [
+    "senior-engineering-partner"
+  ],
+  "query": "I'm building a small desktop timer app in SwiftUI. It already follows the system light/dark appearance automatically, so theming is covered, right? I'd rather not clutter the settings screen with an appearance option nobody changes.",
+  "files": [],
+  "expected_behavior": [
+    "States that automatic system-following alone does not satisfy the theming rule: the app must also ship a persisted, user-facing THREE-STATE appearance control — System / Light / Dark — defaulting to System, wherever the app has any settings surface",
+    "Rejects a binary light/dark toggle as insufficient because it loses the 'follow the system' state",
+    "Stores the choice as a per-device preference (UserDefaults / localStorage), explicitly NOT in synced or server-side app state — the same user may want different looks per device",
+    "Binds the control to the platform mechanism (macOS NSApp.appearance / SwiftUI preferredColorScheme; web data-theme + prefers-color-scheme fallback), applied at launch before first render"
+  ],
+  "anti_behavior": [
+    "Accepts 'it follows the system automatically' as sufficient theming",
+    "Proposes a two-state light/dark toggle with no way back to following the system",
+    "Puts the appearance choice into synced app state or a server-side profile",
+    "Treats the appearance control as optional clutter to be skipped because few users change it"
+  ],
+  "source": "2026-07-20 Rosso (Pomodoro app): light/dark support existed and followed the system, but the human had to explicitly request the System/Light/Dark override as a feature — the skill was silent on the user-facing control, its three-state shape, and its per-device (never-synced) storage."
+}
