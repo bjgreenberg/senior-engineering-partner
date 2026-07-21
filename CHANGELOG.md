@@ -17,6 +17,14 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.20.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.19.0...v1.20.0) (2026-07-21)
+
+
+### Features
+
+* require a three-state appearance control (System/Light/Dark) on every GUI deliverable ([#100](https://github.com/bjgreenberg/senior-engineering-partner/issues/100)) ([7e10c4d](https://github.com/bjgreenberg/senior-engineering-partner/commit/7e10c4dd94761023fc86d7bc7a7cd1fa70daabd1))
+* **skill:** add Swift & Apple-platform development discipline ([#101](https://github.com/bjgreenberg/senior-engineering-partner/issues/101)) ([4c5516d](https://github.com/bjgreenberg/senior-engineering-partner/commit/4c5516dfa68419a3c40998a0f6fb3a953ac4a325))
+
 ## [1.19.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.18.0...v1.19.0) (2026-07-17)
 
 Two disciplines, one origin story — a real fleet miss, caught the same day it cost
