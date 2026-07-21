@@ -1,0 +1,23 @@
+{
+  "skills": [
+    "senior-engineering-partner"
+  ],
+  "query": "I'm setting up CI for my iOS/macOS app (XcodeGen project.yml, a SwiftPM package for the core logic, a few third-party SwiftPM dependencies — one is pinned to .branch(\"main\") because the maintainer said main is stable). Package.resolved is in my .gitignore since it churns. What should the CI pipeline check before a PR can merge? Right now it just runs xcodebuild build.",
+  "files": [],
+  "expected_behavior": [
+    "Prescribes a lint/format gate as merge-blocking: SwiftLint in strict mode (swiftlint lint --strict) plus a formatter check (the toolchain's swift format in lint mode, or equivalent) — not advisory warnings",
+    "Treats the compiler as a gate: Swift 6 language mode / strict concurrency with warnings-as-errors in CI, not a bare xcodebuild build",
+    "Reverses the .gitignore decision: Package.resolved is the lockfile and MUST be committed, with CI resolving pinned to it (xcodebuild -onlyUsePackageVersionsFromResolvedFile / -disableAutomaticPackageResolution, or swift package resolve --force-resolved-versions) rather than freshly resolving",
+    "Flags the .branch(\"main\") dependency as a mutable pin that must become a version requirement — a branch pin changes the build without a diff",
+    "Names a dependency auditor for Swift: osv-scanner over Package.resolved (OSV SwiftURL / GitHub Advisory Database) and/or Dependabot alerts covering Swift, wired as a standing CI gate",
+    "Includes a test + coverage gate (swift test for the package; xcodebuild test with -enableCodeCoverage and an xccov-based threshold that fails the build) and asserts the XcodeGen source of truth (project.yml generates cleanly; no .xcodeproj tracked)"
+  ],
+  "anti_behavior": [
+    "Accepts the uncommitted Package.resolved (or suggests committing it is optional/style preference)",
+    "Leaves the .branch(\"main\") pin in place because the maintainer calls it stable",
+    "Prescribes lint/format as warnings or a non-blocking step rather than a merge-blocking strict gate",
+    "Claims Swift has no dependency-audit tooling, or omits any auditor while presenting the pipeline as complete",
+    "Invents unverifiable CLI flags instead of the documented pinned-resolution/coverage flags (or fails to caveat version-volatile flags)"
+  ],
+  "source": "SKILL.md Coding Standards (Swift), Security Checks (Swift), Dependency-audit gate + Supply-chain integrity (Package.resolved); references/swift-apple-development.md §8 (toolchain gates), §9 (SwiftPM supply chain), §11–§12 (coverage + CI); references/github-actions.md Swift job shape; origin: 2026-07-21 audit of the Swift discipline — the knowledge lane shipped without the enforcement lane (no lint/audit/coverage/CI gates, Package.resolved absent repo-wide)"
+}

@@ -1,0 +1,24 @@
+{
+  "skills": [
+    "senior-engineering-partner"
+  ],
+  "query": "REVIEW: Quick review before I submit my iOS app to the App Store. Auth flow: after login I store the refresh token with UserDefaults.standard.set(token, forKey: \"refreshToken\") so it survives relaunch. Our staging API is HTTP-only, so I added NSAllowsArbitraryLoads = true to Info.plist to make it work everywhere. The app also registers a custom URL scheme myapp://open?file=<path> that opens the named file from the container so support can deep-link users to documents. While debugging I also switched on a bunch of capabilities in the project (iCloud, App Groups, background modes, HealthKit) even though we only actually use push notifications — figured it's harmless to leave them. It builds clean and works great in TestFlight — anything blocking?",
+  "files": [],
+  "expected_behavior": [
+    "Flags the UserDefaults token storage as a security-floor violation: runtime secrets go in Keychain Services with a deliberate kSecAttrAccessible choice — UserDefaults is unencrypted relative to Keychain protection classes and rides along in backups",
+    "Rejects NSAllowsArbitraryLoads as an app-wide ATS kill-switch: the fix is HTTPS on staging (or at most a narrowly-scoped, justified per-domain exception), never the global arbitrary-loads flag",
+    "Treats the URL scheme as an untrusted-input trust boundary: myapp://open?file=<path> with an attacker-influencable path is path traversal by deep link — validate/canonicalize and allowlist what the scheme may open, never build file paths from URL components",
+    "Flags the leftover capabilities as an entitlement-minimization violation: unused entitlements (iCloud, App Groups, background modes, HealthKit) are standing least-privilege grants that must be removed before shipping — declare only what the app uses",
+    "Checks App Store shipping gates beyond code: privacy manifest (PrivacyInfo.xcprivacy incl. required-reason APIs and third-party SDK manifests), noting review rejection as the cost of missing it",
+    "Delivers the corrected code/approach per REVIEW: mode, not just the critique"
+  ],
+  "anti_behavior": [
+    "Accepts UserDefaults for the token because it is convenient, obfuscated, or \"only a refresh token\"",
+    "Accepts NSAllowsArbitraryLoads because it is staging-only, temporary, or TestFlight passed",
+    "Treats the URL-scheme file parameter as safe because only support sends the links",
+    "Accepts the unused capabilities because they are \"harmless\", debug-only leftovers, or TestFlight passed with them on",
+    "Waves the app through because it builds clean and works in TestFlight — a green build is not a security review",
+    "Suggests an ADR or tier argument (MVP, internal-only) to waive any of these floor controls"
+  ],
+  "source": "references/swift-apple-development.md §10 (security floor bound to Apple surfaces: Keychain never UserDefaults, ATS intact, entry surfaces as trust boundaries, privacy manifest as shipping gate) + SKILL.md Security Checks (Swift) + STRICT SECURITY PROTOCOLS (secrets, input validation); origin: 2026-07-21 audit of the Swift discipline — the Apple bindings of the security floor were absent repo-wide (verified by grep)"
+}

@@ -50,6 +50,36 @@ CI is the merge gate that makes the PR-flow real (SKILL.md Source Code Managemen
 - **Assert the image runs the *real* app, not a dev/legacy entrypoint.** A green build proves the image *compiles*, not that it boots the authenticated production app — a stale `CMD`, a dev server, or an unauthenticated legacy entrypoint can ship green. Add a gate that starts the built image and asserts the production entrypoint answers correctly (health is up **and** an authenticated path returns 401 unauthenticated, not 200), and fence dev-only entrypoints so they can't become the prod default (cross-ref `gcp.md` PORT-bind check).
 - **Make the security/integration gates *required*, not just present.** A pipeline that runs `migrations` (RLS) and `api-test` (tenant isolation) but only marks `test` as required in branch protection lets a PR merge red on a cross-tenant leak. Every job that can go red on an auth bypass, a failed migration, or a cross-tenant leak is a **required** check — adding a gate to CI isn't done until it's added to the required-checks list (`github-teams.md`).
 
+## Swift / Apple-platform job shape
+
+The same one-job-per-provable-claim structure, on **macOS runners** (`runs-on: macos-15` or
+your pinned image — pin the image *and* the Xcode version via `xcode-select`/`DEVELOPER_DIR`;
+"latest" is a version-skew flake source). The gates, each its own required check
+(deep discipline: `swift-apple-development.md` §8–§12):
+
+- `lint` — `swiftlint lint --strict` + `swift format lint --strict --recursive Sources/ Tests/`.
+- `test` (pure logic) — `swift test` on the SwiftPM package: no simulator, runs on any
+  runner with the toolchain, the fast lane.
+- `app-test` — `xcodegen generate && xcodebuild test -onlyUsePackageVersionsFromResolvedFile
+  -enableCodeCoverage YES …` against a pinned simulator destination; a follow-up step reads
+  the `.xcresult` with `xcrun xccov view --report --json` and fails below the coverage floor.
+- **Source-of-truth asserts, mechanized:** the committed `project.yml` generates cleanly
+  (`xcodegen generate` exits 0 — it *is* the first step of `app-test`), and **no `.xcodeproj`
+  is tracked** — `test -z "$(git ls-files '*.xcodeproj/*')"` as a step (the trailing `/*`
+  matters: git tracks the *files inside* the bundle, so a bare `'*.xcodeproj'` pathspec
+  matches nothing and the gate false-negatives green); a committed generated project silently
+  becomes the thing people edit.
+- `audit` — `osv-scanner` over the committed `Package.resolved` (same shared audit script as
+  the other ecosystems).
+- **Signing/provisioning in CI uses an App Store Connect API key, never an interactive
+  Apple ID** — the manual-signing-for-CI principle (`dev-environments.md`), mechanized:
+  store the `.p8` key in the secrets manager / repo secrets, write it to the runner at
+  job start, and pass `-authenticationKeyPath` / `-authenticationKeyID` /
+  `-authenticationKeyIssuerID` with `-allowProvisioningUpdates` so `xcodebuild` provisions
+  headlessly (`swift-apple-development.md` §2). The key is a credential: least-privilege ASC
+  role, its own per-repo key (SKILL.md one-credential-per-workload), never echoed. (Flags
+  verified on Xcode 26; re-verify on your toolchain.)
+
 ## Deploy, approval & rollback
 
 - **Promotion to prod is a gated step, not the automatic consequence of a green merge.** Put the deploy job behind a GitHub **Environment** (`production`) with **required reviewers** — a human approves the promotion after CI is green (branch protection for the deploy itself; cross-ref `github-teams.md`, and `iac-terraform.md` for the matching `terraform apply` approval). The deploy authenticates via OIDC→WIF, never a stored key.
