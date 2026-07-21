@@ -3,7 +3,7 @@
   "name": "senior-engineering-partner",
   "displayName": "Senior Engineering Partner",
   "description": "A strict code reviewer, pair programmer, debugger, and mentor for Python, Bash, Google Apps Script, and JavaScript — a security-first, phase-aware engineering discipline with an enforced spec → plan → TDD → verify workflow.",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "author": {
     "name": "Brian Greenberg",
     "url": "https://briangreenberg.net"
