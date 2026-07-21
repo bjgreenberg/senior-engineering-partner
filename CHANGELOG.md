@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.21.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.20.0...v1.21.0) (2026-07-21)
+
+
+### Features
+
+* **skill:** complete the Swift discipline — tooling, supply-chain, security & testing gates ([#103](https://github.com/bjgreenberg/senior-engineering-partner/issues/103)) ([e0199e2](https://github.com/bjgreenberg/senior-engineering-partner/commit/e0199e2d5ac465ece4b07afc90058425b529ca91))
+
 ## [1.20.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.19.0...v1.20.0) (2026-07-21)
 
 Two additions, both extracted from the same week of building and shipping a real
