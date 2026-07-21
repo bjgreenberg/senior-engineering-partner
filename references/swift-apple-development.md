@@ -42,7 +42,7 @@ OS-version-volatile behaviors are flagged inline: verify them on your target OS,
 - **Dev-signed builds run ONLY on registered devices.** A dev-signed app copied to an
   unregistered machine will not launch — that's provisioning, not a bug. Register devices in
   the developer portal; the UDID form field must contain the bare identifier — a pasted
-  `UDID xxxxxxxx…` prefix (as Finder/System Information copy it) is silently invalid.
+  value carrying a `UDID ` label prefix is silently invalid.
 - **Provision headlessly with `-allowProvisioningUpdates`.** Added to `xcodebuild` (plus
   `-allowProvisioningDeviceRegistration` for new devices), it mints certificates, registers
   App IDs and capabilities, and generates profiles without opening Xcode — and it works with
@@ -147,8 +147,9 @@ Each of these cost a real outage or crash; none is guessable from the API surfac
   occluded app stops ticking after a while (observed ~20 min) — the app isn't crashed, just
   napping, and it wakes with stale state. An app whose **background currency is a feature**
   (a sync poll, a countdown that must stay fresh) takes
-  `ProcessInfo.beginActivity(.userInitiatedAllowingIdleSystemSleep, reason:)` while the work
-  is active and ends it when idle — that option still permits **system sleep** (a sleeping
+  `ProcessInfo.processInfo.beginActivity(options: .userInitiatedAllowingIdleSystemSleep,
+  reason:)` while the work is active and ends it (`endActivity`) when idle — that option
+  still permits **system sleep** (a sleeping
   machine converging one tick after wake is correct behavior; a machine kept awake by a timer
   app is a bug). Pair it with the foreground-return fetch (§5) so waking the app always
   refreshes immediately.
