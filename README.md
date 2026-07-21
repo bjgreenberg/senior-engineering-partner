@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-17 12:14 PM CDT
+Last updated: 2026-07-21 10:53 AM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -75,7 +75,7 @@ Three ideas run through everything:
 The disciplines are stack-agnostic, but they bind to concrete tooling. At a glance, what the skill
 carries standards for:
 
-- **Languages:** Python · Bash · Google Apps Script · JavaScript / TypeScript
+- **Languages:** Python · Bash · Google Apps Script · JavaScript / TypeScript · Swift (macOS/iOS/watchOS/iPadOS)
 - **Source control & CI/CD:** GitHub · GitHub Actions · branch protection / rulesets · supply-chain gates (SBOM · SLSA · signing)
 - **Cloud & infra:** GCP / Cloud Run · Docker · Kubernetes · Terraform (IaC)
 - **Data:** Postgres / Supabase (RLS) · BigQuery · SQLite · caching
@@ -223,6 +223,7 @@ version-specific commands.
 | | `google-apps-script.md` | `clasp` + git over the editor, minimal `oauthScopes`, `PropertiesService` secrets/limits, `LockService`, trigger quotas + the 6-min wall, Advanced Services vs `UrlFetchApp`, `console`→Cloud Logging, pure-logic isolation for testing |
 | | `javascript-and-typescript.md` | TS strict mode (the `mypy --strict` analog) + the flags `strict` misses, runtime-validated typed boundaries (the Pydantic analog), Node `SIGTERM`/no-floating-promises patterns |
 | | `bash-scripting.md` | Strict mode's documented gaps (`-e` suspension, masked substitutions), traps/atomic output/locks, `curl -f`, stock-bash-3.2 portability, BATS + command stubs |
+| | `swift-apple-development.md` | XcodeGen `project.yml` as source of truth, SwiftPM pure-logic packages, headless provisioning, never-store-ticks state design, the `CKSyncEngine` hard rules, Swift 6 concurrency field notes, `log stream`/`.ips` diagnosis |
 | **UI, docs & AI tooling** | `ui-design-and-accessibility.md` | Responsive + light/dark + WCAG 2.2 AA + Claude Design handoff |
 | | `diagrams-and-visual-docs.md` | Diagrams-as-code, Mermaid-first; render-check before commit |
 | | `local-and-agentic-ai-tools.md` | Agentic assistants + self-hosted LLMs (Ollama/Open WebUI) |

@@ -1,0 +1,20 @@
+{
+  "skills": [
+    "senior-engineering-partner"
+  ],
+  "query": "DEBUG: My macOS/iOS app syncs one record through CloudKit with CKSyncEngine. Sync works exactly once after install: the first save reaches the server, but every save after that fails with serverRecordChanged and the devices never converge again. Separately, when a change arrives I try to push my local edits back right away, and the app dies with EXC_BREAKPOINT somewhere inside the engine. Relevant shape: in nextRecordZoneChangeBatch I build a fresh CKRecord(recordType:recordID:) each time and copy my fields into it; in my handleEvent handler, after processing .fetchedRecordZoneChanges, I call try await engine.sendChanges() — I even wrapped it in do/catch but it still crashes. What's wrong?",
+  "files": [],
+  "expected_behavior": [
+    "Roots the serverRecordChanged loop in the fresh-CKRecord construction: CloudKit conflict detection rides on the server-returned record's change tag, so saves must reuse/mutate the record the server returned (and on rejection adopt the server record, re-apply fields, resend) — a fresh CKRecord for an existing row is rejected forever",
+    "Roots the EXC_BREAKPOINT in re-entrancy: CKSyncEngine wraps event delivery in a task-local and hard-asserts on engine calls made inside handleEvent; the fix is to schedule the follow-up outside the handler via Task.detached, noting that a plain Task {} inherits the task-local and still crashes",
+    "States that the assert is not catchable — do/catch guards thrown errors, not assertions/preconditions, so the existing do/catch is irrelevant to this crash",
+    "Follows the DEBUG: discipline: explains both root causes before changing code and prescribes regression tests (e.g. a save-after-rejection test and a no-engine-calls-in-handler guard) rather than guess-and-check"
+  ],
+  "anti_behavior": [
+    "Suggests retrying the failing save, deleting and re-creating the record, or force-overwriting with savePolicy changes instead of reusing the server-returned record",
+    "Suggests catching or wrapping the EXC_BREAKPOINT in do/catch, or claims error handling will make the in-handler sendChanges() safe",
+    "Proposes escaping the handler with a plain Task {} (which inherits the task-local and still trips the assert)",
+    "Treats persisted change tokens as a correctness guarantee or otherwise patches symptoms without explaining the two root causes"
+  ],
+  "source": "references/swift-apple-development.md §5 (CKSyncEngine hard rules) + §3 (assertions aren't catchable) + SKILL.md Swift & Apple platforms trigger; origin: 2026-07-20/21 CloudKit sync bring-up of a four-platform timer app — fresh-record saves made sync one-shot, and an in-handler engine call hard-asserted; both cost live multi-device debugging sessions"
+}
