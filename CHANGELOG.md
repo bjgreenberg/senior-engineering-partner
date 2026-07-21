@@ -19,6 +19,28 @@ in your own `references/my-environment.md`.
 
 ## [1.20.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.19.0...v1.20.0) (2026-07-21)
 
+Two additions, both extracted from the same week of building and shipping a real
+multi-platform Apple app.
+
+**Swift becomes the skill's fifth language discipline** (#101). A new deep reference,
+`references/swift-apple-development.md`, plus a toolchain trigger in the core: XcodeGen
+`project.yml` as the committed source of truth (the generated `.xcodeproj` is a build
+artifact), pure logic in SwiftPM packages with injected clocks, headless
+provisioning/signing with verify-what-the-build-actually-carries, never-store-ticks
+cross-device state design, the **`CKSyncEngine` hard rules**, Swift 6 concurrency field
+notes, and the on-device diagnosis toolkit (`log stream` over `log show`, `.notice`
+persistence, `.ips` crash-report monitoring as the local-app observability floor). Why:
+every rule here cost a real outage, crash, or debugging session during a two-day,
+ten-PR CloudKit sync bring-up — one-shot sync from rebuilt records, an uncatchable
+in-handler assert, three stacked devices-drift-apart root causes — and none of it is
+guessable from the API surface. Guarded by the `swift-cksyncengine-hard-rules` eval
+(suite: 50 scenarios).
+
+**Light/dark support now requires a three-state appearance control** (#100). Wherever an
+app has a settings surface, the control is System / Light / Dark, defaulting to System
+and persisted per-device — a binary toggle that loses "follow the system" no longer
+satisfies the light-and-dark mandate. Why: a real app shipped the binary toggle first,
+and the correction is cheaper as a standing rule than as a per-project rediscovery.
 
 ### Features
 
