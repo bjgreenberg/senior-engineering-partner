@@ -19,6 +19,21 @@ in your own `references/my-environment.md`.
 
 ## [1.21.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.20.0...v1.21.0) (2026-07-21)
 
+The Swift discipline gets its enforcement lane (#103). v1.20.0 shipped the
+knowledge — CloudKit hard rules, concurrency field notes, diagnosis — but no
+gates. Now every mandate names its checker: SwiftLint `--strict` + the
+toolchain's `swift format` + the Swift 6 compiler as merge-blocking gates
+(with a mechanized backstop for the `nonisolated(unsafe)`-needs-justification
+rule); a committed, pinned, osv-scanner-audited `Package.resolved`; the Apple
+bindings of the security floor (Keychain never UserDefaults, App Sandbox +
+minimal entitlements, ATS intact, privacy manifests as a shipping gate, entry
+surfaces as trust boundaries); Swift Testing/XCTest with an xccov coverage
+gate; and the CI job shape in `github-actions.md`. Why: the audit verdict on
+v1.20.0 was "deep but narrow" — every other language named its checker, Swift
+named none. Every flag verified against a live toolchain; every gate proven
+red and green before being encoded — then applied the same day to the app
+that originated the discipline. Guarded by two new evals (suite: 52).
+
 
 ### Features
 
