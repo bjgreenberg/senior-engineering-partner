@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.22.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.21.0...v1.22.0) (2026-07-22)
+
+
+### Features
+
+* agentic-AI security reference, MCP-server review, and prompt-injection red-team tier ([#105](https://github.com/bjgreenberg/senior-engineering-partner/issues/105)) ([2b4de04](https://github.com/bjgreenberg/senior-engineering-partner/commit/2b4de04605c95470fa0ba49b35033b048528dc34))
+
 ## [1.21.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.20.0...v1.21.0) (2026-07-21)
 
 The Swift discipline gets its enforcement lane (#103). v1.20.0 shipped the
