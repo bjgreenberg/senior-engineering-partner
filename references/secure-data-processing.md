@@ -77,6 +77,23 @@ Prove the fence with **fence-integrity tests** alongside the injection corpus be
 - **Cost is a security property in a metered product.** Cap `max_tokens`, set request timeouts (the engine uses an httpx 600s read / 10s connect) and a bounded retry/backoff that honors `retry-after` — an unbounded retry loop on `overloaded` is a billing-DoS. Use prompt caching (`cache_control: ephemeral`) for the large, identical system prompt (~0.1× input cost on repeat jobs) and meter `cache_read`/`cache_creation` tokens for accurate per-tenant billing.
 - Never log the full prompt/response at INFO in production (it contains tenant evidence and PII); log token counts and `error_code`, not content.
 
+### Red-team the fence — structure the injection corpus against a published taxonomy
+
+The injection corpus above ("classic injection strings") is the floor; for a commercial product whose value rests on the fence holding, an ad-hoc handful of "ignore previous instructions" strings tests only the attack you already imagined. Structure the corpus against a **published prompt-injection taxonomy** so the suite spans the attack *space* and grows as the taxonomy does. The **Arcanum Prompt Injection Taxonomy** (Jason Haddix / Arcanum Information Security, **CC BY 4.0** — `github.com/Arcanum-Sec/arc_pi_taxonomy`) is a usable structure; it decomposes an attack along three axes (it is actively maintained — treat the current entries, not a fixed count, as the source of truth):
+
+- **Intent** — the attacker's *goal*: system-prompt extraction, jailbreak, tool/API enumeration, credential theft, data poisoning, denial of service, business-logic manipulation, and more. Only the intents your surface enables matter (a doc-analysis app with no tools can't be "tool-enumerated," but it *can* be prompt-extracted and made to poison a report).
+- **Technique** — the *delivery method*: framing, narrative smuggling, nested ("Russian doll") injection, rule injection, end-sequence spoofing (a planted `</untrusted_document>` — exactly the delimiter-neutralization case the worked example above already tests), link injection, encoding as ASCII art / binary.
+- **Evasion** — the *obfuscation layer* dodging a naive filter: Base64/hex/Morse, cipher/reversing, alternate languages or fictional dialects, emoji substitution, Unicode look-alikes, whitespace manipulation, JSON/XML wrapping, steganography.
+
+Wire it as a **scheduled security-test tier** (like the malicious-file corpus in §1 and fuzzing in `testing.md` §5/§6), not a per-commit gate — the cross-product is large and slow. Rules that keep it honest:
+
+- **Every case asserts the two invariants, not "the model refused":** the structured output stays schema-valid (fence held structurally) **and** the verdict is unflipped with the attempt reported as a finding (fence held semantically) — the same two invariants as the fence-integrity tests above, now driven by the taxonomy instead of by hand.
+- **Scope to your surfaces first.** Map input surfaces (uploaded body, third-party "metadata" fields, tool results, RAG chunks — §4, multimodal blocks), then generate only intent×technique×evasion cases the surface can carry. An un-scoped full-matrix run is review-theater; a scoped one is a red-team.
+- **A new bypass becomes a permanent case.** Any injection that gets through — in testing or production — is added as a regression, seen to fail red first (SKILL.md TDD), like any bugfix. The taxonomy seeds the suite; your incidents grow it.
+- **Attribution rides with the corpus.** If the taxonomy's structure or labels are reproduced in the repo (fixtures, docs), carry the CC BY 4.0 attribution to Jason Haddix / Arcanum — a license obligation (`foss-adoption.md`).
+
+This is the offensive complement to the defensive fence above: the fence is the control; this tier proves it holds under a structured attack rather than a token one. Its home in the test-tier taxonomy is `testing.md` §5 (indirect prompt injection).
+
 ---
 
 ## 3. The tenant boundary is a legal boundary (sensitive-data handling)
