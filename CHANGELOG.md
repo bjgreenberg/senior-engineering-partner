@@ -17,6 +17,50 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.22.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.21.0...v1.22.0) (2026-07-22)
+
+Prompted by holding the skill up against the OWASP **secure-agent-playbook** (#105): the
+disciplines here already enforced the *controls* an agent audit checks for, but three things had no
+home — the security of a product that *is* an agent, a way to review an MCP server, and a
+structured (not ad-hoc) prompt-injection test. Three additive references close the gap; nothing is
+relaxed.
+
+**Agentic-AI security becomes its own discipline.** A new deep reference,
+`references/agentic-ai-security.md`, plus a toolchain trigger in the core, for the surface the
+adjacent files deliberately don't own — `llm-apps.md` *designs* the loop and
+`secure-data-processing.md` secures the *document-analysis* shape, but neither covers the model's
+autonomy once it holds tools that act on the world. Least agency (every tool least-privilege, args
+validated as a trust boundary, tool *results* untrusted); a human-in-the-loop gate on the
+**resolved** consequential call, not the model's narration; agent memory/context as a poisoning
+surface; inter-agent trust and cascading failure for multi-agent products. It **names the mapping**
+to the OWASP Top 10 for Agentic Applications (2026, `ASI01`–`ASI10`) at *theme* level — the
+framework is weeks old and its exact titles still drift across sources, so the durable codes+themes
+carry the mapping and a verify-live pointer carries the labels — and adds a **CSA MAESTRO**
+seven-layer threat-model pass beside STRIDE.
+
+**MCP servers get a review checklist.** A new Part C in
+`references/local-and-agentic-ai-tools.md` — the file that already owns "agentic tooling you run" —
+reviews an MCP server across seven dimensions (transport/auth, per-tool permission audit,
+input-validation/injection, data exposure, scope/sandboxing, supply chain, client config), each
+folded into the existing least-privilege / input-validation / supply-chain floor.
+
+**The injection corpus gets a structure.** `secure-data-processing.md` §2 and `testing.md` §5 turn
+the ad-hoc "ignore previous instructions" corpus into a scheduled, taxonomy-driven red-team tier
+(Arcanum PI Taxonomy, CC BY 4.0, attributed) across intent × technique × evasion, scoped to the
+product's real input surfaces, each case asserting both fence invariants.
+
+Why now, and how it was verified: the 2026 Agentic Top 10 and MAESTRO both postdate the skill's
+existing LLM coverage, so the gap was real and timely. The build was its own advertisement for the
+discipline — a critical-review pass plus primary-source verification caught stale taxonomy counts, a
+mis-shaped test-tier table, and unverifiable verbatim framework titles before any reached `main`;
+MAESTRO and the Arcanum license were confirmed against their primary sources, and the Agentic Top 10
+is mapped at theme level precisely because its primary is gated and its labels still drift.
+
+
+### Features
+
+* agentic-AI security reference, MCP-server review, and prompt-injection red-team tier ([#105](https://github.com/bjgreenberg/senior-engineering-partner/issues/105)) ([2b4de04](https://github.com/bjgreenberg/senior-engineering-partner/commit/2b4de04605c95470fa0ba49b35033b048528dc34))
+
 ## [1.21.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.20.0...v1.21.0) (2026-07-21)
 
 The Swift discipline gets its enforcement lane (#103). v1.20.0 shipped the
