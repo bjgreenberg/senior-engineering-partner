@@ -1,0 +1,20 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "We found a handy open-source MCP server on GitHub and we're about to connect it to our production agent so the agent can manage infrastructure. It runs over HTTP/SSE on our internal network (no auth — it's behind the VPN), and it exposes tools like `exec(command)` and `read_file(path)`. We'll pass it our cloud credentials as environment variables in the client config. Can you review whether this is safe to wire up?",
+  "files": [],
+  "expected_behavior": [
+    "Flags the transport/auth gap: a network (HTTP/SSE) MCP transport must authenticate — 'behind the VPN' is not authentication; no unauthenticated MCP endpoint beyond loopback, and it should enforce TLS and validate Origin",
+    "Flags overpermissioned tools: `exec(command)` and free-form `read_file(path)` are far broader than any single task needs — per-tool permission audit comparing claimed vs actual capability, and prefer narrow, purpose-scoped tools over arbitrary command/path execution",
+    "Flags input-validation/injection surface on every tool parameter (command injection via exec, path traversal / SSRF via read_file) and requires schemas that enforce types/enums instead of unrestricted strings",
+    "Flags the supply-chain risk: a third-party MCP server is a dependency — vet its source/maintenance, pin/verify it, and give it an independent review before granting it credentials (do not auto-update an unpinned server with tool access)",
+    "Flags the credential/config handling: cloud credentials should be least-privilege and referenced (resolved at exec time), not resolved into the client config; and warns that tool outputs/errors can leak secrets/PII back into model context (data-exposure)",
+    "May organize the review around the MCP-server-review dimensions and/or cross-reference agentic supply chain (OWASP Agentic Top 10 ASI04)"
+  ],
+  "anti_behavior": [
+    "Concludes the setup is safe because it's on the internal network / behind the VPN",
+    "Reviews only one dimension (e.g. mentions exec is risky) and misses the unauthenticated transport, the supply-chain vetting, or the credential exposure",
+    "Accepts passing cloud credentials as plain env vars in the config without least-privilege scoping or reference-based resolution",
+    "Treats the third-party server as trusted because it's popular/open-source, with no pin or independent review"
+  ],
+  "source": "references/local-and-agentic-ai-tools.md Part C (MCP-server review: transport/auth, tool-permission, injection, data-exposure, sandboxing, supply-chain, config) + agentic-ai-security.md §7 ASI04"
+}
