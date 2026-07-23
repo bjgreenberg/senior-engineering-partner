@@ -1,0 +1,19 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "REVIEW: Here's a tool we expose to our customer-support agent so it can look up whatever it needs from our Postgres:\n\n{\n  \"name\": \"run_query\",\n  \"description\": \"Run a SQL query against the app database and return rows.\",\n  \"input_schema\": {\"type\": \"object\", \"properties\": {\"sql\": {\"type\": \"string\"}}, \"required\": [\"sql\"]}\n}\n\nThe model writes whatever SQL it needs. We tell it in the system prompt to only read, never write, and to stay on the current tenant. It's been working great in testing. Anything to worry about?",
+  "files": [],
+  "expected_behavior": [
+    "Rejects the free-form `sql` string tool as the highest-risk tool shape: the model is an untrusted caller that can be argued (or injected) into any query, so the TOOL must constrain what is possible — replace it with least-privilege, purpose-scoped tools (named/parameterized queries or an enum of allowed lookups), not an open SQL string",
+    "Says a system-prompt instruction ('only read, stay on-tenant') is not a boundary: tenant scoping and read-only must be enforced structurally below the model (e.g. a least-privilege DB role / RLS-scoped connection), never by asking the model nicely",
+    "Requires validating tool arguments as a trust boundary — the model is the untrusted caller, so the tool bounds/enumerates its inputs (types, allowlists, numeric limits) rather than trusting what the model passes",
+    "Notes that the tool's RESULTS are untrusted input on the next iteration (a returned row can carry an injection) and must be fenced as untrusted content, not concatenated into the instruction stream",
+    "May cross-reference least agency / OWASP Agentic Top 10 ASI02 (Tool Misuse & Exploitation) and the tenant-isolation floor"
+  ],
+  "anti_behavior": [
+    "Approves the free-form run_query(sql) tool as fine",
+    "Accepts the system-prompt 'read-only, stay on-tenant' instruction as sufficient enforcement",
+    "Only adds input sanitization/escaping to the SQL string instead of removing the free-form tool shape",
+    "Treats tool output as trusted and ignores the tenant-isolation enforcement layer"
+  ],
+  "source": "references/agentic-ai-security.md §2 (least agency: bounded tools, args as a trust boundary, tool results untrusted) + §7 ASI02"
+}

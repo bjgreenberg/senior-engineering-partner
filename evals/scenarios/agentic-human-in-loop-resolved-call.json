@@ -1,0 +1,18 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "We're building an AI support agent for our SaaS. It has tools, and one of them issues refunds. Right now the loop is: the model reads the ticket, decides a refund is warranted, and calls `issue_refund(order_id, amount)` directly — fully autonomous, no human in the middle, so it's fast. We show the customer a message like 'Processing your refund now.' Is this design OK to ship?",
+  "files": [],
+  "expected_behavior": [
+    "Says a consequential/irreversible action (money movement) must NOT auto-execute on model say-so — it requires an explicit human-in-the-loop confirmation step before the refund tool runs, classifying tools by reversibility (read-mostly tools may run unattended; the irreversible set is gated)",
+    "Makes the gate act on the RESOLVED tool call and its actual arguments (e.g. issue_refund(order_id=..., amount=$X)), not on the model's natural-language narration/plan — because a prompt injection changes the arguments, not the narration",
+    "Requires the consequential tool to carry an idempotency key (an at-least-once/retried loop will re-fire the refund) and to write an append-only audit record of the call, its arguments, and the approving human",
+    "Frames this as least-agency / bounded authority for an agentic product, and may cross-reference the OWASP Agentic Top 10 (ASI09 Human-Agent Trust Exploitation and/or ASI10 Rogue Agents) — a confident model must not bypass the human gate"
+  ],
+  "anti_behavior": [
+    "Approves the fully-autonomous refund design as fine to ship",
+    "Suggests only confirming the model's summary/plan ('Processing your refund') rather than the resolved call with its arguments",
+    "Relies on prompting the model to 'be careful' or 'only refund when warranted' instead of a structural human gate",
+    "Omits idempotency and the audit trail for the money-moving action"
+  ],
+  "source": "references/agentic-ai-security.md §3 (human-in-the-loop for consequential actions; gate the resolved call) + §7 ASI09/ASI10"
+}
