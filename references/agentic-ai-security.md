@@ -6,7 +6,7 @@ Companion reference for the senior-engineering-partner skill.
 
 > **Rigor tier:** the least-agency (§2) and human-in-the-loop (§3) rules are **floor** for any agent that takes a consequential action (money, data mutation, outbound message, code execution) — no tier defers them. What scales with tier is *depth*: a Tier-0 single-tool spike names the surface; a Tier-2 multi-agent product runs the full MAESTRO threat model (§8) and the Agentic-Top-10 mapping (§7) as an audit artifact.
 
-> *Framework codes, titles, and layer names below are version-volatile — the Agentic Top 10 is new (2026) and its exact titles still drift across sources. Verify `ASIxx` titles against the OWASP GenAI Security Project's primary document, and MAESTRO layer names against the current CSA reference, before quoting a label externally — the codes and controls are durable, the adjectives drift.*
+> *Framework codes, titles, and layer names below are version-volatile. The `ASIxx` titles in §7 are the official 2026-edition wording, verified against the OWASP primary document; MAESTRO's layers are verified against the current CSA reference. They can still revise between editions — reconfirm against the current OWASP GenAI / CSA sources before quoting a label externally.*
 
 ---
 
@@ -55,20 +55,20 @@ The moment agents call agents, two failure modes appear that a single agent lack
 
 ## 7. Name the framework — OWASP Top 10 for Agentic Applications (2026)
 
-The sections above *implement* the controls; this **names the mapping** so an audit ask ("are you aligned to the OWASP Agentic Top 10?") has a one-line answer — the same move as `secure-data-processing.md` §5 (LLM Top 10) and `compliance.md`. The 2026 edition (`ASI01`–`ASI10`, published 2025-12-09 by the OWASP GenAI Security Project) is **new and its exact titles drift across sources**; the mapping below is keyed to the durable **theme** per code, not a verbatim title. *Before quoting a specific title externally, verify it against the OWASP primary document (currently a registration-gated PDF) — do not rely on this table's wording for the exact label.*
+The sections above *implement* the controls; this **names the mapping** so an audit ask ("are you aligned to the OWASP Agentic Top 10?") has a one-line answer — the same move as `secure-data-processing.md` §5 (LLM Top 10) and `compliance.md`. Titles below are the official `ASI01`–`ASI10` of the **2026 edition** (published 2025-12-09 by the OWASP GenAI Security Project), **verified against the primary document**. *Labels can still revise between editions — reconfirm against the current OWASP GenAI list before quoting externally.*
 
-| Code | Theme (durable) | Where this skill handles it |
+| Code | Title (2026 edition) | Where this skill handles it |
 |---|---|---|
-| `ASI01` | Agent goal hijack | §2 tool-results-untrusted + `secure-data-processing.md` §2 fence — injected content must not redirect the objective |
-| `ASI02` | Tool misuse / exploitation | §2 least-privilege tools + arg validation — a weaponized-via-parameters tool dies at the constrained signature |
-| `ASI03` | Identity & privilege abuse | §4 — scoped attributable identity, no mid-loop escalation, secrets out of context |
-| `ASI04` | Agentic supply chain | SKILL.md *Supply-chain integrity* applied to agent components; review a connected MCP server per `local-and-agentic-ai-tools.md` Part C |
-| `ASI05` | Unexpected code execution | §2 — no free-form `run_shell`/`eval`-shaped tool without a hard sandbox (SKILL.md *Bash Command Injection Prevention*) |
-| `ASI06` | Memory & context poisoning | §5 in full |
-| `ASI07` | Inter-agent communication | §6 — A2A messages fenced, senders authenticated, payloads validated |
-| `ASI08` | Cascading failures | §6 + `resilience-engineering.md` — breakers, bulkheads, cluster-level budgets |
-| `ASI09` | Human-agent trust | §3 — consequential actions gated on the *resolved* call; `llm-apps.md` §6 evals catch confident-wrong |
-| `ASI10` | Rogue agents | §2 loop brakes + §4 bounded static privilege + §3 gates — a misaligned agent is capped in authority, budget, reach |
+| `ASI01` | Agent Goal Hijack | §2 tool-results-untrusted + `secure-data-processing.md` §2 fence — injected content must not redirect the objective |
+| `ASI02` | Tool Misuse & Exploitation | §2 least-privilege tools + arg validation — a weaponized-via-parameters tool dies at the constrained signature |
+| `ASI03` | Identity & Privilege Abuse | §4 — scoped attributable identity, no mid-loop escalation, secrets out of context |
+| `ASI04` | Agentic Supply Chain Vulnerabilities | SKILL.md *Supply-chain integrity* applied to agent components; review a connected MCP server per `local-and-agentic-ai-tools.md` Part C |
+| `ASI05` | Unexpected Code Execution (RCE) | §2 — no free-form `run_shell`/`eval`-shaped tool without a hard sandbox (SKILL.md *Bash Command Injection Prevention*) |
+| `ASI06` | Memory & Context Poisoning | §5 in full |
+| `ASI07` | Insecure Inter-Agent Communication | §6 — A2A messages fenced, senders authenticated, payloads validated |
+| `ASI08` | Cascading Failures | §6 + `resilience-engineering.md` — breakers, bulkheads, cluster-level budgets |
+| `ASI09` | Human-Agent Trust Exploitation | §3 — consequential actions gated on the *resolved* call; `llm-apps.md` §6 evals catch confident-wrong |
+| `ASI10` | Rogue Agents | §2 loop brakes + §4 bounded static privilege + §3 gates — a misaligned agent is capped in authority, budget, reach |
 
 ## 8. Threat-model multi-agent systems with MAESTRO
 
@@ -86,6 +86,6 @@ MAESTRO's added value over per-layer checks: **cross-layer attack chains** (an L
 
 ## Sources
 
-- OWASP GenAI Security Project — *OWASP Top 10 for Agentic Applications* (2026 edition, published 2025-12-09); codes `ASI01`–`ASI10`. Exact titles are in the project's primary document (registration-gated at this writing) — verify titles there before quoting; this file maps at theme level by design.
+- OWASP GenAI Security Project — *OWASP Top 10 for Agentic Applications* (2026 edition, published 2025-12-09); codes `ASI01`–`ASI10`, titles verified against the primary document. Reconfirm against the current edition before quoting externally.
 - Cloud Security Alliance — *MAESTRO: Agentic AI Threat Modeling Framework* (Ken Huang, 2025-02-06); the seven-layer architecture, Layer 6 vertical/cross-cutting.
 - Within this skill: `llm-apps.md` (loop design + brakes), `secure-data-processing.md` (fence, output validation, tenant boundary, RAG), `local-and-agentic-ai-tools.md` (agentic-tool least privilege; MCP-server review, Part C), `threat-modeling-and-api-design.md` (STRIDE, API contract), `resilience-engineering.md` (breakers/bulkheads), `multi-agent-coordination.md` (coding-agent concurrency — a *different* multi-agent concern).
