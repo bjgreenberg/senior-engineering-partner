@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-21 12:32 PM CDT
+Last updated: 2026-07-25 09:01 AM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -188,7 +188,7 @@ version-specific commands.
 |---|---|---|
 | **Environment profile** | `my-environment.md` | The concrete stack/hosts/repos/house-Git-standards — the one file to swap when forking the skill |
 | **Engineering process** | `engineering-workflow.md` | The spec → plan → tier-aware iron-law TDD → verify-before-done self-review loop |
-| | `debugging.md` | Systematic root-cause method (the `DEBUG:` mode): reproduce → hypothesize → isolate → fix cause → red-first regression test |
+| | `debugging.md` | Systematic root-cause method (the `DEBUG:` mode): read the logs first, then reproduce → hypothesize → isolate → fix cause → red-first regression test |
 | | `audit-report-format.md` | The `AUDIT:` mode deliverable: a severity-ranked findings report (finding schema, severity taxonomy, mechanize-the-checkable, lead-with-verified-strengths) |
 | | `standards-authoring.md` | Distill sprawling project conventions into a checkable standards set (extract → filter → human-approve → classify floor-vs-overridable); prose-first, format-agnostic |
 | | `skill-self-improvement.md` | The consent-gated loop's full procedure: classify (pattern / one-off / irreversible-cost), the three-part proposal package (rule + guarding eval + origin story), ship-through-PR, never-relax, the non-maintainer path |
@@ -208,7 +208,7 @@ version-specific commands.
 | | `business-continuity.md` | BIA → justified RTO/RPO, provider-outage plans, comms/decision plan, the solo-operator/bus-factor path |
 | | `resilience-engineering.md` | Degrade-don't-die in code: timeouts, circuit breaker, bulkhead, load-shed, designed degraded modes, kill-switch |
 | | `scalability-and-system-design.md` | The "-ilities": statelessness for horizontal scale, queue+worker, DLQ, transactional outbox, the pool/N+1/hot-partition ceilings, capacity & perf targets |
-| | `logging-and-monitoring.md` | Structured logging in Python (JSON + `contextvars` correlation id, per-stack loggers), log location/rotation, the launchd open-fd gotcha, unattended-job monitor design |
+| | `logging-and-monitoring.md` | Reading the logs as a Definition-of-Done gate (subsystem-scoped *and* not-subsystem-scoped, never-report-clean-without-the-command, empty ≠ clean), structured logging in Python (JSON + `contextvars` correlation id, per-stack loggers), log location/rotation, the launchd open-fd gotcha, unattended-job monitor design |
 | **Data** | `databases.md` | Postgres/Supabase RLS (+ pgTAP), BigQuery, SQLite, migrations |
 | | `caching.md` | Cache-key-must-encode-the-tenant, invalidation, what-not-to-cache |
 | **App toolchains, CI & collaboration** | `python-web-apis.md` | FastAPI/Uvicorn/psycopg: lifespan, Pydantic, auth-as-`Depends`, RLS pipeline |

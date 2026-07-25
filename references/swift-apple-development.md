@@ -161,11 +161,22 @@ Each of these cost a real outage or crash; none is guessable from the API surfac
 ## 7. Field diagnosis toolkit (macOS/iOS)
 
 - **`log show` can return empty from sandboxed/automation shells — a false negative.** The
-  archive query can silently yield nothing where entries exist; use **`log stream`** with a
-  subsystem predicate for live capture. Remote capture over `ssh` needs the predicate in a
+  archive query can silently yield nothing where entries exist; use **`/usr/bin/log stream`**
+  with a **`process ==`** predicate for live capture (a *subsystem* predicate is only half the
+  pass — next bullet). Remote capture over `ssh` needs the predicate in a
   **copied script** — inline quoting through ssh mangles it. (The skill's
   false-negative-search rule: an empty result from a tool that can fail empty is not
   "verified absent.")
+- **A subsystem predicate is half the pass — always read an unfiltered/process-scoped window
+  too.** `BUG IN CLIENT OF <FRAMEWORK>`, entitlement and sandbox denials, and XPC failures are
+  emitted by the *framework*, not your `Logger`, so they carry no app subsystem and a
+  subsystem-scoped query structurally cannot see them — the quieter the app, the more of the
+  truth lives outside its subsystem. Read the Xcode console on a device run, or headless
+  `/usr/bin/log stream --process <name>` with no subsystem predicate. Reading the logs is the
+  **first** step of a diagnosis and part of the Definition of Done for any change to a running
+  app — a successful install, a launched process, and a bumped version are all *upstream* of it
+  (`logging-and-monitoring.md` *Reading the logs* for the procedure and the never-report-clean
+  rule).
 - **Only `.notice` and above persist to the log archive** — `.info`/`.debug` are
   memory-only by default. Put lifecycle breadcrumbs (engine started, poll tick, save
   accepted/rejected, merge applied) at **`.notice`**, structured and **payload-free** — the
@@ -179,7 +190,13 @@ Each of these cost a real outage or crash; none is guessable from the API surfac
 - **Verification one-liners:** `pluginkit -m -p <extension-point>` — is the
   widget/extension actually registered; `codesign -d --entitlements -` — what the build
   really carries (§2); `xcrun devicectl list devices` — pairing + Developer Disk Image
-  state when a device build won't install.
+  state when a device build won't install. When an install or launch fails, the complaint is in
+  the **tooling's** log, not the app's:
+  `/usr/bin/log show --predicate 'process == "CoreDeviceService"'`. And a push/entitlement
+  defect can be *invisible* in the log while `codesign -d --entitlements -` names it — the
+  macOS-only spelling of an APNs entitlement is silently dropped on an iOS build, so read
+  both instruments before calling a device install verified (`logging-and-monitoring.md`
+  *Reading the logs* — worked example).
 
 ## 8. Toolchain gates — lint, format, and the compiler as a gate
 
