@@ -16,6 +16,8 @@ Self-review (vs. the agreed spec):
 - [ ] Blast radius — neighbours, diagrams, and numbered step-lists touched by a behaviour change are updated (same commit)
 - [ ] This diff's own risk areas — whatever is novel/fragile here got extra scrutiny
 - [ ] Tests — new/changed logic has tests; bugfix has a regression test seen to fail red first; suite + linters green
+- [ ] Logs read (any change to a running system) — change exercised, then its log read BOTH subsystem-scoped
+      and not-subsystem-scoped; exact command shown, the tool's own exit status checked, empty ≠ clean
 - [ ] Docs — README (+ Last updated stamp), CHANGELOG, ADR for non-obvious decisions, in the SAME commit
 - [ ] Definition of Done — working tree clean, HEAD == origin, results quoted from actual command output (not memory)
 ```
