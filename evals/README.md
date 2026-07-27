@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-27 09:19 AM CDT
+Last updated: 2026-07-27 10:11 AM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -126,6 +126,34 @@ Results land in `evals/results/<UTC-stamp>-<mode>-<model>/` (git-ignored): one J
 scenario plus `summary.md`/`summary.json`. Curate a run worth keeping (e.g. the pre-edit
 baseline before a large `SKILL.md` restructuring) into `evals/baselines/`. Exit code is `0`
 only when every scenario passes, so the runner can gate.
+
+### Recording a baseline (cadence + procedure)
+
+**Cadence: a baseline is DUE the moment any scenario exists that the newest committed
+baseline never measured** — enforced by the baseline-coverage tripwire in
+`scripts/tests/test-scripts.sh` (the `script-tests` CI gate fails with a "re-baseline due"
+message naming the missing scenarios). In practice that means: batch new scenarios freely
+within a PR, but a release that ships new scenarios ships their baseline too. A **model
+change** (new CLI default, new model family) also warrants a re-baseline even though the
+tripwire can't see it — the 2026-07-05 discontinuity note shows why cross-harness numbers
+must never be compared silently.
+
+**Procedure** (the documented recipe — keep it stable so runs stay comparable):
+
+```bash
+# bare first, then with-skill, sequentially; judge stays opus
+scripts/run-evals.py --mode baseline   --model <m> --judge-model opus --jobs 2 --timeout 900
+scripts/run-evals.py --mode with-skill --model <m> --judge-model opus --jobs 2 --timeout 900
+
+# slim each results dir into the committable shape (strips response/evidence/trail;
+# refuses status=error entries — re-run the scenario and splice, disclosing it):
+scripts/curate-baseline.py <results-dir> evals/baselines/<date>-<model>/baseline.json \
+  [--splice <scenario>=<rerun-results-dir>]
+```
+
+Each baseline dir carries `baseline.json`, `with-skill.json`, and a `BASELINE.md` recording
+provenance (harness commit, CLI version, exact flags, splices disclosed) and the headline
+table — see any existing baseline for the shape.
 
 ### Cross-CLI runs (`--runner generic`)
 
