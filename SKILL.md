@@ -198,6 +198,7 @@ Code-level review the dependency/image/secret-alert scanners do **not** perform 
 ## Supply-chain integrity — pin AND checksum-verify EVERY fetched artifact (a pin without a hash is not enough)
 A pin says *what* you asked for; a checksum/digest proves you *got exactly that, untampered* — pinning alone still trusts the network, registry, and mutable tags. Every fetched artifact (CI tool binary, installer, tarball, base image, GitHub Action, `curl … | bash` script) is **both** version-pinned **and** hash-verified, by the strongest mechanism the ecosystem offers:
 - **Binaries/tarballs (canonical pattern):** pin version, download over HTTPS, verify the published checksum *before* use — `echo "<sha256>  file.tgz" | sha256sum -c -`, gating on its exit. **Never `curl … | bash`** an unpinned, unhashed URL; never run a downloaded installer unverified.
+- **Install the WHOLE distribution, not just the binary — and gate on the tool's *output*, not its exit code.** A dist that ships `share/`/`lib/` beside `bin/` resolves those resources relative to the binary; copying the bare binary out silently orphans them, and the tool may keep exiting 0 while degraded. The worked failure: XcodeGen installed as `sudo install …/bin/xcodegen /usr/local/bin/` lost `share/xcodegen/SettingPresets`, warned `No "iOS" settings found`, **exited 0**, and generated every target with no `SDKROOT` — weeks of "no destinations" CI failures blamed on runner images (Rossino #83). Use the dist's own layout/`install.sh` or invoke the binary in place; then **assert the artifact contains what the tool exists to produce** (e.g. grep the generated project for each expected `SDKROOT`), a red/green guard proven against the broken state.
 - **Containers:** pin by **digest** (`image@sha256:…`), never a mutable tag — the digest *is* the integrity check. Prefer a scanner/tool run from a digest-pinned official image over an unverified package install.
 - **GitHub Actions:** pin third-party actions by **commit SHA**, not a tag (`references/github-actions.md`). Prefer a checksum-verified binary or digest-pinned container over a third-party action adding GitHub-API/token surface you don't need.
 - **Language packages:** ecosystem hash-locking — `pip install --require-hashes` with a `--generate-hashes` lock, `npm ci` against a committed lockfile (+ `npm audit signatures` for provenance), a committed `Cargo.lock`/`poetry.lock`/`uv.lock`/`Package.resolved` (SwiftPM: CI resolves with `-onlyUsePackageVersionsFromResolvedFile`, pins by version never branch — `references/swift-apple-development.md` §9). A bare `pkg==1.2.3` is *version*-pinned, **not** *integrity*-pinned — say so; hash-lock where the gate matters.
@@ -421,7 +422,7 @@ A second writer — agent or human — in the tree overrides the solo-speed Defi
 | **Website** | https://briangreenberg.net |
 | **License** | Apache-2.0 |
 | **Created** | 2026-05-18 |
-| **Last updated** | 2026-07-25 |
+| **Last updated** | 2026-07-26 |
 | **Version** | 1.22.0 | <!-- x-release-please-version -->
 
 ### Changelog
