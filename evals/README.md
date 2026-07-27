@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-04 11:04 PM CDT
+Last updated: 2026-07-05 08:54 AM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -100,6 +100,12 @@ reach. Scenario `query`s are first-party fixtures, but run sweeps only on a mach
 you trust with that. With-skill runs read a **staged copy** of the skill tree that excludes
 `evals/` (a run must never be able to read its own grading criteria) and the private,
 uncommitted files.
+
+Claude-runner scenario **and judge** runs are isolated from the invoking user's global agent
+context (`--setting-sources project`): user-level memory, hooks, and settings never load, so
+a sweep's "bare" responses can't absorb the operator's environment — the root cause of an
+identifier once leaking into a committed baseline. (Generic runners: the `--runner-cmd`
+template author owns the foreign CLI's equivalent isolation.)
 
 The judge receives two pieces of **harness-collected evidence** alongside the response text:
 the post-run **workspace evidence** (unified diffs vs the fixtures first, then new files —
