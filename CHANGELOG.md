@@ -17,6 +17,21 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.23.1](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.23.0...v1.23.1) (2026-07-27)
+
+A harness-hygiene patch. Claude-runner scenario **and judge** invocations in the eval sweep now
+pass `--setting-sources project`, so the invoking user's global agent context — user-level
+memory, hooks, and settings — never loads into a run. A sweep's "bare" (no-skill) responses could
+previously absorb the operator's environment, which is the root cause of the environment
+identifier that leaked into a committed baseline (scrubbed after the fact in #79); this closes
+the hole at the harness level instead of relying on post-hoc scrubbing. The temp cwd has no
+project settings, so the flag yields a true clean room. Generic runners are named as
+out-of-scope: the `--runner-cmd` template author owns the foreign CLI's equivalent isolation.
+
+### Bug Fixes
+
+* **evals:** isolate scenario and judge runs from the operator's global agent context ([#114](https://github.com/bjgreenberg/senior-engineering-partner/issues/114)) ([09a616f](https://github.com/bjgreenberg/senior-engineering-partner/commit/09a616fd840cd10c742f252b3eef7b9401a85b4a)) — `scripts/run-evals.py` (both the scenario and judge paths) + the isolation note in `evals/README.md`
+
 ## [1.23.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.22.0...v1.23.0) (2026-07-27)
 
 An observe-don't-infer release: both rules come from the same failure class — a healthy-looking
