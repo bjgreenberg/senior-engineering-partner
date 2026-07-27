@@ -149,3 +149,37 @@ The platform enforces the gate; discipline keeps the gate cheap to pass.
 | Require signed commits | not yet (defer) | once all writers sign |
 
 The migration from left column to right is intentionally a settings change, not a re-architecture. Build the left column correctly and the team-ready state is already there.
+
+---
+
+## SCM mechanics (the core's SOURCE CODE MANAGEMENT rules, in full)
+
+The always-loaded core carries these as one-line rules; this is the complete procedure for each.
+
+### Merge method: `--squash`, never `--rebase`
+
+`gh pr merge --squash --delete-branch`. Signature-required branches refuse rebase merges ("Rebase merges cannot be automatically signed"); on every other repo a GitHub rebase merge rewrites the commits and **silently strips their signatures** — signed PR commits land `verified:false` on `main`. Squash commits are GitHub web-flow-signed → *Verified*. With approvals at the fleet-standard 0, self-merge once required checks are green (never blind-merge an agent PR — above).
+
+### Review triage BEFORE merging — reviews are work items, not decoration
+
+An unread review (Copilot, any bot, any human) is a known-flagged bug shipped to `main`. After CI is green and **before** `gh pr merge`, fetch and read: `gh api repos/<owner>/<repo>/pulls/<n>/comments` (inline findings — where the Copilot reviewer posts), `…/pulls/<n>/reviews` (review bodies), `…/issues/<n>/comments` — then **address each finding or dismiss it with a written reason**; re-check after pushing fixes (the reviewer re-runs per push).
+
+- **An unresolved human `CHANGES_REQUESTED` is a hard block — it outranks green CI and any bot `APPROVE`.** Resolve the thread or get an explicit re-review first.
+- **Reviewer unavailable (quota, outage, not configured)?** The obligation does not evaporate — substitute a *documented* structured self-review over the same dimensions (correctness/edge cases, security, tenant isolation, the diff's risk areas) and state in the PR that you did; re-check for reviewer recovery each session.
+- **Chronically unavailable? Offload, don't self-review forever:** make the deterministic gates real and required (SAST, secret scan, dependency audit, linters), and run a local AI review pass on the diff before opening the PR, recording its verdict in the PR body. Encode the *process*, not a dependency on one bot.
+
+### Commit signing
+
+Commits are SSH-signed (interactive) so the host shows *Verified* — typical: global `commit.gpgsign=true` + `gpg.format=ssh`, a signer like 1Password `op-ssh-sign`, an ed25519 signing key (record the exact config in `my-environment.md`). **Unattended automation is exempt per-invocation, never per-machine:** any LaunchAgent/cron/bot commit uses `git -c commit.gpgsign=false commit …` (the secrets agent may be locked when it fires) — include the flag in any new auto-committing automation from day one.
+
+### Per-repo deploy keys for push auth
+
+Each new remote-backed repo gets its own dedicated ed25519 key registered as a *write-enabled deploy key* on that one repo; pin the local clone to it with repo-local `core.sshCommand` (`ssh -i <key> -o IdentitiesOnly=yes -o IdentityAgent=none`), **bypassing** the SSH/secrets agent so another repo's agent-held key can't win auth into the wrong scope (the failure mode: a silent `ERROR: Repository not found`). Least-privilege transport — a leaked key reaches exactly one repo and rotates independently — and **separate from the commit-signing key** (`core.sshCommand` governs transport only; signing still routes through the signing agent). On a host without write-enabled deploy keys, use its narrowest per-repo credential (project-scoped token / dedicated bot account). Concrete paths and naming: `my-environment.md`.
+
+### Releases are cut, not hand-tagged
+
+For any versioned/distributed artifact, automate the release: **release-please** (or semantic-release) reads the Conventional Commits, bumps semver, updates the CHANGELOG, tags, and creates a **GitHub Release** with notes; the release workflow attaches the SBOM + provenance attestation (`supply-chain.md`). A manually-tagged release whose CHANGELOG/notes drift from the commits is exactly the staleness this prevents. (Scripts/single-file tools keep the date-based CHANGELOG; this is for things that ship versions.)
+
+### Machine-synced config (dotfile/config sync tools)
+
+Treat synced config as code. Cardinal rule: **edit the *source of truth*, never the live *rendered target*** — an auto-apply job silently reverts target-only edits, and an auto-sync job can absorb uncommitted source edits into a generic commit. Commit + push the source (an apply is not delivery), keep it machine-identical (template if it must differ), and never check runtime output (logs/state) into the sync repo. Record the tool's concrete source-vs-target discipline in `my-environment.md`.
