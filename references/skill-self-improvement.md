@@ -39,7 +39,10 @@ Present all three parts — the human's yes/no gates everything that follows:
 2. **The guarding eval** — a new or extended `evals/` scenario whose
    `expected_behavior` / `anti_behavior` would have caught the original miss. A lesson
    without a guarding eval can silently regress; the scenario's `source` field records
-   the provenance.
+   the provenance. This contract is mechanized at the PR boundary: the `eval-guard` CI
+   gate (`scripts/eval-guard.py`) fails a substantive SKILL.md change that ships no
+   `evals/scenarios/` change, unless the PR body carries an explicit
+   `Eval-waiver: <reason>` line — an auditable decision, not a silent skip.
 3. **The origin story** — what happened, what it cost, and why the existing rules
    didn't cover it. This becomes the PR body's "why" and, at release time, changelog
    narrative material.

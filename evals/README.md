@@ -1,11 +1,17 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-05 08:54 AM CDT
+Last updated: 2026-07-27 09:19 AM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
 "this must never happen again." Anthropic's own most-emphasized authoring practice is *build evaluations
 first*; this brings the skill into line with it (the changelog was the spec; these are the tests).
+
+**The suite is gate-enforced, not aspirational:** the `eval-guard` CI check
+(`scripts/eval-guard.py`) fails any PR that makes a substantive SKILL.md change without touching
+`evals/scenarios/` — a rule change must ship its guarding eval, or the PR body must carry an
+explicit `Eval-waiver: <reason>` line (metadata-only diffs, e.g. release-please version bumps,
+pass automatically). Fixture-tested in `scripts/tests/test-scripts.sh` like every other gate.
 
 ## Why this exists
 

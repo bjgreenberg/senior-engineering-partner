@@ -13,6 +13,16 @@ AI tools"):
      repo has tripped over before — see CHANGELOG v1.1.0).
   4. Unknown frontmatter keys are WARNED, not failed (the spec allows optional fields;
      a typo'd required key still fails via checks 2-3).
+  5. Reference link integrity: every `references/<file>.md` path the SKILL.md body names
+     exists on disk, and every `references/*.md` file on disk is named somewhere in the
+     body (no dead pointers, no orphans a reader can never reach). The private
+     environment profile (`my-environment.md`) is exempt in both directions — it is
+     deliberately untracked, so it is absent in CI and unnamed-on-disk locally.
+  6. Core word budget: the SKILL.md body (frontmatter excluded) stays within
+     CORE_WORD_BUDGET words. The body is loaded wholesale into context on every
+     invocation, so its size is a per-session cost and an instruction-salience risk —
+     the budget is a RATCHET: it may be lowered as the core is compressed, never raised
+     without a maintainer decision recorded in the CHANGELOG.
 
 Exit 0 = all checks pass (warnings allowed). Exit 1 = any check failed.
 Usage: scripts/skill-lint.py [path-to-SKILL.md]
@@ -27,6 +37,14 @@ KNOWN_KEYS = {"name", "description", "license", "allowed-tools", "metadata", "ve
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 DESCRIPTION_LIMIT = 1024
 NAME_LIMIT = 64
+# Snapshot at v1.23.1 was 12,612 body words; headroom guards drift while the HIGH-1 core
+# diet is in flight, after which this ratchets DOWN (see the audit of 2026-07-27).
+CORE_WORD_BUDGET = 12_700
+CORE_WORD_WARN = 12_000
+# The private environment profile: named by SKILL.md but deliberately untracked (absent in
+# CI), and locally present but not required to be named — exempt from check 5 both ways.
+PRIVATE_REFS = {"my-environment.md"}
+REF_LINK_RE = re.compile(r"references/([A-Za-z0-9._-]+\.md)")
 
 
 def parse_frontmatter(text: str) -> dict[str, str] | None:
@@ -98,6 +116,37 @@ def main() -> int:
     for key in sorted(set(fields) - KNOWN_KEYS):
         warnings.append(f"unknown frontmatter key {key!r} (not failed; verify against the spec)")
 
+    # Check 5 — reference link integrity (both directions), rooted at the skill dir.
+    text = skill_path.read_text(encoding="utf-8")
+    body = re.sub(r"^---\r?\n.*?\r?\n---\r?\n", "", text, count=1, flags=re.S)
+    skill_dir = skill_path.resolve().parent
+    refs_dir = skill_dir / "references"
+    named = set(REF_LINK_RE.findall(body))
+    for ref in sorted(named - PRIVATE_REFS):
+        if not (refs_dir / ref).is_file():
+            failures.append(f"SKILL.md names references/{ref} but the file does not exist")
+    if refs_dir.is_dir():
+        on_disk = {p.name for p in refs_dir.glob("*.md")}
+        for ref in sorted(on_disk - named - PRIVATE_REFS):
+            failures.append(
+                f"references/{ref} exists but SKILL.md never names it (orphan — unreachable"
+                " by progressive disclosure; name it or remove it)"
+            )
+
+    # Check 6 — core word budget (ratchet; see module docstring).
+    words = len(body.split())
+    if words > CORE_WORD_BUDGET:
+        failures.append(
+            f"SKILL.md body is {words} words, over the CORE_WORD_BUDGET of"
+            f" {CORE_WORD_BUDGET} — compress to a reference trigger instead of growing the"
+            " always-loaded core (the budget only ratchets down)"
+        )
+    elif words > CORE_WORD_WARN:
+        warnings.append(
+            f"SKILL.md body is {words} words (> {CORE_WORD_WARN} warning floor,"
+            f" budget {CORE_WORD_BUDGET}) — nearing the core budget"
+        )
+
     for w in warnings:
         print(f"WARN: {w}", file=sys.stderr)
     if failures:
@@ -105,7 +154,8 @@ def main() -> int:
             print(f"FAIL: {f_}", file=sys.stderr)
         return 1
     print(
-        f"PASS: skill-lint — name OK, description {len(description)}/{DESCRIPTION_LIMIT} chars"
+        f"PASS: skill-lint — name OK, description {len(description)}/{DESCRIPTION_LIMIT} chars,"
+        f" body {words}/{CORE_WORD_BUDGET} words, {len(named - PRIVATE_REFS)} reference links OK"
         + (f", {len(warnings)} warning(s)" if warnings else "")
     )
     return 0
