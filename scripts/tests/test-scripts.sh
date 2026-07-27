@@ -110,6 +110,82 @@ mkdir -p "$blockdir"
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$blockdir/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint FAILS on an oversize block-scalar description (bypass closed)" 1 "$rc"
 
+# Reference-integrity + core-budget checks (2026-07-27 audit): each planted violation must
+# FAIL; the conforming fixture above (no references, tiny body) already proves the PASS path.
+deadrefdir="$scratch/skill-fixture/deadref-skill"
+mkdir -p "$deadrefdir/references"
+printf -- '---\nname: deadref-skill\ndescription: "t"\n---\nRead references/does-not-exist.md.\n' \
+  > "$deadrefdir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$deadrefdir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS on a dead reference pointer" 1 "$rc"
+
+orphandir="$scratch/skill-fixture/orphan-skill"
+mkdir -p "$orphandir/references"
+printf 'never named\n' > "$orphandir/references/unreachable.md"
+printf -- '---\nname: orphan-skill\ndescription: "t"\n---\nbody with no reference links\n' \
+  > "$orphandir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$orphandir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS on an orphan reference file" 1 "$rc"
+
+# my-environment.md is exempt both ways: named-but-absent AND present-but-unnamed must pass.
+envdir="$scratch/skill-fixture/env-skill"
+mkdir -p "$envdir/references"
+printf 'private profile\n' > "$envdir/references/my-environment.md"
+printf -- '---\nname: env-skill\ndescription: "t"\n---\nRead references/my-environment.md early.\n' \
+  > "$envdir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$envdir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint PASSES the private-profile exemption (both directions)" 0 "$rc"
+
+budgetdir="$scratch/skill-fixture/budget-skill"
+mkdir -p "$budgetdir"
+{
+  printf -- '---\nname: budget-skill\ndescription: "t"\n---\n'
+  python3 -c "print('word ' * 12800)"
+} > "$budgetdir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$budgetdir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a body over the core word budget" 1 "$rc"
+
+# --- eval-guard.py fixtures ------------------------------------------------------------------
+# A scratch git repo: base commit, then per-case head commits. The gate must FAIL a bare rule
+# change, and PASS each of its three documented outs (rides-with-eval, metadata-only, waiver).
+gitfix="$scratch/eval-guard-repo"
+mkdir -p "$gitfix/evals/scenarios"
+g() { git -C "$gitfix" -c user.email=t@t -c user.name=t -c commit.gpgsign=false "$@"; }
+git -C "$gitfix" init -q -b main
+printf -- '# rules\nold rule\n| **Version** | 1.0.0 |\n| **Last updated** | 2026-01-01 |\n' \
+  > "$gitfix/SKILL.md"
+g add SKILL.md && g commit -qm base
+base_sha="$(g rev-parse HEAD)"
+
+guard() { # guard <expected-exit> <desc> — runs eval-guard at current HEAD vs base
+  local expected="$1" desc="$2" body="${3-}"
+  local rc=0
+  (cd "$gitfix" && BASE_REF="$base_sha" HEAD_REF=HEAD PR_BODY="$body" \
+    python3 "$repo_root/scripts/eval-guard.py") >/dev/null 2>&1 || rc=$?
+  check "$desc" "$expected" "$rc"
+}
+
+printf -- '# rules\nNEW RULE with no eval\n| **Version** | 1.0.0 |\n| **Last updated** | 2026-01-01 |\n' \
+  > "$gitfix/SKILL.md"
+g commit -qam "rule change, no eval"
+guard 1 "eval-guard FAILS a bare SKILL.md rule change"
+guard 0 "eval-guard PASSES the same change with an Eval-waiver body" \
+  $'What changed\nEval-waiver: prose reorder only, no behavior change'
+
+printf '{}\n' > "$gitfix/evals/scenarios/new-rule.json"
+g add evals/scenarios/new-rule.json && g commit -qm "add guarding eval"
+guard 0 "eval-guard PASSES a rule change that ships its guarding eval"
+
+g reset -q --hard "$base_sha"
+printf -- '# rules\nold rule\n| **Version** | 1.1.0 |\n| **Last updated** | 2026-02-02 |\n' \
+  > "$gitfix/SKILL.md"
+g commit -qam "release metadata only"
+guard 0 "eval-guard PASSES a metadata-only SKILL.md diff (release PR shape)"
+
+g reset -q --hard "$base_sha"
+g commit -q --allow-empty -m "no skill change"
+guard 0 "eval-guard PASSES when SKILL.md is untouched"
+
 # --- run-evals.py runner plumbing (offline: pure logic + argparse fail-fast; no model runs) --
 # build_runner_cmd is the injection boundary for --runner generic: placeholders substitute
 # AFTER shell-style tokenization, so a hostile prompt must stay ONE argv token.

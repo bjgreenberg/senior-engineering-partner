@@ -1,0 +1,31 @@
+name: eval-guard
+
+# A substantive SKILL.md rule change must ship a guarding eval scenario, or carry an
+# explicit `Eval-waiver: <reason>` line in the PR body — the mechanized form of the
+# self-improvement loop's guarding-eval contract (references/skill-self-improvement.md).
+# Metadata-only SKILL.md diffs (release-please Version/Last-updated rows) pass without a
+# waiver. Stdlib-only Python, so the local run and CI are byte-identical:
+# scripts/eval-guard.py. PR-only: the check needs a base to diff against.
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  eval-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Guard SKILL.md rule changes with evals
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.sha }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          python3 scripts/eval-guard.py
