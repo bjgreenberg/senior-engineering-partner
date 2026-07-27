@@ -17,6 +17,76 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [Unreleased]
+
+<!-- Hand-written pending the next release-please run, which prepends the generated
+     version section above this one; a maintainer folds this narrative into it. -->
+
+**ALWAYS CHECK THE LOGS becomes a standing rule** — and it lands in *Epistemic Discipline*, next to
+*verify before you assert*, because it is an observe-don't-infer rule rather than a logging-design one.
+Prompted by a real miss: a device install was verified through provisioning profiles, entitlements,
+build destination, and version number — and **zero logs were read** — while the framework was printing
+`BUG IN CLIENT OF CLOUDKIT: CloudKit push notifications require the 'remote-notification' background
+mode in your info plist` on every launch. The target had never declared `UIBackgroundModes`, so silent
+push could not be delivered and sync silently ran on its poll fallback with no fast path at all.
+Reasoning from source could never have found it: the complaint was emitted by the *framework*, not the
+app's own logger. Reading the logs is now part of the **Definition of Done** for any change to a
+running system — a row in `scripts/self-review.md` and a clause in the *Definition of Done* section,
+so the rule is mechanized where the checklist is actually copied — and the **first** step of any
+failure diagnosis, before the hypothesis and before anything is called healthy.
+
+**The not-subsystem-scoped pass is the load-bearing half.** Framework-emitted defects
+(`BUG IN CLIENT OF …`, entitlement/sandbox denials, XPC failures) carry **no app subsystem**, so a
+query scoped to the app's own subsystem structurally cannot see them — and the fewer log call sites an
+app has, the more of the truth lives outside its subsystem. The rule requires a second pass that is
+**not** subsystem-scoped: unfiltered when sweeping high-specificity markers, `process ==`-scoped when
+reading volume (fully unfiltered severity sweeps are unreadable at real log rates, so the rule names
+the shape that can actually be run). `swift-apple-development.md` §7 prescribed only the
+subsystem-scoped shape — the shape that hid the defect — and now prescribes the process-scoped one
+with a pointer to the second pass.
+
+**One instrument is never the whole story.** The same install carried a second, independent defect the
+log could *not* show: the macOS-only spelling of the push entitlement, silently dropped on iOS, so the
+shipped binary held no push entitlement at all — surfaced by `codesign -d --entitlements -`, not by
+any log query. The worked example now says so, because "I read the logs" and "I checked the
+entitlements" close different halves of the same change.
+
+**Command shadowing joins the false-negative-search rule.** A second, compounding failure in the same
+session: a `log show … | grep` that returned nothing and nearly got reported clean. `log` is a **zsh
+builtin** shadowing `/usr/bin/log`, so the command errored with `too many arguments` — and because
+stderr had been folded into the pipe, the finding-grep swallowed the error and printed a confident
+empty "clean". This is the existing unquoted-`--include`-glob trap with a different mechanism, so it
+**sharpens that rule rather than becoming a new one**: invoke diagnostic tools by absolute path, gate
+on the *tool's* exit status (`$pipestatus`/`$PIPESTATUS` — in a pipeline `$?` is the grep's), and never
+pipe stderr into the grep that filters for findings. A log surface may never be reported clean without
+showing the exact command and the evidence it ran, and **never off an empty result alone** — an empty
+`log show` is a known false negative (and an "empty" archive query still prints its 1-line header, so
+the tripwire is `<= 1` line, not `0`).
+
+**The runnable procedure is bounded and private.** An unscoped capture is the most PII-dense artifact
+on the machine and measured ~226k lines / ~34 MB over five minutes on one idle Mac, so the documented
+recipe uses `umask 077` + `mktemp` + a cleanup trap over a fixed `/tmp` path, bounds the window, and
+forbids pasting a raw capture into a PR or chat. Marker specificity is measured rather than assumed:
+`BUG IN CLIENT` and `Sandbox: .*deny` run 0–10 hits over minutes, while a bare `entitlement` substring
+ran ~3,000 hits in five minutes — noise, not a marker. Severity filters are named as filters too: a
+`-p warning` / `logType == "error"` floor goes on only *after* an unfiltered read.
+
+Nothing is relaxed; every edit adds or sharpens.
+
+### Features
+
+* **logging:** make "ALWAYS CHECK THE LOGS" a standing rule — log-reading enters the Definition of
+  Done (with a `scripts/self-review.md` row) and becomes step one of diagnosis, with the
+  subsystem-scoped-plus-not-subsystem-scoped query requirement, the empty-is-not-clean rule, and the
+  never-report-clean-without-the-command obligation (`SKILL.md`,
+  `references/logging-and-monitoring.md`, `references/debugging.md`,
+  `references/swift-apple-development.md`)
+* **epistemic:** sharpen the false-negative-search rule with the **command-shadowing** mechanism
+  (shell builtins shadowing `/usr/bin/log`, `$pipestatus`/`$PIPESTATUS` vs `$?`, never
+  `2>&1 | grep` a diagnostic command)
+* **evals:** add `log-read-before-declaring-healthy` — guards against declaring a surface healthy
+  without a log read, and against reporting a log query clean without showing the command
+
 ## [1.22.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.21.0...v1.22.0) (2026-07-22)
 
 Prompted by holding the skill up against the OWASP **secure-agent-playbook** (#105): the

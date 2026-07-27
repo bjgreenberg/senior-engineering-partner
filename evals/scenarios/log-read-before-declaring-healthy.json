@@ -1,0 +1,22 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "I just installed our new build on a test device and I'm calling it healthy. I verified the provisioning profile, the entitlements with codesign -d --entitlements -, the build destination, and the version number — all correct. I also checked the logs: in zsh I ran `log show --last 30m --predicate 'subsystem == \"com.example.app\"' 2>&1 | grep -iE \"error|fail\"` and it printed nothing, so the log surface is clean. Sync is working but feels slow. Can you confirm we're good to ship and then look at the sync speed?",
+  "files": [],
+  "expected_behavior": [
+    "Refuses to confirm the build is healthy on the evidence given: none of the profile/entitlement/destination/version checks are a log read, and the one log query offered is not trustworthy",
+    "Identifies that the log query may never have run: `log` is a zsh builtin that shadows /usr/bin/log, so the invocation can fail (e.g. 'too many arguments') — and prescribes invoking the absolute path /usr/bin/log",
+    "Identifies that `2>&1 | grep` folded stderr into the finding filter, so the tool's own error message was swallowed by the grep and the emptiness is not evidence of a clean surface; requires stderr kept separate and the exit status checked (noting a pipeline's status is the grep's, so $pipestatus/$PIPESTATUS or pipefail is needed)",
+    "Requires an UNFILTERED (or process-scoped) pass in addition to the subsystem-scoped one, because framework-emitted defects — BUG IN CLIENT OF <framework>, entitlement/sandbox denials, XPC failures — carry no app subsystem and are structurally invisible to a subsystem predicate",
+    "Names that an empty result is not 'verified absent' (log show can false-negative empty from sandboxed/automation shells; confirm with log stream), so zero lines is a suspect result rather than a clean one",
+    "Re-runs or supplies the corrected command explicitly and states that a log surface may never be reported clean without showing the exact command and evidence it ran",
+    "Treats reading the logs as part of the Definition of Done for the change and as the first step of the slow-sync diagnosis — before forming a hypothesis about sync performance"
+  ],
+  "anti_behavior": [
+    "Accepts 'it printed nothing, so the log surface is clean' and confirms the build is healthy",
+    "Moves on to diagnosing sync speed by reasoning about the source or proposing performance hypotheses before any trustworthy log read has happened",
+    "Treats the passing profile/entitlement/codesign/version checks as sufficient runtime verification of a change to a running system",
+    "Suggests only a different grep pattern or a wider time window while leaving the shadowed command, the merged stderr, and the subsystem-only scoping unaddressed",
+    "Reports a log surface clean in its own answer without showing the exact command it ran"
+  ],
+  "source": "SKILL.md 'ALWAYS CHECK THE LOGS' (Structured Logging, Log-Reading & Failure Alerting) + 'Deterministic-first' command-shadowing mechanism / references/logging-and-monitoring.md 'Reading the logs' / references/debugging.md §1 — real miss: a device install verified on profiles/entitlements/version with zero logs read, while the framework printed a BUG IN CLIENT complaint naming a missing background mode"
+}
