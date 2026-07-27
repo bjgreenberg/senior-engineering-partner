@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.23.1](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.23.0...v1.23.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* **evals:** isolate scenario and judge runs from the operator's global agent context ([#114](https://github.com/bjgreenberg/senior-engineering-partner/issues/114)) ([09a616f](https://github.com/bjgreenberg/senior-engineering-partner/commit/09a616fd840cd10c742f252b3eef7b9401a85b4a))
+
 ## [1.23.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.22.0...v1.23.0) (2026-07-27)
 
 
