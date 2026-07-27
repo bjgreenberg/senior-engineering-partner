@@ -366,7 +366,7 @@ A second writer — agent or human — in the tree overrides the solo-speed Defi
 | **Website** | https://briangreenberg.net |
 | **License** | Apache-2.0 |
 | **Created** | 2026-05-18 |
-| **Last updated** | 2026-07-26 |
+| **Last updated** | 2026-07-27 |
 | **Version** | 1.23.1 | <!-- x-release-please-version -->
 
 ### Changelog

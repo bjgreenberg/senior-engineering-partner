@@ -37,10 +37,11 @@ KNOWN_KEYS = {"name", "description", "license", "allowed-tools", "metadata", "ve
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 DESCRIPTION_LIMIT = 1024
 NAME_LIMIT = 64
-# Snapshot at v1.23.1 was 12,612 body words; headroom guards drift while the HIGH-1 core
-# diet is in flight, after which this ratchets DOWN (see the audit of 2026-07-27).
-CORE_WORD_BUDGET = 12_700
-CORE_WORD_WARN = 12_000
+# Ratcheted post-diet (tranche 5, 2026-07-27): the core landed at 8,630 body words after
+# the 12,490 → 8,630 compression; headroom covers small rule additions, and the budget
+# only ever ratchets DOWN (a raise is a maintainer decision recorded in the CHANGELOG).
+CORE_WORD_BUDGET = 8_900
+CORE_WORD_WARN = 8_700
 # The private environment profile: named by SKILL.md but deliberately untracked (absent in
 # CI), and locally present but not required to be named — exempt from check 5 both ways.
 PRIVATE_REFS = {"my-environment.md"}
