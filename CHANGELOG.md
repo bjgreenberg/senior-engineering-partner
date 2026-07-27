@@ -19,16 +19,11 @@ in your own `references/my-environment.md`.
 
 ## [1.23.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.22.0...v1.23.0) (2026-07-27)
 
-
-### Features
-
-* **logging:** make "ALWAYS CHECK THE LOGS" a standing rule ([#111](https://github.com/bjgreenberg/senior-engineering-partner/issues/111)) ([da28fc0](https://github.com/bjgreenberg/senior-engineering-partner/commit/da28fc0ff35acff792a1424cbe6945eeca926e0b))
-* **supply-chain:** install the whole distribution and gate on tool output, not exit code ([#112](https://github.com/bjgreenberg/senior-engineering-partner/issues/112)) ([d5410ec](https://github.com/bjgreenberg/senior-engineering-partner/commit/d5410ec7dbfd3dea524b499474d14e5cd5283090))
-
-## [Unreleased]
-
-<!-- Hand-written pending the next release-please run, which prepends the generated
-     version section above this one; a maintainer folds this narrative into it. -->
+An observe-don't-infer release: both rules come from the same failure class — a healthy-looking
+surface (a clean-seeming install, a zero-exit tool) trusted without reading what it actually
+emitted or produced. One lands on the diagnosis side (read the logs before calling anything
+healthy), one on the supply-chain side (a verified download says nothing about a complete
+install or a correct effect).
 
 **ALWAYS CHECK THE LOGS becomes a standing rule** — and it lands in *Epistemic Discipline*, next to
 *verify before you assert*, because it is an observe-don't-infer rule rather than a logging-design one.
@@ -79,11 +74,28 @@ forbids pasting a raw capture into a PR or chat. Marker specificity is measured 
 ran ~3,000 hits in five minutes — noise, not a marker. Severity filters are named as filters too: a
 `-p warning` / `logType == "error"` floor goes on only *after* an unfiltered read.
 
+**Install the whole distribution — and gate on the tool's output, not its exit code.** The
+supply-chain rule, from a second real miss with the same shape: a CI pipeline installed XcodeGen by
+copying the bare binary out of the dist (`sudo install …/bin/xcodegen /usr/local/bin/`), silently
+orphaning the `share/xcodegen/SettingPresets` directory the binary resolves *relative to itself*.
+XcodeGen warned `No "iOS" settings found`, **exited 0**, and generated every target without
+`SDKROOT` — so iOS/watchOS schemes resolved as macOS and CI reported "no destinations" across 16
+runs, two PRs, and two runner-image generations, all misattributed to the runners. The existing
+pin+hash discipline verified the download perfectly and still missed it: **integrity of the
+artifact says nothing about completeness of the install or correctness of the tool's effect.** A
+new bullet in *Supply-chain integrity* pairs the two halves — install the dist whole (`share/` and
+`lib/` ride beside `bin/`), then assert the produced artifact contains what the tool exists to
+produce (the guard was proven red/green in the source incident: a preset-less install yields 0
+`SDKROOT` matches and fails; a healthy one yields 4 per platform and passes).
+
 Nothing is relaxed; every edit adds or sharpens.
 
 ### Features
 
-* **logging:** make "ALWAYS CHECK THE LOGS" a standing rule — log-reading enters the Definition of
+* **logging:** make "ALWAYS CHECK THE LOGS" a standing rule
+  ([#111](https://github.com/bjgreenberg/senior-engineering-partner/issues/111),
+  [da28fc0](https://github.com/bjgreenberg/senior-engineering-partner/commit/da28fc0ff35acff792a1424cbe6945eeca926e0b))
+  — log-reading enters the Definition of
   Done (with a `scripts/self-review.md` row) and becomes step one of diagnosis, with the
   subsystem-scoped-plus-not-subsystem-scoped query requirement, the empty-is-not-clean rule, and the
   never-report-clean-without-the-command obligation (`SKILL.md`,
@@ -91,9 +103,15 @@ Nothing is relaxed; every edit adds or sharpens.
   `references/swift-apple-development.md`)
 * **epistemic:** sharpen the false-negative-search rule with the **command-shadowing** mechanism
   (shell builtins shadowing `/usr/bin/log`, `$pipestatus`/`$PIPESTATUS` vs `$?`, never
-  `2>&1 | grep` a diagnostic command)
+  `2>&1 | grep` a diagnostic command) ([#111](https://github.com/bjgreenberg/senior-engineering-partner/issues/111))
 * **evals:** add `log-read-before-declaring-healthy` — guards against declaring a surface healthy
   without a log read, and against reporting a log query clean without showing the command
+  ([#111](https://github.com/bjgreenberg/senior-engineering-partner/issues/111))
+* **supply-chain:** install the whole distribution and gate on tool output, not exit code
+  ([#112](https://github.com/bjgreenberg/senior-engineering-partner/issues/112),
+  [d5410ec](https://github.com/bjgreenberg/senior-engineering-partner/commit/d5410ec7dbfd3dea524b499474d14e5cd5283090))
+  — one new bullet in *Supply-chain integrity* beside the binaries/tarballs canonical pattern
+  (`SKILL.md`)
 
 ## [1.22.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.21.0...v1.22.0) (2026-07-22)
 
