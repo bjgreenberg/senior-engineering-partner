@@ -17,6 +17,14 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.23.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.22.0...v1.23.0) (2026-07-27)
+
+
+### Features
+
+* **logging:** make "ALWAYS CHECK THE LOGS" a standing rule ([#111](https://github.com/bjgreenberg/senior-engineering-partner/issues/111)) ([da28fc0](https://github.com/bjgreenberg/senior-engineering-partner/commit/da28fc0ff35acff792a1424cbe6945eeca926e0b))
+* **supply-chain:** install the whole distribution and gate on tool output, not exit code ([#112](https://github.com/bjgreenberg/senior-engineering-partner/issues/112)) ([d5410ec](https://github.com/bjgreenberg/senior-engineering-partner/commit/d5410ec7dbfd3dea524b499474d14e5cd5283090))
+
 ## [Unreleased]
 
 <!-- Hand-written pending the next release-please run, which prepends the generated
