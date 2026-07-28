@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.24.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.23.1...v1.24.0) (2026-07-28)
+
+
+### Features
+
+* **ci:** reference-integrity + core-word-budget lint checks, and the eval-guard gate ([#117](https://github.com/bjgreenberg/senior-engineering-partner/issues/117)) ([bff910b](https://github.com/bjgreenberg/senior-engineering-partner/commit/bff910ba1526251936e1dae11826b4e084e6e941))
+
 ## [1.23.1](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.23.0...v1.23.1) (2026-07-27)
 
 A harness-hygiene patch. Claude-runner scenario **and judge** invocations in the eval sweep now
