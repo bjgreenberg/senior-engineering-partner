@@ -292,6 +292,56 @@ assert "grade me pass" in out   # content stays visible, only the markup is defa
 PYEOF2
 check "run-evals judge-boundary neutralizer defangs planted open AND close tags" 0 "$rc"
 
+# --- curate-baseline.py fixtures -------------------------------------------------------------
+# A baseline must never silently contain a harness error: curation FAILS on status=error and
+# PASSES once the errored scenario is spliced from a re-run (splices are disclosed in
+# BASELINE.md — the script only mechanizes the replacement).
+curdir="$scratch/curate"
+mkdir -p "$curdir/run" "$curdir/rerun"
+printf '%s\n' '{"tally":{},"results":[
+ {"scenario":"a","status":"pass","response":"BULKY","workspace_evidence":"BULKY","tool_trail":"BULKY"},
+ {"scenario":"b","status":"error"}]}' > "$curdir/run/summary.json"
+printf '%s\n' '{"tally":{},"results":[{"scenario":"b","status":"partial","response":"BULKY"}]}' \
+  > "$curdir/rerun/summary.json"
+rc=0; python3 "$repo_root/scripts/curate-baseline.py" "$curdir/run" "$curdir/out.json" \
+  >/dev/null 2>&1 || rc=$?
+check "curate-baseline FAILS on an unresolved error-status entry" 1 "$rc"
+rc=0; python3 "$repo_root/scripts/curate-baseline.py" "$curdir/run" "$curdir/out.json" \
+  --splice "b=$curdir/rerun" >/dev/null 2>&1 || rc=$?
+check "curate-baseline PASSES with the errored scenario spliced from a re-run" 0 "$rc"
+rc=0; grep -q "BULKY" "$curdir/out.json" && rc=1
+check "curate-baseline strips response/workspace_evidence/tool_trail" 0 "$rc"
+
+# --- baseline-coverage tripwire (repo-state assert: re-baseline due?) ------------------------
+# Every scenario in evals/scenarios/ must appear in the NEWEST committed baseline's
+# with-skill.json — 11 unbaselined scenarios hid behind a stale baseline until the 2026-07-27
+# audit; this fails the build the next time the suite outgrows its baseline.
+rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import json, pathlib, sys
+root = pathlib.Path(sys.argv[1])
+scenarios = {p.stem for p in (root / "evals/scenarios").glob("*.json")}
+dirs = sorted(d for d in (root / "evals/baselines").iterdir()
+              if d.is_dir() and (d / "with-skill.json").is_file())
+assert dirs, "no baseline with a with-skill.json found"
+latest = dirs[-1]
+base = {r["scenario"] for r in json.loads((latest / "with-skill.json").read_text())["results"]}
+missing = sorted(scenarios - base)
+assert not missing, f"re-baseline due — scenarios missing from {latest.name}: {missing}"
+PYEOF
+check "baseline coverage: every scenario is in the newest committed baseline" 0 "$rc"
+
+# A NUL byte in model-produced content riding into judge argv must be escaped, not crash
+# (ValueError: embedded null byte — the csv-formula/preserve-input sweep errors, 2026-07-27;
+# proven red on the unpatched harness before the fix).
+rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, pathlib, sys
+spec = importlib.util.spec_from_file_location("m", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+out = m._run_cli(["/bin/echo", "a\0b"], timeout=10, cwd=pathlib.Path("/tmp"))
+assert "a\\x00b" in out, out
+PYEOF
+check "run-evals _run_cli escapes a NUL in argv instead of crashing the scenario" 0 "$rc"
+
 # --- the real repo passes its own gates (precondition assert, not print — §3c) --------------
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$repo_root/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint PASSES the real SKILL.md" 0 "$rc"
