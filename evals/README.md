@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-27 10:11 AM CDT
+Last updated: 2026-07-28 07:48 AM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -138,12 +138,15 @@ change** (new CLI default, new model family) also warrants a re-baseline even th
 tripwire can't see it — the 2026-07-05 discontinuity note shows why cross-harness numbers
 must never be compared silently.
 
-**Procedure** (the documented recipe — keep it stable so runs stay comparable):
+**Procedure** (the documented recipe — keep it stable so runs stay comparable; the
+per-scenario timeout is **1800s**: two scenarios reproducibly need 20+ minutes under tool
+grants, and the 2026-07-27 sweeps showed a 900s budget manufactures error-splices rather
+than tolerating flakes):
 
 ```bash
 # bare first, then with-skill, sequentially; judge stays opus
-scripts/run-evals.py --mode baseline   --model <m> --judge-model opus --jobs 2 --timeout 900
-scripts/run-evals.py --mode with-skill --model <m> --judge-model opus --jobs 2 --timeout 900
+scripts/run-evals.py --mode baseline   --model <m> --judge-model opus --jobs 2 --timeout 1800
+scripts/run-evals.py --mode with-skill --model <m> --judge-model opus --jobs 2 --timeout 1800
 
 # slim each results dir into the committable shape (strips response/evidence/trail;
 # refuses status=error entries — re-run the scenario and splice, disclosing it):
