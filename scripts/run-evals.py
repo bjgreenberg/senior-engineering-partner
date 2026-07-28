@@ -207,6 +207,14 @@ def _run_cli(cmd: list[str], timeout: int, cwd: Path, label: str = "claude") -> 
     CLIs spawn tool subprocesses, and a bare child-kill would orphan them past the
     temp-dir cleanup.
     """
+    # A NUL byte in any argv element makes exec raise `ValueError: embedded null byte`,
+    # erroring the whole scenario on harness plumbing. The reachable path is real:
+    # model-produced workspace content (a CSV-injection or form-state fixture writing
+    # NULs) reads as valid UTF-8, rides into the judge prompt, and lands in argv. NUL
+    # cannot reach the child through exec at all, so escape it VISIBLY — the judge still
+    # sees the content contained one. (Root cause of the csv-formula-injection-export /
+    # preserve-input-on-failed-submit sweep errors, 2026-07-27.)
+    cmd = [arg.replace("\0", "\\x00") for arg in cmd]
     proc = subprocess.Popen(
         cmd,
         stdin=subprocess.DEVNULL,  # a CLI polling the terminal would SIGTTIN-stop here

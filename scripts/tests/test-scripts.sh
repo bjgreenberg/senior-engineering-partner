@@ -330,6 +330,18 @@ assert not missing, f"re-baseline due — scenarios missing from {latest.name}: 
 PYEOF
 check "baseline coverage: every scenario is in the newest committed baseline" 0 "$rc"
 
+# A NUL byte in model-produced content riding into judge argv must be escaped, not crash
+# (ValueError: embedded null byte — the csv-formula/preserve-input sweep errors, 2026-07-27;
+# proven red on the unpatched harness before the fix).
+rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, pathlib, sys
+spec = importlib.util.spec_from_file_location("m", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+out = m._run_cli(["/bin/echo", "a\0b"], timeout=10, cwd=pathlib.Path("/tmp"))
+assert "a\\x00b" in out, out
+PYEOF
+check "run-evals _run_cli escapes a NUL in argv instead of crashing the scenario" 0 "$rc"
+
 # --- the real repo passes its own gates (precondition assert, not print — §3c) --------------
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$repo_root/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint PASSES the real SKILL.md" 0 "$rc"
