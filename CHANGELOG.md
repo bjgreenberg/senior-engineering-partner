@@ -17,6 +17,50 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.24.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.23.1...v1.24.0) (2026-07-28)
+
+The audit release. A full `AUDIT:`-mode pass over the skill's own repo (2026-07-27) found the two
+places world-class was still aspiration rather than evidence — an eval suite that had outgrown its
+baseline, and policy (guarding evals, reference hygiene, core size) without enforcement — and this
+release closes both, plus the experiment that *disproved* the audit's own biggest recommendation.
+
+**The evidence base is current and tripwired.** Eleven of 56 scenarios had never been baselined and
+the only harness-v2 baseline was single-model. Now: full-suite baselines for **Opus** (bare 15/28/13 →
+with-skill 42/13/1), **Haiku** (1/21/34 → 13/28/15), and **Fable** (9/30/17 → **42/14/0 — the first
+zero-fail with-skill sweep on any model**), every splice/re-run disclosed in its BASELINE.md, a
+`curate-baseline.py` that refuses to bake a harness error into a record, and a **baseline-coverage
+tripwire** in `script-tests`: the moment a scenario exists that the newest baseline never measured,
+CI fails with "re-baseline due" — the staleness class the audit found can't silently recur.
+
+**Policy became gates.** `eval-guard` (now a **required** check) fails any substantive SKILL.md change
+that ships no guarding eval and carries no explicit `Eval-waiver:` line — the self-improvement loop's
+contract, mechanized at the PR boundary. `skill-lint` grew reference-integrity checks (dead pointers
+and orphaned references both fail; the private profile exempt by design) and a **core word budget
+ratchet** (12,700, lower-only).
+
+**The core diet was proposed, measured, and refuted — and the refutation is the release's most
+valuable artifact.** A 31% core compression (12,490 → 8,630 words, mechanics relocated to references)
+was built behind a draft PR gated on a before/after sweep. It lost: 7 regressions on Opus, 16 on
+Haiku, mapping exactly onto the relocated rules. **In-core density is load-bearing — models often act
+without reading the reference a trigger points to, and small models depend on inlined rules more, not
+less.** The full negative result is committed as `evals/baselines/2026-07-27-postdiet-experiment/`
+(PR #119, closed unmerged by design), and any future compression must hold its section's guarding
+scenarios individually.
+
+**Harness fixes from the sweeps themselves:** model-produced NUL bytes riding into judge argv crashed
+scenarios (`ValueError: embedded null byte`) — root-caused at `_run_cli`, escaped visibly, red/green
+proven; the documented sweep timeout rose 900→1800s after two scenarios proved to *reproducibly* need
+20+ minutes (the old budget manufactured error-splices, it didn't tolerate flakes).
+
+### Features
+
+* **ci:** reference-integrity + core-word-budget lint checks, and the eval-guard gate ([#117](https://github.com/bjgreenberg/senior-engineering-partner/issues/117)) ([bff910b](https://github.com/bjgreenberg/senior-engineering-partner/commit/bff910ba1526251936e1dae11826b4e084e6e941))
+
+### Tests
+
+* **evals:** 2026-07-27 full-suite baselines (Opus + Haiku), baseline-coverage tripwire, `curate-baseline.py`, re-baseline cadence, NUL-argv harness fix, and the committed core-diet experiment record ([#120](https://github.com/bjgreenberg/senior-engineering-partner/issues/120))
+* **evals:** 2026-07-28 Fable baseline — with-skill 42/14/0, the first zero-fail sweep — and the 1800s sweep-timeout recipe ([#121](https://github.com/bjgreenberg/senior-engineering-partner/issues/121))
+
 ## [1.23.1](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.23.0...v1.23.1) (2026-07-27)
 
 A harness-hygiene patch. Claude-runner scenario **and judge** invocations in the eval sweep now
