@@ -1,12 +1,17 @@
 # senior-engineering-partner
 
-Last updated: 2026-07-25 09:01 AM CDT
+Last updated: 2026-08-02 11:34 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
 [![docs-render](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/docs-render.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/docs-render.yml)
 [![leakage-guard](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/leakage-guard.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/leakage-guard.yml)
 [![shellcheck](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/shellcheck.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/shellcheck.yml)
+[![skill-lint](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/skill-lint.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/skill-lint.yml)
+[![script-tests](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/script-tests.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/script-tests.yml)
+[![citation-validate](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/citation-validate.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/citation-validate.yml)
+[![eval-guard](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/eval-guard.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/eval-guard.yml)
+[![plugin-validate](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/plugin-validate.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/plugin-validate.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/bjgreenberg/senior-engineering-partner/badge)](https://scorecard.dev/viewer/?uri=github.com/bjgreenberg/senior-engineering-partner)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13458/badge)](https://www.bestpractices.dev/projects/13458)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://www.conventionalcommits.org/en/v1.0.0/)
