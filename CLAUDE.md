@@ -4,6 +4,18 @@ Agent/contributor guide for working **on** this repo (the skill itself lives
 in `SKILL.md` + `references/`). Human-facing process docs: `CONTRIBUTING.md`
 and `MAINTAINERS.md` — this file is the agent-facing distillation.
 
+## Model requirement (read before editing anything)
+
+**All authoring in this repo is done with the Fable model (`claude-fable-5`).**
+Reading, auditing, and *proposing* changes are fine on any model; **writing** to
+`SKILL.md`, `references/`, `scripts/`, `evals/`, or the repo docs is not. On any
+other model, say so and stop before editing — offer to switch (`/model
+claude-fable-5`) or resume in a Fable session. Proceed otherwise only on an
+express, per-change instruction from the maintainer; a general "go ahead"
+earlier in the session is not one. Rationale: the skill's authored content
+stays consistent in voice, judgment, and rule-wording instead of drifting with
+whichever model happens to be loaded.
+
 ## Repo shape
 
 - `SKILL.md` — the universal core; `references/` — deep-dive references
