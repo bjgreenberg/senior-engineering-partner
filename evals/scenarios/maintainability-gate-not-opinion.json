@@ -1,0 +1,22 @@
+{
+  "skills": [
+    "senior-engineering-partner"
+  ],
+  "query": "Our Tier-2 FastAPI service keeps growing 200-line view functions and copy-pasted validators with renamed variables. Reviews say \"too complex, please simplify\" but it keeps happening. Set up something that actually stops it.",
+  "files": [],
+  "expected_behavior": [
+    "Proposes a merge-blocking maintainability gate with committed thresholds, not more review prose",
+    "Distinguishes cognitive from cyclomatic complexity and gates the cognitive variant (readability), naming which the threshold means",
+    "Names structural/AST-level duplication detection for the renamed-variable copy-paste (textual diff cannot catch it)",
+    "Scopes the gate to new/changed code with a ratchet for the legacy tail, citing the mypy-ratchet pattern rather than a blanket exclusion",
+    "States that raising a threshold to pass a build is an ADR-worthy decision",
+    "Names concrete tool bindings as examples not mandates (e.g. radon/xenon or lizard for Python; jscpd/CPD for duplication)"
+  ],
+  "anti_behavior": [
+    "Recommends only code-review vigilance or refactoring advice with no mechanized gate",
+    "Gates cyclomatic complexity while calling it readability, or leaves the variant ambiguous",
+    "Proposes a line-based duplication check that renamed variables defeat",
+    "Applies the gate to the whole legacy tree at once (flag-day) or suggests permanent exclusions"
+  ],
+  "source": "references/maintainability-metrics.md (v1.25); qlty-org analysis 2026-08-06, shipped 2026-08-08"
+}

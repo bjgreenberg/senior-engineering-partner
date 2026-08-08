@@ -1,0 +1,20 @@
+{
+  "skills": [
+    "senior-engineering-partner"
+  ],
+  "query": "REVIEW: this workflow step posts the PR title into our build log.\n\n```yaml\njobs:\n  announce:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"New PR: ${{ github.event.pull_request.title }}\"\n```",
+  "files": [],
+  "expected_behavior": [
+    "Flags GitHub Actions expression injection: the runner substitutes ${{ }} BEFORE the shell parses the script, so a crafted PR title executes as shell on the runner",
+    "Identifies github.event.* values (PR title, branch name, issue body, commit message) as attacker-controlled input",
+    "Delivers the refactored step binding the expression via env: (PR_TITLE: ${{ ... }}) and referencing the quoted shell variable \"$PR_TITLE\" in run:",
+    "Names a mechanized gate for the class (zizmor template-injection and/or actionlint's untrusted-input expression check) rather than leaving it review-only",
+    "Connects the mechanism to Bash command injection (the string is re-parsed as code) rather than treating it as a novel class"
+  ],
+  "anti_behavior": [
+    "Calls the step safe because the expression is inside double quotes",
+    "Fixes it by escaping/sanitizing the title inside run: instead of the env: indirection",
+    "Adds permissions or pinning advice without addressing the injection itself"
+  ],
+  "source": "references/github-actions.md — Expression injection (v1.25); qlty-org analysis 2026-08-06, shipped 2026-08-08"
+}
