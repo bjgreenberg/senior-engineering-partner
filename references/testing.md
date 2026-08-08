@@ -87,6 +87,43 @@ The red-first rule (3b) is about individual tests; it generalizes to **whole gat
 - **Assert preconditions, don't print them.** A gate that *displays* the facts it depends on — a role's attributes, an object's owner, a tool version, the count of things it's checking — but never *asserts* them will sail green after a refactor silently invalidates one of them (e.g. a `SECURITY DEFINER` function that gets re-owned, so the suite passes for the wrong reason). Turn each load-bearing fact into a hard check that aborts the gate when it's wrong (a `DO $$ … RAISE EXCEPTION` / an `exit 1`), *before* the expensive assertions run. A printed precondition is documentation; an asserted one is a gate.
 - **Trust the verdict, not just the exit code.** A non-zero exit can mean "the suite ran and failed" *or* "the harness never ran" (no test files, a parse error, a recreated container). If those must be distinguished — as in a negative scenario *required* to fail — assert on the tool's own verdict signal (e.g. `pg_prove`'s `Result: FAIL` line), not a bare non-zero exit, so an infrastructure failure can't masquerade as the proof you wanted.
 
+### 3d. Introducing a NEW gate on an existing codebase — the promotion ladder
+
+The gates above assume they were merge-blocking from day one. Retrofitting one onto a
+living codebase has exactly two failure modes: a **flag-day** block that reds every open
+PR on legacy findings (so the gate gets reverted or blanket-excluded), or a **permanently
+optional** check nobody reads (decoration, per 3c). The escape is a *graduated
+introduction with the promotion written down*:
+
+- **monitor** → the gate runs and records; findings are visible in its output/dashboard
+  but absent from the PR. Purpose: measure the finding rate and tune false positives
+  *before* anyone is blocked.
+- **comment** → findings surface on the PR as non-blocking review feedback. Purpose:
+  socialize the rule; new code starts conforming while legacy noise is triaged.
+- **block** → merge-blocking required check. The terminal state — a gate that never
+  reaches block was either mis-scoped or isn't worth its runtime; decide which and
+  either fix the scope or delete it.
+
+Three rules make the ladder a discipline instead of a stall:
+
+1. **The promotion trigger is written down when the gate is added** — "promotes to
+   comment after one week under N false positives/week; to block when the diff-scoped
+   run is clean for M consecutive PRs" — in the gate's config or the PR that adds it. An
+   undated "we'll promote it later" is how monitor becomes the permanent state.
+2. **Scope every rung to the diff by default** (changed files vs. the merge base — the
+   `mypy` ratchet generalized, same as `maintainability-metrics.md`). The whole-tree run
+   is a scheduled sweep feeding the monitor view, never the PR check.
+3. **Security-floor gates skip the ladder and enter at block.** Secret scanning,
+   injection SAST, tenant-isolation tests, the dependency audit: a "monitor-mode"
+   `gitleaks` is a leak you watched happen. The ladder exists for *quality* gates
+   (complexity, duplication, lint adoption, coverage floors on legacy code) — never a
+   mechanism to soften the floor (the ADR rule: the floor is never waivable).
+
+Promotion mechanics on GitHub: the check runs identically at every rung; promotion =
+adding it to the required-status-check list (`github-teams.md`), demotion on discovered
+false-positive storms = removing it *with the reason recorded* — an auditable decision,
+not a quiet toggle.
+
 ---
 
 ## 4. Test data: factories, synthetic fixtures, zero real PII
