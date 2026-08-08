@@ -80,6 +80,36 @@ check "leakage-guard PASSES on a clean tree" 0 "$rc"
 rc=0; grep -q "Tier 1 only" <<<"$out" || rc=$?
 check "leakage-guard WARNs Tier-1-only when the .local denylist is absent" 0 "$rc"
 
+# (c) Tier-2 sectioning: [hand-authored-only] patterns are exempt in evals/baselines/ but
+# enforced in hand-authored files; default-section identifiers stay enforced EVERYWHERE.
+# Patterns here are synthetic words in no real denylist, so literals are safe in this file.
+sectdir="$scratch/guard-sectioned"
+make_guard_fixture "$sectdir"
+mkdir -p "$sectdir/evals/baselines"
+{
+  echo "plutonium-project"          # default section: a literal identifier
+  echo "[hand-authored-only]"
+  echo "fictionology"               # domain-fingerprint word: baseline-exempt
+} > "$sectdir/references/leakage-denylist.local"
+printf '{"evidence": "the fictionology angle held"}\n' > "$sectdir/evals/baselines/run.json"
+printf '# doc\nclean prose here.\n' > "$sectdir/README.md"
+git -C "$sectdir" add -A
+rc=0; (cd "$sectdir" && bash scripts/leakage-guard.sh) >/dev/null 2>&1 || rc=$?
+check "leakage-guard PASSES a hand-authored-only word inside evals/baselines/" 0 "$rc"
+
+# ...the same word in a hand-authored file must still FAIL.
+printf 'notes on the fictionology approach\n' > "$sectdir/README.md"
+git -C "$sectdir" add -A
+rc=0; (cd "$sectdir" && bash scripts/leakage-guard.sh) >/dev/null 2>&1 || rc=$?
+check "leakage-guard FAILS the same word in a hand-authored file" 1 "$rc"
+
+# ...and a default-section identifier inside evals/baselines/ must still FAIL.
+printf '# doc\nclean prose here.\n' > "$sectdir/README.md"
+printf '{"evidence": "ran on plutonium-project last week"}\n' > "$sectdir/evals/baselines/run.json"
+git -C "$sectdir" add -A
+rc=0; (cd "$sectdir" && bash scripts/leakage-guard.sh) >/dev/null 2>&1 || rc=$?
+check "leakage-guard FAILS a default-section identifier inside evals/baselines/" 1 "$rc"
+
 # --- skill-lint.py fixtures ------------------------------------------------------------------
 lintdir="$scratch/skill-fixture/good-skill"
 mkdir -p "$lintdir"
