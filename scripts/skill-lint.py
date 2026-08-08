@@ -23,6 +23,11 @@ AI tools"):
      invocation, so its size is a per-session cost and an instruction-salience risk —
      the budget is a RATCHET: it may be lowered as the core is compressed, never raised
      without a maintainer decision recorded in the CHANGELOG.
+  7. README documentation integrity (only when a README.md sits beside SKILL.md):
+     every `references/*.md` on disk and every helper in `scripts/` (top-level .sh/.py/
+     .md) is NAMED somewhere in the README — the catalogue/prose must not silently lag
+     the tree (the 2026-08-08 docs audit found two references and four scripts missing;
+     this is that audit's LOW-11 "mechanize it", the same move that created check 5).
 
 Exit 0 = all checks pass (warnings allowed). Exit 1 = any check failed.
 Usage: scripts/skill-lint.py [path-to-SKILL.md]
@@ -37,8 +42,10 @@ KNOWN_KEYS = {"name", "description", "license", "allowed-tools", "metadata", "ve
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 DESCRIPTION_LIMIT = 1024
 NAME_LIMIT = 64
-# Snapshot at v1.23.1 was 12,612 body words; headroom guards drift while the HIGH-1 core
-# diet is in flight, after which this ratchets DOWN (see the audit of 2026-07-27).
+# A CEILING against unbounded growth, not a diet target: the tranche-5 core diet was
+# REFUTED by its own eval sweep (docs/adr/0001-core-density-over-token-cost.md) — the
+# core keeps its density, and any future compression pays section-by-section against
+# that section's guarding scenarios. Raise only via a recorded maintainer decision.
 CORE_WORD_BUDGET = 12_700
 CORE_WORD_WARN = 12_000
 # The private environment profile: named by SKILL.md but deliberately untracked (absent in
@@ -132,6 +139,32 @@ def main() -> int:
                 f"references/{ref} exists but SKILL.md never names it (orphan — unreachable"
                 " by progressive disclosure; name it or remove it)"
             )
+
+    # Check 7 — README documentation integrity (see module docstring). Conditional on a
+    # README existing beside SKILL.md so fixture skills without one still lint clean.
+    readme_path = skill_dir / "README.md"
+    if readme_path.is_file():
+        readme = readme_path.read_text(encoding="utf-8")
+        if refs_dir.is_dir():
+            for ref in sorted({p.name for p in refs_dir.glob("*.md")} - PRIVATE_REFS):
+                if ref not in readme:
+                    failures.append(
+                        f"references/{ref} exists but README.md never names it — update the"
+                        " reference catalogue (a doc that lags the tree is a wrong doc)"
+                    )
+        scripts_dir = skill_dir / "scripts"
+        if scripts_dir.is_dir():
+            helpers = sorted(
+                p.name
+                for p in scripts_dir.iterdir()
+                if p.is_file() and p.suffix in {".sh", ".py", ".md"}
+            )
+            for helper in helpers:
+                if helper not in readme:
+                    failures.append(
+                        f"scripts/{helper} exists but README.md never names it — document"
+                        " the helper (or remove it)"
+                    )
 
     # Check 6 — core word budget (ratchet; see module docstring).
     words = len(body.split())
