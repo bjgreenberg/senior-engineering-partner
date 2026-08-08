@@ -22,6 +22,14 @@
 # SKILL.md's metadata table — matched out below. references/my-environment.md and
 # references/leakage-denylist.local are never scanned (the latter has a non-scanned extension).
 #
+# Tier-2 sectioning: a `[hand-authored-only]` line in the .local file starts a section whose
+# patterns are enforced everywhere EXCEPT evals/baselines/ (recorded model outputs). Rationale:
+# broad domain-fingerprint words (generic English that merely *hints* at a product domain)
+# recur legitimately in baseline transcripts whose sanitized scenarios use that vocabulary —
+# an every-branch false positive that trains reviewers to wave the guard through. Literal
+# identifiers (hosts, employer, repo names) stay in the default section: those are enforced in
+# baselines too, because a baseline containing a real hostname IS a leak.
+#
 # Usage:  scripts/leakage-guard.sh
 set -euo pipefail
 
@@ -33,15 +41,27 @@ denylist='100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.[0-9]{1,3}\.[0-9]{1,3}'  
 denylist+='|\[\[[A-Za-z]'   # [[wikilink]] — NOT a Bash [[ test (which has a space after [[)
 
 # --- Tier 2: your private LITERAL identifiers, sourced from an un-committed file (if present).
-#     One POSIX-ERE fragment per line; '#' lines and blanks are ignored.
+#     One POSIX-ERE fragment per line; '#' lines and blanks are ignored. A `[hand-authored-only]`
+#     line starts the section whose patterns skip evals/baselines/ (see header).
 local_list="references/leakage-denylist.local"
+denylist_ho=''   # [hand-authored-only] patterns — enforced everywhere except evals/baselines/
+section='all'
 if [[ -f "$local_list" ]]; then
   while IFS= read -r frag; do
     frag="${frag%$'\r'}"                                 # strip a trailing CR
+    # Section directive — whitespace-tolerant: an indented directive treated as a pattern
+    # would be an ERE *character class* matching nearly every line (Copilot review, PR #125).
+    if [[ "$frag" =~ ^[[:space:]]*\[hand-authored-only\][[:space:]]*$ ]]; then
+      section='ho'; continue
+    fi
     [[ "$frag" =~ ^[[:space:]]*(#.*)?$ ]] && continue    # skip blank / comment lines
     frag="${frag#"${frag%%[![:space:]]*}"}"              # ltrim
     frag="${frag%"${frag##*[![:space:]]}"}"              # rtrim
-    denylist+="|${frag}"
+    if [[ "$section" == 'ho' ]]; then
+      denylist_ho+="${denylist_ho:+|}${frag}"
+    else
+      denylist+="|${frag}"
+    fi
   done < "$local_list"
 else
   # A missing local list silently downgrades this run to Tier-1 only — say so loudly, so a
@@ -71,15 +91,22 @@ allow='Brian Greenberg|briangreenberg\.net'
 hits=0
 for f in "${files[@]}"; do
   [[ -f "$f" ]] || continue
+  # Effective pattern for THIS file: recorded eval baselines are exempt from the
+  # [hand-authored-only] section; every other file gets both sections.
+  eff="$denylist"
+  case "$f" in
+    evals/baselines/*|./evals/baselines/*) ;;
+    *) if [[ -n "$denylist_ho" ]]; then eff+="|${denylist_ho}"; fi ;;
+  esac
   while IFS= read -r line; do
     # Strip the allowed-attribution substrings, then test the remainder for denylist tokens.
     stripped="$(printf '%s' "$line" | sed -E "s/${allow}//g")"
-    if printf '%s' "$stripped" | grep -qEi "$denylist"; then
+    if printf '%s' "$stripped" | grep -qEi "$eff"; then
       if [[ "$hits" -eq 0 ]]; then echo "LEAKAGE-GUARD: environment-specific identifiers found:" >&2; fi
       printf '  %s: %s\n' "$f" "$line" >&2
       hits=$((hits + 1))
     fi
-  done < <(grep -nEi "$denylist" "$f" || true)
+  done < <(grep -nEi "$eff" "$f" || true)
 done
 
 if [[ "$hits" -ne 0 ]]; then
