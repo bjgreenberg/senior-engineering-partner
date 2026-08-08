@@ -49,8 +49,10 @@ section='all'
 if [[ -f "$local_list" ]]; then
   while IFS= read -r frag; do
     frag="${frag%$'\r'}"                                 # strip a trailing CR
-    if [[ "$frag" =~ ^\[hand-authored-only\][[:space:]]*$ ]]; then
-      section='ho'; continue                             # section directive, not a pattern
+    # Section directive — whitespace-tolerant: an indented directive treated as a pattern
+    # would be an ERE *character class* matching nearly every line (Copilot review, PR #125).
+    if [[ "$frag" =~ ^[[:space:]]*\[hand-authored-only\][[:space:]]*$ ]]; then
+      section='ho'; continue
     fi
     [[ "$frag" =~ ^[[:space:]]*(#.*)?$ ]] && continue    # skip blank / comment lines
     frag="${frag#"${frag%%[![:space:]]*}"}"              # ltrim

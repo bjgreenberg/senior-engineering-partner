@@ -88,7 +88,7 @@ make_guard_fixture "$sectdir"
 mkdir -p "$sectdir/evals/baselines"
 {
   echo "plutonium-project"          # default section: a literal identifier
-  echo "[hand-authored-only]"
+  echo "  [hand-authored-only]  "   # INDENTED on purpose: directive must be whitespace-tolerant
   echo "fictionology"               # domain-fingerprint word: baseline-exempt
 } > "$sectdir/references/leakage-denylist.local"
 printf '{"evidence": "the fictionology angle held"}\n' > "$sectdir/evals/baselines/run.json"

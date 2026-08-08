@@ -45,7 +45,10 @@
 # Personal email prefix (attribution should use your website/handle, not an address)
 # me@
 
-# [hand-authored-only]
+# The directive below is deliberately UNcommented so the section works as soon as you add
+# patterns under it (a commented-out directive is an easy trap — Copilot review, PR #125).
+# The guard never reads this template, only your .local copy.
+[hand-authored-only]
 # Broad product-domain words (enforced in hand-authored files; exempt in evals/baselines/)
 # widgetization
 # supply[-. ]chain[-. ]auditing
