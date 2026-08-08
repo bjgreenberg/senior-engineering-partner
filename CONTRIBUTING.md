@@ -61,8 +61,10 @@ regular collaborators use a branch on the repo. Either way:
 7. **If you encode a discipline, guard it with an eval.** New or changed rules should add or extend
    a scenario in `evals/` — the project's "changelog is the spec, evals are the tests" model.
 8. **Run the gates locally** before opening the PR: `bash scripts/leakage-guard.sh`,
-   `bash scripts/render-diagrams.sh` (render-check any Mermaid you touched), if you touched a
-   helper script — `shellcheck scripts/*.sh`, and if you touched the plugin/marketplace manifests
+   `bash scripts/render-diagrams.sh` (render-check any Mermaid you touched),
+   `python3 scripts/skill-lint.py` + `bash scripts/tests/test-scripts.sh`, if you touched a
+   helper script — `shellcheck scripts/*.sh`, if you touched `.github/workflows/` —
+   `bash scripts/actions-lint.sh`, and if you touched the plugin/marketplace manifests
    under `.claude-plugin/` — `claude plugin validate . --strict`. Locally-green is necessary but
    **not sufficient** — the PR's required checks are the source of truth.
 9. **Open the PR** with the **What changed / Why it changed / Testing** description (the PR template

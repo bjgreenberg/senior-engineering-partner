@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-08-02 11:58 PM CDT
+Last updated: 2026-08-08 06:35 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -8,6 +8,7 @@ Last updated: 2026-08-02 11:58 PM CDT
 [![leakage-guard](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/leakage-guard.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/leakage-guard.yml)
 [![shellcheck](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/shellcheck.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/shellcheck.yml)
 [![skill-lint](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/skill-lint.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/skill-lint.yml)
+[![actions-lint](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/actions-lint.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/actions-lint.yml)
 [![script-tests](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/script-tests.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/script-tests.yml)
 [![citation-validate](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/citation-validate.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/citation-validate.yml)
 [![eval-guard](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/eval-guard.yml/badge.svg)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/eval-guard.yml)
@@ -17,7 +18,7 @@ Last updated: 2026-08-02 11:58 PM CDT
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://www.conventionalcommits.org/en/v1.0.0/)
 
 A custom Claude Code skill: a strict **code reviewer, pair programmer, debugger, and mentor** for
-Python, Bash, Google Apps Script, and JavaScript. It encodes a security-first,
+Python, Bash, Google Apps Script, JavaScript, and Swift/Apple platforms. It encodes a security-first,
 phase-aware engineering discipline — and an enforced **spec → plan → TDD → verify** workflow —
 as reusable instructions that activate via
 `/senior-engineering-partner` (or auto-activate when a task matches its description) in
@@ -109,12 +110,12 @@ flowchart TD
     U["/senior-engineering-partner"] --> C
     C["SKILL.md — universal core<br/>modes · epistemic discipline · engineering workflow · rigor ladder<br/>security floor · coding standards · toolchain triggers"]
     C -->|"progressive disclosure: read a reference only when relevant"| R[(references/)]
-    C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · validate-citation · run-evals · skill-lint · self-review · fixture tests)<br/>evals/ (regression scenarios)"]
+    C -.->|"shipped helpers"| K["scripts/ (audit · render-diagrams · validate-citation · leakage-guard · actions-lint · run-evals · eval-guard · curate-baseline · skill-lint · self-review · fixture tests)<br/>evals/ (regression scenarios + recorded baselines)"]
     R --> P["Environment profile<br/>my-environment.md (swap to re-home the skill)"]
     R --> W["Engineering process (5)<br/>engineering-workflow · debugging · audit-report-format · standards-authoring · skill-self-improvement"]
-    R --> S["Security, privacy and compliance (6)"]
-    R --> T["Testing and QA (2)"]
-    R --> I["Cloud, infra and ops (9) + data (2)"]
+    R --> S["Security, privacy and compliance (7)"]
+    R --> T["Testing and QA (3)"]
+    R --> I["Cloud, infra, ops and logging (10) + data (2)"]
     R --> A["App toolchains, CI and collaboration (12)"]
     R --> X["UI, a11y, diagrams, AI tooling, macOS (5)"]
 ```
@@ -203,8 +204,10 @@ version-specific commands.
 | | `secrets-and-key-rotation.md` | Rotation lifecycle, zero-downtime overlap, KMS key-version re-wrap |
 | | `data-protection.md` | GDPR/UK-GDPR/CCPA as code: DSAR, erasure cascade, retention, DPIA |
 | | `compliance.md` | NIST CSF 2.0 + **SSDF (800-218)** / OWASP / SOC 2 / **Well-Architected** as enforceable review checklists, incl. crypto-agility + **post-quantum readiness** (FIPS 203–205, harvest-now-decrypt-later triage) |
-| **Testing & QA** | `testing.md` | The enforced merge-gate taxonomy, tenant-isolation tests, coverage/mutation/load tiers, frontend testing (behavior-not-implementation, network-boundary mocks, E2E/a11y gates) |
+| | `agentic-ai-security.md` | Products that ARE agents: least agency, human-in-the-loop on the resolved call, memory as a poisoning surface, OWASP Agentic Top 10 + CSA MAESTRO mapping |
+| **Testing & QA** | `testing.md` | The enforced merge-gate taxonomy, tenant-isolation tests, the monitor→comment→block gate-introduction ladder, coverage/mutation/load tiers, frontend testing (behavior-not-implementation, network-boundary mocks, E2E/a11y gates) |
 | | `testing-single-file.md` | The `conftest.py` argv-patch pattern for single-file scripts |
+| | `maintainability-metrics.md` | Complexity (cognitive, not cyclomatic) + structural duplication as committed-threshold gates; legacy ratchet; tool bindings incl. the qlty BUSL license note |
 | **Cloud, infra & ops** | `gcp.md` | Cloud Run, GCS, BigQuery, Secret Manager, IAM (no SA keys → Workload Identity) |
 | | `iac-terraform.md` | Terraform on GCP, locked remote state, OIDC deployer, plan-as-gate |
 | | `containers-and-orchestration.md` | Docker/Kubernetes: digest pins, non-root, scanning, securityContext |
@@ -247,8 +250,14 @@ support directories:
 - **`scripts/`** — the utility scripts the disciplines reference, shipped so they're
   *executed*, not regenerated: `audit.sh` (manifest-level dependency-audit gate),
   `render-diagrams.sh` (the `docs-render` Mermaid render-check), `validate-citation.sh`
-  (the `citation-validate` CFF schema check), `run-evals.py` (the
-  eval-suite runner — below), and `self-review.md` (the verify-before-done checklist).
+  (the `citation-validate` CFF schema check), `leakage-guard.sh` (the two-tier
+  environment-identifier gate), `actions-lint.sh` (the workflow gate: checksum-verified
+  `actionlint` + pinned `zizmor` — **green-optional by explicit decision**, on the
+  `testing.md` §3d introduction ladder; promotion to required is a recorded maintainer
+  call), `run-evals.py` (the eval-suite runner — below), `eval-guard.py` (the
+  substantive-SKILL.md-change-needs-an-eval gate), `curate-baseline.py` (slims a sweep
+  into a committable baseline), `skill-lint.py` (name/description/word-budget/
+  reference-integrity), and `self-review.md` (the verify-before-done checklist).
   Pin `render-diagrams.sh`'s `MMDC_IMAGE` to a digest before relying on it.
 - **`evals/`** — a regression suite. Each `scenarios/*.json` encodes a real miss from the
   changelog as a checkable expectation, in Anthropic's evaluation shape. `evals/README.md`
