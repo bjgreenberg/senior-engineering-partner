@@ -17,6 +17,23 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.25.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.24.0...v1.25.0) (2026-08-08)
+
+
+### Features
+
+* absence-is-not-evidence (relay suggestion c) ([#132](https://github.com/bjgreenberg/senior-engineering-partner/issues/132)) ([b5d63fe](https://github.com/bjgreenberg/senior-engineering-partner/commit/b5d63fe18951d651f0e7cf0fef5a3bf0be442bae))
+* counted observations (ECC take [#3](https://github.com/bjgreenberg/senior-engineering-partner/issues/3)) + selective-test-execution note ([#131](https://github.com/bjgreenberg/senior-engineering-partner/issues/131)) ([d954f02](https://github.com/bjgreenberg/senior-engineering-partner/commit/d954f02b050c8114d0f5dd04a0a38e63121ab798))
+* gate workflows with actionlint + zizmor; forbid ${{ }} interpolation in run: ([#127](https://github.com/bjgreenberg/senior-engineering-partner/issues/127)) ([8f8115a](https://github.com/bjgreenberg/senior-engineering-partner/commit/8f8115a059494b99c91d7b85671944b8e7a5a1ea))
+* gate-introduction promotion ladder (qlty proposal [#3](https://github.com/bjgreenberg/senior-engineering-partner/issues/3)) ([#130](https://github.com/bjgreenberg/senior-engineering-partner/issues/130)) ([c7b11b6](https://github.com/bjgreenberg/senior-engineering-partner/commit/c7b11b679eeb12a6c80410ae597156f62c155467))
+* maintainability metrics as gates (qlty proposal [#2](https://github.com/bjgreenberg/senior-engineering-partner/issues/2)) ([#129](https://github.com/bjgreenberg/senior-engineering-partner/issues/129)) ([4cb8115](https://github.com/bjgreenberg/senior-engineering-partner/commit/4cb811544297f0af6e9ea453df3af7c6c5acdf38))
+* mechanize README↔tree documentation integrity (audit LOW-11) ([#136](https://github.com/bjgreenberg/senior-engineering-partner/issues/136)) ([48a0d36](https://github.com/bjgreenberg/senior-engineering-partner/commit/48a0d3622f8ad9c8f2fde335c23c8c60860c7586))
+
+
+### Bug Fixes
+
+* scope hand-authored-only denylist patterns away from recorded baselines ([#125](https://github.com/bjgreenberg/senior-engineering-partner/issues/125)) ([8db2556](https://github.com/bjgreenberg/senior-engineering-partner/commit/8db2556c6710c4f21dc0fd69345e10c7f2dcc1f8))
+
 ## [1.24.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.23.1...v1.24.0) (2026-07-28)
 
 The audit release. A full `AUDIT:`-mode pass over the skill's own repo (2026-07-27) found the two
