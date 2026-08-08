@@ -24,9 +24,9 @@ never a wholesale diet justified by token savings alone.
 ## Consequences
 
 - **Token cost is accepted as purchased behavior.** The trade was measured, not assumed:
-  −31% tokens cost −4 pass / +2 fail on Opus (7 scenarios regressed) and −5 pass / +7
-  fail on Haiku (16 regressed), same day, same harness, same judge. The regressions
-  mapped directly onto the relocated content.
+  a 31% token reduction produced 4 fewer passes and 2 more fails on Opus (7 scenarios
+  regressed) and 5 fewer passes and 7 more fails on Haiku (16 regressed), same day, same
+  harness, same judge. The regressions mapped directly onto the relocated content.
 - **The mechanism is now a documented design premise:** in eval conditions the model
   frequently acts without first reading the reference a trigger points at, so a
   trigger-plus-pointer carries measurably less behavior than the inlined rule — and
@@ -41,7 +41,8 @@ never a wholesale diet justified by token savings alone.
 ## Alternatives rejected
 
 - **Wholesale compression (PR #119):** refuted by its own eval sweep; closed unmerged.
-  The branch is retained locally for provenance (`EXPERIMENT.md` cites `a8ae524`).
+  Durable provenance: PR #119 itself, commit `a8ae524`, and the recorded sweeps in
+  `evals/baselines/2026-07-27-postdiet-experiment/`.
 - **Raising the word budget instead:** rejected — an unbounded core re-creates the
   context-tax failure mode the skill criticizes elsewhere (a catalog that costs more
   than it teaches). The ceiling stands; it just isn't a diet mandate.
