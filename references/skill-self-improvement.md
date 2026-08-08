@@ -21,11 +21,32 @@ detection, quiet output. The check itself is never narrated on routine sessions.
 | Case | Action |
 |---|---|
 | **Second instance of a rule class** — the same *kind* of miss has now happened twice (even in different tools/services) | Propose codification now. Two instances is the pattern bar: one miss is an anecdote, two is a rule the skill is missing. |
-| **Genuine one-off** | Record it in session memory / the environment profile with enough context to recognize a recurrence; do not propose yet. A skill that codifies every anecdote bloats its core and dilutes its floors. |
+| **Genuine one-off** | Record it as a **counted observation** (below); do not propose yet. A skill that codifies every anecdote bloats its core and dilutes its floors. |
 | **First instance with *irreversible* cost** — data loss, permanently unattributable history, a leaked secret, an unrecoverable deletion | Propose immediately. Waiting for instance two pays the permanent cost twice; irreversibility substitutes for recurrence. |
 
 Classifying honestly matters more than proposing eagerly: the loop's credibility with
 the human depends on proposals being rare and load-bearing.
+
+### Counted observations — the instance counter is a file, not a recollection
+
+The two-instance bar only works if instances are *counted across sessions* — a working
+memory of "I think this happened before" evaporates at session end, so real second
+instances get re-classified as one-offs forever. A candidate lesson below the bar is
+therefore recorded as a durable file in the agent's persistent memory store (wherever
+that lives for your setup), carrying:
+
+- **trigger** — the situation that would make this fire again, concrete enough for a
+  future session to recognize a match;
+- **evidence list** — one dated entry per instance (what happened, what it cost), so the
+  count is a fact on disk;
+- **confidence** — tentative vs. near-certain, revised as evidence accrues.
+
+When a later session hits the trigger, it *appends to the evidence list* rather than
+writing a fresh anecdote — and the classifier in §1 reads the count: two entries meets
+the pattern bar, and the file's evidence section becomes the proposal's origin story
+(§2.3) nearly for free. The observation file is bookkeeping for the loop, not a rule:
+nothing in it changes agent behavior until it graduates through the consent gate like
+any other proposal.
 
 ## 2. Assemble the proposal package
 
