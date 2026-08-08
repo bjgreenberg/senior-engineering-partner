@@ -127,6 +127,24 @@ check "skill-lint FAILS on bad name + oversize description" 1 "$rc"
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$scratch/does-not-exist/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint FAILS on a missing file" 1 "$rc"
 
+# Check 7 (README documentation integrity) — red/green both directions.
+docdir="$scratch/skill-fixture/doc-skill"
+mkdir -p "$docdir/references" "$docdir/scripts"
+printf -- '---\nname: doc-skill\ndescription: "A test skill."\n---\n# body\nRead references/covered.md.\n' > "$docdir/SKILL.md"
+printf '# covered\n' > "$docdir/references/covered.md"
+printf '#!/usr/bin/env bash\n' > "$docdir/scripts/mystery.sh"
+printf '# README\nNothing documented here.\n' > "$docdir/README.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$docdir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS when README omits a reference and a script helper" 1 "$rc"
+
+printf '# README\nCatalogue: covered.md. Helpers: mystery.sh.\n' > "$docdir/README.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$docdir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint PASSES when README names every reference and helper" 0 "$rc"
+
+# ...and a fixture with NO README (the good-skill shape) must stay exempt from check 7.
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$lintdir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint remains PASS for a skill dir with no README (check 7 conditional)" 0 "$rc"
+
 # Block-scalar bypass (a Copilot-review catch): an oversize description written as a
 # multi-line block must still trip the length gate — the parser accumulates continuation
 # content instead of counting a sentinel.
