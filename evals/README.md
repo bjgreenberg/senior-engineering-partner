@@ -221,9 +221,10 @@ narrative):** no scenario fails on all three models any more. Opus's single with
 is `adversarial-review-green-but-insufficient`; Fable's fail column is zero; Haiku's 15
 fails are an enforcement-reliability gap, not content gaps — the old durable-fail trio
 (dependency-manifest-drift · stale-diagram-on-behavior-change · tdd-regression-red-first)
-now passes on Opus, and only `dependency-manifest-drift` still runs partial on
-Fable/Haiku. Sharpening effort goes to the adversarial-review scenario and Haiku
-enforcement, not the solved trio. Prior harness-v2 record (45-scenario era, superseded as
+now passes on Opus, and of that trio only `dependency-manifest-drift` still runs partial
+on Fable/Haiku (`stale-diagram-on-behavior-change` also fails on Haiku, inside Haiku's
+broader enforcement gap). Sharpening effort goes to the adversarial-review scenario and
+Haiku enforcement, not the solved trio. Prior harness-v2 record (45-scenario era, superseded as
 "current"): [`baselines/2026-07-05-opus/`](baselines/2026-07-05-opus/BASELINE.md) —
 bare 11/22/12/0 vs with-skill 29/16/0/0. Historical
 (pre-discontinuity, not comparable — see the note below):
