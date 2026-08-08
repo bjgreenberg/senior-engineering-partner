@@ -102,7 +102,7 @@ may not be checkable enough yet.
   every review thread addressed or resolved. We don't merge on green CI alone: green proves the
   *gates* passed, not that the change is correct, in-scope, and free of a subtle regression a check
   didn't cover.
-- The repo's **required checks** (`docs-render`, `leakage-guard`, `shellcheck`, `skill-lint`, `script-tests`, `citation-validate`) must pass.
+- The repo's **required checks** (`docs-render`, `leakage-guard`, `shellcheck`, `skill-lint`, `script-tests`, `citation-validate`, `eval-guard`) must pass. **`eval-guard` means a substantive `SKILL.md` change must ship a change under `evals/scenarios/` in the same PR** — a discipline needs a guarding eval — or carry an explicit `Eval-waiver: <reason>` line in the PR body (an auditable deferral, e.g. batching several scenarios into one re-baseline sweep — never a silent skip).
 - Merges are **squash-only** — rebase-merge (it rewrites your commits *unsigned*) and merge-commit
   are both disabled — and the branch is auto-deleted on merge. GitHub signs the squash commit, so
   your contribution lands **Verified** on `main` even if your own commits weren't signed; you don't

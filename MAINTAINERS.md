@@ -7,7 +7,9 @@ This project is maintained by:
 ## How we work
 
 - Every change lands via a pull request with the required checks green (`docs-render`, `leakage-guard`,
-  `shellcheck`, `skill-lint`, `script-tests`, `citation-validate`) and a maintainer review — see [CONTRIBUTING.md](CONTRIBUTING.md).
+  `shellcheck`, `skill-lint`, `script-tests`, `citation-validate`, `eval-guard`) and a maintainer review — see [CONTRIBUTING.md](CONTRIBUTING.md).
+  (`eval-guard`: a substantive `SKILL.md` change ships an `evals/scenarios/` change in the same PR, or an
+  explicit `Eval-waiver: <reason>` line in the PR body.)
 - The branch ruleset requires **1 approving review**. The maintainer (repo admin) can self-merge
   their *own* PRs via an admin bypass, so a solo merge is never blocked — while every *other*
   contributor's PR gets a genuine four-eyes review before it lands.

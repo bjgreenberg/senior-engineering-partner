@@ -206,10 +206,26 @@ judge reasons, with the response transcripts stripped — plus a `BASELINE.md` s
 headline numbers, the per-scenario gap table, and the harness caveats. Record one **before
 any large core edit** and validate the edit by re-running **both** modes under the same
 harness afterward; a baseline only covers the scenarios that existed when it was taken
-(added/edited scenarios re-baseline on the next sweep). **Current (harness v2, the only
-comparable record):** [`baselines/2026-07-05-opus/`](baselines/2026-07-05-opus/BASELINE.md) —
-bare 11/22/12/0 vs with-skill **29/16/0/0**: 23 of 45 improved, 0 regressed, and the
-with-skill fail column is zero for the first time on any recorded sweep. Historical
+(added/edited scenarios re-baseline on the next sweep). **Current (harness v2, 56-scenario
+suite, recorded 2026-07-27/28):**
+[`baselines/2026-07-27-opus/`](baselines/2026-07-27-opus/BASELINE.md) — bare 15/28/13/0 vs
+with-skill **42/13/1/0**;
+[`baselines/2026-07-28-fable/`](baselines/2026-07-28-fable/BASELINE.md) — bare 9/30/17/0 vs
+with-skill **42/14/0/0**, the first zero-fail with-skill sweep on the full suite;
+[`baselines/2026-07-27-haiku/`](baselines/2026-07-27-haiku/BASELINE.md) — bare 1/21/34/0 vs
+with-skill 13/28/15/0 (content transfers down-model; enforcement reliability does not).
+[`baselines/2026-07-27-postdiet-experiment/`](baselines/2026-07-27-postdiet-experiment/EXPERIMENT.md)
+is the core-density control record — future core-compression edits compare against it, not
+against post-t4. **The current sharpening picture (read from these records, not the older
+narrative):** no scenario fails on all three models any more. Opus's single with-skill fail
+is `adversarial-review-green-but-insufficient`; Fable's fail column is zero; Haiku's 15
+fails are an enforcement-reliability gap, not content gaps — the old durable-fail trio
+(dependency-manifest-drift · stale-diagram-on-behavior-change · tdd-regression-red-first)
+now passes on Opus, and only `dependency-manifest-drift` still runs partial on
+Fable/Haiku. Sharpening effort goes to the adversarial-review scenario and Haiku
+enforcement, not the solved trio. Prior harness-v2 record (45-scenario era, superseded as
+"current"): [`baselines/2026-07-05-opus/`](baselines/2026-07-05-opus/BASELINE.md) —
+bare 11/22/12/0 vs with-skill 29/16/0/0. Historical
 (pre-discontinuity, not comparable — see the note below):
 [`baselines/2026-07-02-opus/`](baselines/2026-07-02-opus/BASELINE.md) — the skill improves
 20 of 38 scenarios over the bare model with zero regressions (fails 13→4) — plus the
@@ -217,19 +233,17 @@ per-model portability sweeps of 2026-07-04:
 [`baselines/2026-07-04-fable/`](baselines/2026-07-04-fable/BASELINE.md) — 22 of 45
 improved, 0 regressed (fails 9→3, pass 8→28: the skill's value compounds up-model) —
 [`baselines/2026-07-04-sonnet/`](baselines/2026-07-04-sonnet/BASELINE.md) — 14 of 45
-improved, 0 regressed (fails 12→7; four of the seven remaining fails are the same durable
-fails Opus records, i.e. content gaps, not model gaps) — and
+improved, 0 regressed (fails 12→7; four of the seven remaining fails were the same durable
+fails Opus recorded then, i.e. content gaps, not model gaps) — and
 [`baselines/2026-07-04-haiku/`](baselines/2026-07-04-haiku/BASELINE.md) — the skill improves
 15 of 45 scenarios on Haiku 4.5 (fails 23→16), but 15 scenarios stay failed with the skill
 loaded, where Opus left 4: the content transfers down-model, the enforcement reliability
-does not. Across the four recorded sweeps, with-skill fails run 16 (Haiku) → 7 (Sonnet) →
-4 (Opus, older suite) → 3 (Fable) with identical skill text — the shared durable-fail core
-(dependency-manifest-drift · stale-diagram-on-behavior-change · tdd-regression-red-first)
-is the standing sharpening target. The tranche-4 core compression (~18% of SKILL.md,
-rules-lossless) was validated against those pre-edit references the same day —
+does not. (The durable-fail trio those sweeps identified was closed by later releases —
+see the current sharpening picture above.) The tranche-4 core compression (~18% of
+SKILL.md, rules-lossless) was validated against those pre-edit references the same day —
 [`baselines/2026-07-04-post-t4/`](baselines/2026-07-04-post-t4/BASELINE.md): no drop on any
-model traces to lost text; future core edits compare with-skill runs against the post-t4
-record. Superseded:
+model traces to lost text; post-t4 served as the core-edit comparison record until the
+2026-07-27 postdiet-experiment control superseded it. Superseded:
 [`baselines/2026-07-01-opus/`](baselines/2026-07-01-opus/BASELINE.md) (31 scenarios @ v1.8.0).
 
 > **Harness discontinuity (2026-07-04, the fixture/tool-grant change).** Every baseline above —
