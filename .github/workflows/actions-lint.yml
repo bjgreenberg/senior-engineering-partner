@@ -1,0 +1,33 @@
+name: actions-lint
+
+# Gate the workflows themselves: actionlint (correctness — schema, expression types,
+# shellcheck inside run: blocks) + zizmor (security — template injection, unpinned uses:,
+# credential persistence, dangerous triggers), via scripts/actions-lint.sh — the same
+# script a maintainer runs locally (house one-script rule). Both tools pinned; actionlint
+# checksum-verified. This is the mechanized half of the "least-privilege permissions,
+# SHA-pinned actions, no ${{ }} in run:" discipline in references/github-actions.md —
+# a mandate without a checker that runs is unenforced.
+#
+# Green-optional at introduction; promotion to a required status check is the maintainer's
+# explicit call (house promotion rule).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  actions-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false   # lint job never pushes; do not leave the token in .git/config
+      - name: Lint workflows (actionlint + zizmor)
+        run: |
+          set -euo pipefail
+          bash scripts/actions-lint.sh

