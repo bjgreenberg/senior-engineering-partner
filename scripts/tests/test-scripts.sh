@@ -343,6 +343,25 @@ PYEOF
   check "run-evals _maybe_sandbox FAILS CLOSED when no sandbox and no override" 0 "$rc"
 fi
 
+# The detection backstop must catch a REAL escape yet ignore the OS's own launchd churn
+# (com.apple.mdworker.shared.* spins up/down mid-run) — else it cries wolf on every scenario
+# and masks a true escape. Deterministic: exercises diff_persistence + the noise filter, no
+# real launchctl.
+rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+kept = [l for l in ["com.apple.mdworker.shared.01", "application.com.apple.x", "com.acme.evil"]
+        if not l.startswith(m._LAUNCHCTL_NOISE_PREFIXES)]
+assert kept == ["com.acme.evil"], kept                         # OS noise dropped, real label kept
+before = {"launchctl": [], "LaunchAgents": ["keep.plist"]}
+assert m.diff_persistence(before, dict(before)) == []          # no change → no alert
+real = {"launchctl": ["com.acme.evil"], "LaunchAgents": ["keep.plist", "com.acme.evil.plist"]}
+d = m.diff_persistence(before, real)
+assert any("com.acme.evil" in x for x in d) and len(d) == 2, d  # real escape → alert
+PYEOF
+check "run-evals persistence backstop catches a real escape, ignores OS launchd churn" 0 "$rc"
+
 # --- run-evals.py fixture harness (offline: pure logic only; no model runs) -----------------
 # The fixture gates must be ABLE to fail (§3c): suffix rule + manifest drift fire on planted
 # violations, the harness-written instructions file stays out of evidence, and the judge-
