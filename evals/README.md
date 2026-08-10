@@ -46,6 +46,16 @@ origin.
 > (e.g. `v4.0`, `v5.4`) that predate the public `v1.0.0` release and intentionally do **not** appear in
 > the SKILL.md changelog — treat them as provenance notes, not resolvable versions.
 
+> **Phrase system-touching scenarios advisorily, not imperatively.** A scenario about
+> launchd, app bundles, installs, or any real machine mutation must ask *"what's the correct
+> fix / why is this wrong?"* — never *"fix it."* The checklist grades the model's *prose*, so
+> advisory phrasing costs zero grading signal; imperative phrasing invites the model to
+> actually perform the mutation, which the 2026-08-09 `fda-compiled-launcher` run did (it built
+> a real LaunchAgent + app bundle on the maintainer's Mac). The sandbox now bounds the blast
+> radius, but the phrasing is the first line: don't ask a shell-granted model to do a thing you
+> only want it to *explain*. Pair such scenarios with an `anti_behavior` that fails a candidate
+> which builds/installs instead of explaining.
+
 **`files` — fixture workspaces.** A scenario whose query demands work on real code (an edit, a
 red-first regression test, a doc sweep) lists workspace-relative paths in `files`; the runner
 materializes each from `evals/fixtures/<scenario>/<path>.fixture` into the scratch cwd (suffix
