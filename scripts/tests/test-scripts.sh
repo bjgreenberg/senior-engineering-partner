@@ -341,6 +341,37 @@ with mock.patch.object(m, "sandbox_available", return_value=False):
 sys.exit(1)                  # ran bare — fail-open, WRONG
 PYEOF
   check "run-evals _maybe_sandbox FAILS CLOSED when no sandbox and no override" 0 "$rc"
+
+  # The seatbelt must deny launchctl/osascript EXEC for every runner (kernel-enforced) — the
+  # generic runner ignores the Claude settings.json, so this is what stops it bootstrapping a
+  # workspace plist. A plain `bash -c launchctl` stands in for any runner's shell.
+  rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, sys, tempfile
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+if not m.sandbox_available():
+    sys.exit(3)
+ws = Path(tempfile.mkdtemp())
+# launchctl exec is blocked -> the child exits nonzero -> _run_cli raises.
+try:
+    m._run_cli(["bash", "-c", "launchctl list"], 30, ws, sandbox_root=ws)
+    raise SystemExit("launchctl ran under the sandbox — EXEC DENY FAILED")
+except RuntimeError:
+    pass
+# a benign binary still execs (the deny is targeted, not blanket).
+out = m._run_cli(["bash", "-c", "echo exec-control-ok"], 30, ws, sandbox_root=ws)
+assert "exec-control-ok" in out, out
+# the seatbelt regex is derived from the shared basename list (no drift).
+assert all(n in m._seatbelt_profile(ws) for n in m._FORBIDDEN_EXEC_BASENAMES)
+assert m._SCENARIO_DENY_TOOLS == [f"Bash({n}:*)" for n in m._FORBIDDEN_EXEC_BASENAMES]
+PYEOF
+  if [[ "$rc" -eq 3 ]]; then
+    note "SKIP: sandbox-exec unavailable — exec-deny not exercised here"
+    pass=$((pass + 1))
+  else
+    check "run-evals sandbox DENIES launchctl exec for any runner (kernel, not settings.json)" 0 "$rc"
+  fi
 fi
 
 # The detection backstop must fire on a REAL persistence write (a new LaunchAgent/app) and
