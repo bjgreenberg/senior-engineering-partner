@@ -17,6 +17,61 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.25.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.24.0...v1.25.0) (2026-08-08)
+
+The two-analyses release. Two external repos were read at source level and mined for what this
+skill lacked — `qltysh/qlty` (the code-quality engine; its own license proved the first lesson:
+"open-source" in a README can sit on a BUSL grant that forbids your use case) and `affaan-m/ECC`
+(a 284-skill meta-harness whose one sharp idea, evidence-over-claims gating, pointed back at this
+skill's own unenforced prose). Every adopted idea shipped as a gated, evidenced discipline; the
+same week's documentation audit then corrected the repo's own record and mechanized the drift
+class it found.
+
+**The workflows are now a gated surface.** `scripts/actions-lint.sh` runs checksum-verified
+`actionlint` + pinned `zizmor` over `.github/workflows/` (#127), and the core forbids `${{ }}`
+interpolation in `run:` — GitHub Actions expression injection, the CI twin of the Bash-injection
+rule the skill always carried. Dogfooding the gate found and fixed eight credential-persistence
+findings in this repo's own lint workflows, and the gate was proven red on a planted injection
+before it shipped.
+
+**Quality gets gates, not opinions.** `references/maintainability-metrics.md` (#129) turns
+"too complex, please simplify" into committed thresholds — cognitive (not cyclomatic) complexity,
+structural (not textual) duplication, a legacy ratchet, and ADR-worthy threshold raises. The
+monitor→comment→block introduction ladder (`testing.md` §3d, #130) gives a living codebase a
+graduated path to enforcement with the load-bearing exemption stated twice: security-floor gates
+skip the ladder and enter at block.
+
+**The loop keeps count and the record matches reality.** Counted observations (#131) make the
+self-improvement loop's two-instance bar a fact on disk instead of a session recollection;
+absence-is-not-evidence (#132) sharpens the epistemic core with a cross-session lesson (a missing
+marker file proved nothing — the status command said otherwise). The docs audit (#133–#136)
+corrected the evals narrative to the current 2026-07-27/28 baselines (Fable's zero-fail sweep
+included), documented `eval-guard` and its `Eval-waiver:` escape hatch where contributors read,
+recorded the refuted core diet as ADR 0001 (density is purchased behavior; the budget is a
+ceiling, not a target), and added skill-lint check 7 so the README can never again silently lag
+the tree. The leakage-guard fix (#125) is the same honesty applied to the local gate: broad
+domain-fingerprint patterns are scoped away from recorded baselines, with fixtures proving both
+directions of the boundary, so a guard that failed on every branch regardless of diff can no
+longer train its reviewer to ignore it.
+
+New scenarios for the new disciplines are staged on `staging/eval-scenarios-batch` behind
+auditable `Eval-waiver:` lines, pending one batched re-baseline sweep.
+
+
+### Features
+
+* absence-is-not-evidence (relay suggestion c) ([#132](https://github.com/bjgreenberg/senior-engineering-partner/issues/132)) ([b5d63fe](https://github.com/bjgreenberg/senior-engineering-partner/commit/b5d63fe18951d651f0e7cf0fef5a3bf0be442bae))
+* counted observations (ECC take [#3](https://github.com/bjgreenberg/senior-engineering-partner/issues/3)) + selective-test-execution note ([#131](https://github.com/bjgreenberg/senior-engineering-partner/issues/131)) ([d954f02](https://github.com/bjgreenberg/senior-engineering-partner/commit/d954f02b050c8114d0f5dd04a0a38e63121ab798))
+* gate workflows with actionlint + zizmor; forbid ${{ }} interpolation in run: ([#127](https://github.com/bjgreenberg/senior-engineering-partner/issues/127)) ([8f8115a](https://github.com/bjgreenberg/senior-engineering-partner/commit/8f8115a059494b99c91d7b85671944b8e7a5a1ea))
+* gate-introduction promotion ladder (qlty proposal [#3](https://github.com/bjgreenberg/senior-engineering-partner/issues/3)) ([#130](https://github.com/bjgreenberg/senior-engineering-partner/issues/130)) ([c7b11b6](https://github.com/bjgreenberg/senior-engineering-partner/commit/c7b11b679eeb12a6c80410ae597156f62c155467))
+* maintainability metrics as gates (qlty proposal [#2](https://github.com/bjgreenberg/senior-engineering-partner/issues/2)) ([#129](https://github.com/bjgreenberg/senior-engineering-partner/issues/129)) ([4cb8115](https://github.com/bjgreenberg/senior-engineering-partner/commit/4cb811544297f0af6e9ea453df3af7c6c5acdf38))
+* mechanize README↔tree documentation integrity (audit LOW-11) ([#136](https://github.com/bjgreenberg/senior-engineering-partner/issues/136)) ([48a0d36](https://github.com/bjgreenberg/senior-engineering-partner/commit/48a0d3622f8ad9c8f2fde335c23c8c60860c7586))
+
+
+### Bug Fixes
+
+* scope hand-authored-only denylist patterns away from recorded baselines ([#125](https://github.com/bjgreenberg/senior-engineering-partner/issues/125)) ([8db2556](https://github.com/bjgreenberg/senior-engineering-partner/commit/8db2556c6710c4f21dc0fd69345e10c7f2dcc1f8))
+
 ## [1.24.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.23.1...v1.24.0) (2026-07-28)
 
 The audit release. A full `AUDIT:`-mode pass over the skill's own repo (2026-07-27) found the two
