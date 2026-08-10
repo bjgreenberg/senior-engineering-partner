@@ -29,10 +29,14 @@ stream so the judge receives, alongside the response text: the ORDERED tool-call
 diff can't prove) and the post-run workspace evidence (unified diffs vs fixtures first,
 then new files). The judge itself gets no tool grants.
 
-SECURITY NOTE: a scenario run executes model-chosen shell commands as your user with no
-sandbox — the throwaway temp cwd bounds the *default* working directory, not what Bash can
-reach. Scenario queries are first-party fixtures; still, run sweeps only on a machine and
-account you trust with that.
+SECURITY NOTE: a scenario run executes model-chosen shell commands as your user. The temp
+cwd bounds only the *default* directory, so every scenario child runs under a macOS
+sandbox-exec seatbelt profile that DENIES file writes outside the workspace (see
+``_maybe_sandbox`` / ``_seatbelt_profile``) — without it a Bash call using ``~`` or an
+absolute path writes to the real home, and once installed a real LaunchAgent + app bundle
+(2026-08-09). Reads stay open (the CLI reads its auth from ~/.claude), so scenario queries
+remain first-party fixtures; run sweeps only on an account you trust with that. A platform
+without sandbox-exec fails closed unless EVAL_ALLOW_UNSANDBOXED=1.
 
 Scenario runner is pluggable; the judge is not. ``--runner claude`` (default) is the
 fully-supported path above. ``--runner generic`` runs each scenario through any other
@@ -108,6 +112,177 @@ FIXTURE_SUFFIX = ".fixture"
 # tool stays disallowed in both modes regardless.
 SCENARIO_ALLOWED_TOOLS = "Bash,Edit,Write"
 
+# --- Scenario sandboxing (the write boundary) --------------------------------------------
+# A scenario child is `claude -p` with Bash/Edit/Write, running as the invoking user. The
+# temp cwd bounds only the DEFAULT directory — a Bash call using `~` or an absolute path
+# writes to the real home. A scenario built to "fix a LaunchAgent" once took that literally
+# and installed a real ~/Library/LaunchAgents agent + ~/Applications bundle on the
+# maintainer's Mac (2026-08-09 incident). This is the dev-environment-isolation.md rule
+# ("scope an agent with shell access to one worktree, not your $HOME") applied to the
+# harness itself: every model invocation runs under a macOS `sandbox-exec` seatbelt profile
+# that DENIES all file writes outside the workspace + system temp, while allowing reads
+# (the CLI reads its auth from ~/.claude). Verified: `claude -p` authenticates and runs
+# with all ~/.claude writes denied, so the boundary costs no functionality.
+#
+# Set EVAL_ALLOW_UNSANDBOXED=1 to bypass — an explicit, auditable override for a throwaway
+# VM / dedicated account where the whole machine is already disposable. Absent that, a
+# platform without sandbox-exec fails CLOSED rather than running shell-granted scenarios
+# against the real home.
+_UNSANDBOXED_ENV = "EVAL_ALLOW_UNSANDBOXED"
+
+
+def sandbox_available() -> bool:
+    """True when the kernel write-boundary can be enforced (macOS + sandbox-exec on PATH)."""
+    return sys.platform == "darwin" and shutil.which("sandbox-exec") is not None
+
+
+def _seatbelt_profile(workdir: Path) -> str:
+    """A seatbelt profile: allow reads everywhere, deny writes outside the workspace.
+
+    Last-match-wins in seatbelt, so the blanket `(deny file-write*)` is re-opened only for
+    the workspace, the system temp roots (Python/CLI scratch), and the tty/null devices a
+    CLI needs. Writes to ~/.claude, ~/Library/LaunchAgents, ~/Applications, ~/src, and
+    everywhere else are refused by the kernel. Reads stay open via `(allow default)` so the
+    CLI can read its own auth — the residual (a Bash call can READ the session token) is the
+    pre-existing status quo the evals/README already warns about and cannot be closed at the
+    sandbox layer, since the reader IS the CLI process. The write-escape, which is the
+    load-bearing defect, is fully closed.
+    """
+    root = str(workdir.resolve())
+    # macOS temp dirs resolve under /private; include both the symlink and canonical forms.
+    temp_roots = sorted(
+        {
+            str(Path(tempfile.gettempdir()).resolve()),
+            "/private/tmp",
+            "/private/var/folders",
+            "/tmp",
+        }
+    )
+    lines = [
+        "(version 1)",
+        "(allow default)",
+        "(deny file-write*)",
+        f'(allow file-write* (subpath "{root}"))',
+    ]
+    lines += [f'(allow file-write* (subpath "{t}"))' for t in temp_roots]
+    lines.append(
+        '(allow file-write*'
+        ' (literal "/dev/null") (literal "/dev/stdout") (literal "/dev/stderr")'
+        ' (literal "/dev/tty") (literal "/dev/dtracehelper") (subpath "/dev/fd"))'
+    )
+    return "\n".join(lines)
+
+
+def _maybe_sandbox(cmd: list[str], workdir: Path) -> list[str]:
+    """Prefix cmd with a workspace-scoped seatbelt wrapper, or fail closed.
+
+    The explicit override (EVAL_ALLOW_UNSANDBOXED=1) runs cmd bare — for a disposable
+    VM/account only. Without it, a platform that cannot sandbox refuses rather than running
+    shell-granted scenarios against the real home (fail closed, the skill's own rule)."""
+    if os.environ.get(_UNSANDBOXED_ENV) == "1":
+        return cmd
+    if not sandbox_available():
+        raise RuntimeError(
+            "scenario sandboxing unavailable (needs macOS + sandbox-exec) and "
+            f"{_UNSANDBOXED_ENV}=1 is not set — refusing to run a shell-granted scenario "
+            "unsandboxed against the real home. Run on macOS, or set "
+            f"{_UNSANDBOXED_ENV}=1 only on a throwaway VM/account."
+        )
+    return ["sandbox-exec", "-p", _seatbelt_profile(workdir), *cmd]
+
+
+# Deny rules the seatbelt cannot express: seatbelt bounds FILE writes, but a process-exec
+# like `launchctl bootstrap gui/$UID <workspace>.plist` mutates system state over XPC
+# without writing outside the workspace, and `osascript` can drive other apps. Runs pass
+# --setting-sources project, so a project settings.json in the workspace is honored; its
+# permissions.deny takes precedence over the --allowedTools grant. Defense in depth, not the
+# primary boundary — the seatbelt is (this list can never be exhaustive).
+_SCENARIO_DENY_TOOLS = [
+    "Bash(launchctl:*)",
+    "Bash(osascript:*)",
+    "Bash(sudo:*)",
+    "Bash(systemsetup:*)",
+    "Bash(spctl:*)",
+    "Bash(csrutil:*)",
+    "Bash(crontab:*)",
+]
+
+
+def write_scenario_guard_settings(workdir: Path) -> None:
+    """Merge the system-mutating-exec deny rules into the workspace project settings.json.
+
+    Called AFTER fixtures are materialized so a fixture-supplied `.claude/settings.json`
+    cannot clobber the guard — the deny rules are merged in and always win. A malformed
+    fixture settings file is replaced outright (the guard is not negotiable)."""
+    settings_dir = workdir / ".claude"
+    settings_dir.mkdir(parents=True, exist_ok=True)
+    settings_path = settings_dir / "settings.json"
+    data: dict[str, Any] = {}
+    if settings_path.is_file():
+        with contextlib.suppress(json.JSONDecodeError, OSError):
+            loaded = json.loads(settings_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                data = loaded
+    perms = data.setdefault("permissions", {})
+    if not isinstance(perms, dict):
+        perms = data["permissions"] = {}
+    existing_deny = perms.get("deny")
+    deny = list(existing_deny) if isinstance(existing_deny, list) else []
+    for rule in _SCENARIO_DENY_TOOLS:
+        if rule not in deny:
+            deny.append(rule)
+    perms["deny"] = deny
+    settings_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def guard_settings_intact(workdir: Path) -> bool:
+    """True when the workspace settings.json still carries every deny rule (a self-check)."""
+    settings_path = workdir / ".claude" / "settings.json"
+    try:
+        data = json.loads(settings_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return False
+    deny = data.get("permissions", {}).get("deny", []) if isinstance(data, dict) else []
+    return isinstance(deny, list) and all(rule in deny for rule in _SCENARIO_DENY_TOOLS)
+
+
+# Post-run detection backstop: snapshot the persistence surfaces a scenario must never
+# touch, before and after the run. A delta means something slipped BOTH the seatbelt and the
+# deny rules — it should never fire, which is exactly why it must (silence is only meaningful
+# from a control that could speak). Detection, never a substitute for the enforcement above.
+def _persistence_snapshot() -> dict[str, list[str]]:
+    home = Path.home()
+    surfaces = {
+        "LaunchAgents": home / "Library" / "LaunchAgents",
+        "Applications": home / "Applications",
+    }
+    snap: dict[str, list[str]] = {}
+    for key, path in surfaces.items():
+        with contextlib.suppress(OSError):
+            snap[key] = sorted(p.name for p in path.iterdir()) if path.is_dir() else []
+    if sys.platform == "darwin" and shutil.which("launchctl"):
+        with contextlib.suppress(Exception):
+            out = subprocess.run(
+                ["launchctl", "list"],
+                capture_output=True,
+                text=True,
+                timeout=15,
+                check=False,
+            ).stdout
+            snap["launchctl"] = sorted(
+                line.split("\t")[-1] for line in out.splitlines()[1:] if line.strip()
+            )
+    return snap
+
+
+def diff_persistence(before: dict[str, list[str]], after: dict[str, list[str]]) -> list[str]:
+    """Return human-readable additions to any persistence surface (never removals)."""
+    added: list[str] = []
+    for key in sorted(set(before) | set(after)):
+        new = set(after.get(key, [])) - set(before.get(key, []))
+        added += [f"{key}: +{item}" for item in sorted(new)]
+    return added
+
 # Tool-artifact directories excluded from workspace evidence: a with-skill run that runs
 # mypy/ruff/pytest in the workspace generates cache trees that would otherwise consume the
 # evidence budget before the real edits are reached.
@@ -168,6 +343,7 @@ class ScenarioResult(TypedDict, total=False):
     duration_s: float
     cost_usd: float | None
     error: str
+    sandbox_escape: list[str]  # present ONLY when the detection backstop caught a mutation
 
 
 def stage_skill_copy(dst: Path) -> None:
@@ -200,12 +376,23 @@ def build_skill_system_prompt(base_dir: Path) -> str:
     return preamble + body
 
 
-def _run_cli(cmd: list[str], timeout: int, cwd: Path, label: str = "claude") -> str:
+def _run_cli(
+    cmd: list[str],
+    timeout: int,
+    cwd: Path,
+    label: str = "claude",
+    sandbox_root: Path | None = None,
+) -> str:
     """One CLI invocation; returns stdout, raises on failure.
 
     Runs the child in its own process group and kills the WHOLE group on timeout — agent
     CLIs spawn tool subprocesses, and a bare child-kill would orphan them past the
     temp-dir cleanup.
+
+    When ``sandbox_root`` is given, the whole command runs under a macOS seatbelt profile
+    that denies file writes outside that root (see ``_maybe_sandbox``) — the write boundary
+    for shell-granted scenario runs. ``None`` means "no boundary needed" (never pass it for
+    a run that can write).
     """
     # A NUL byte in any argv element makes exec raise `ValueError: embedded null byte`,
     # erroring the whole scenario on harness plumbing. The reachable path is real:
@@ -215,6 +402,8 @@ def _run_cli(cmd: list[str], timeout: int, cwd: Path, label: str = "claude") -> 
     # sees the content contained one. (Root cause of the csv-formula-injection-export /
     # preserve-input-on-failed-submit sweep errors, 2026-07-27.)
     cmd = [arg.replace("\0", "\\x00") for arg in cmd]
+    if sandbox_root is not None:
+        cmd = _maybe_sandbox(cmd, sandbox_root)
     proc = subprocess.Popen(
         cmd,
         stdin=subprocess.DEVNULL,  # a CLI polling the terminal would SIGTTIN-stop here
@@ -308,7 +497,8 @@ def run_scenario_claude(
     ]
     if system_prompt is not None:
         cmd += ["--append-system-prompt", system_prompt]
-    stdout = _run_cli(cmd, timeout, cwd)
+    # Shell-granted: the write boundary is mandatory (see _maybe_sandbox).
+    stdout = _run_cli(cmd, timeout, cwd, sandbox_root=cwd)
     response, cost, saw_success, subtype = "", None, False, ""
     trail: list[str] = []
     for line in stdout.splitlines():
@@ -379,7 +569,8 @@ def run_generic(
     transcripts non-faithful). No cost data — there is no cross-CLI cost envelope to parse,
     so cost_usd is honestly None."""
     cmd = build_runner_cmd(cmd_template, prompt, model)
-    stdout = _run_cli(cmd, timeout, cwd, label=cmd[0])
+    # A foreign runner CLI may also act on the workspace — bound it the same way.
+    stdout = _run_cli(cmd, timeout, cwd, label=cmd[0], sandbox_root=cwd)
     return stdout.removesuffix("\n"), None
 
 
@@ -755,9 +946,25 @@ def run_scenario(
             workdir = Path(tmp)
             if files:
                 materialize_files(name, files, workdir)
+            # Defense in depth, written AFTER materialize so a fixture cannot clobber it:
+            # deny the system-mutating exec vectors the seatbelt can't express.
+            write_scenario_guard_settings(workdir)
+            if not guard_settings_intact(workdir):
+                raise RuntimeError(f"[{name}] guard settings.json failed its self-check")
+            # Detection backstop: snapshot the persistence surfaces before the run so any
+            # escape past BOTH enforcement layers is caught, not silent.
+            persist_before = _persistence_snapshot()
             response, cost, trail = run_scenario_prompt(
                 runner, scenario["query"], model, timeout, workdir, system_prompt
             )
+            escaped = diff_persistence(persist_before, _persistence_snapshot())
+            if escaped:
+                log.error(
+                    "[%s] SANDBOX ESCAPE — persistence surface mutated: %s",
+                    name,
+                    "; ".join(escaped),
+                )
+                result["sandbox_escape"] = escaped
             # Every scenario gets workspace evidence — a tool-granted model can act in an
             # empty workspace too, and "edited nothing" is itself gradeable information.
             # The generic runner's harness-written instructions file is excluded: it is
