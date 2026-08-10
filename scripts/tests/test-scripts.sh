@@ -260,6 +260,24 @@ sys.exit(1)
 PYEOF
 check "run-evals build_runner_cmd REJECTS a template without {prompt}" 0 "$rc"
 
+# --resume reuses only non-error checkpoints, re-runs errored/malformed/missing — so a
+# usage-limited or externally-killed sweep recovers without re-spending on completed work.
+rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, sys, tempfile, json
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+out = Path(tempfile.mkdtemp())
+(out / "a.json").write_text(json.dumps({"scenario": "a", "status": "pass"}))
+(out / "b.json").write_text(json.dumps({"scenario": "b", "status": "partial"}))
+(out / "c.json").write_text(json.dumps({"scenario": "c", "status": "error"}))   # re-run
+(out / "d.json").write_text("{malformed")                                       # re-run
+r = m.load_resumable_results(out, {"a", "b", "c", "d", "e"})                     # e: no file
+assert sorted(r) == ["a", "b"], sorted(r)                                        # only good reused
+assert sorted({"a","b","c","d","e"} - set(r)) == ["c", "d", "e"]                 # rest re-run
+PYEOF
+check "run-evals --resume reuses non-error checkpoints, re-runs errors/missing" 0 "$rc"
+
 # The generic runner's misuse paths must fail fast at argparse (exit 2), before any run.
 rc=0; python3 "$repo_root/scripts/run-evals.py" --runner generic --filter zz >/dev/null 2>&1 || rc=$?
 check "run-evals FAILS fast: --runner generic without --runner-cmd" 2 "$rc"

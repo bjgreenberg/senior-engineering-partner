@@ -133,6 +133,13 @@ a sweep's "bare" responses can't absorb the operator's environment — the root 
 identifier once leaking into a committed baseline. (Generic runners: the `--runner-cmd`
 template author owns the foreign CLI's equivalent isolation.)
 
+**Resuming an interrupted sweep.** Results checkpoint per scenario as they finish, so an
+interrupted run loses nothing already done. A full Fable sweep spans a usage-limit window
+(scenarios past it error `claude exited 1` in ~3 s) and can be externally killed. Re-invoke
+with the **same `--out` dir** plus **`--resume`**: scenarios with a non-error result are
+reused, only errored/missing ones re-run — recovering the sweep without re-spending on
+completed scenarios. (Errored and malformed checkpoints are always re-run, never trusted.)
+
 The judge receives two pieces of **harness-collected evidence** alongside the response text:
 the post-run **workspace evidence** (unified diffs vs the fixtures first, then new files —
 per-file capped, 60 KB total) and, on the claude runner, the **ordered tool-call trail**

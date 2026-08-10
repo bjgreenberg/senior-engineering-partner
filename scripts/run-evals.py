@@ -62,6 +62,8 @@ Usage examples:
   scripts/run-evals.py --filter spec-first-gate            # one scenario, quick check
   scripts/run-evals.py --mode baseline --model opus        # full baseline sweep
   scripts/run-evals.py --model opus --judge-model opus     # full with-skill sweep
+  scripts/run-evals.py --out DIR --resume ...              # recover an interrupted sweep
+                                                           # (reuse non-error results in DIR)
   scripts/run-evals.py --runner generic \\
       --runner-cmd 'codex exec --model {model} {prompt}' \\
       --runner-instructions-file AGENTS.md                 # cross-CLI sweep (verify flags!)
@@ -1035,6 +1037,25 @@ def run_scenario(
     return result
 
 
+def load_resumable_results(out_dir: Path, names: set[str]) -> dict[str, ScenarioResult]:
+    """Reusable prior results in out_dir: a checkpointed `<scenario>.json` whose status is
+    NOT 'error', for a scenario still in the suite. Errored/absent scenarios are re-run, so
+    a resume recovers a usage-limited or killed sweep without re-spending on the good ones.
+    A malformed checkpoint is ignored (re-run), never trusted."""
+    reusable: dict[str, ScenarioResult] = {}
+    for name in sorted(names):
+        checkpoint = out_dir / f"{name}.json"
+        if not checkpoint.is_file():
+            continue
+        try:
+            prior: ScenarioResult = json.loads(checkpoint.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        if prior.get("scenario") == name and prior.get("status") in ("pass", "partial", "fail"):
+            reusable[name] = prior
+    return reusable
+
+
 def write_summary(out_dir: Path, results: list[ScenarioResult]) -> str:
     """Write summary.json + summary.md; returns the one-line tally."""
     tally = {s: sum(1 for r in results if r["status"] == s) for s in ("pass", "partial", "fail", "error")}
@@ -1063,6 +1084,12 @@ def main() -> int:
     parser.add_argument("--jobs", type=int, default=2, help="concurrent scenarios")
     parser.add_argument("--timeout", type=int, default=600, help="seconds per claude run")
     parser.add_argument("--out", default="", help="output dir (default: evals/results/<stamp>)")
+    parser.add_argument(
+        "--resume", action="store_true",
+        help="skip scenarios that already have a NON-error result in --out (re-runs errors "
+             "and missing scenarios only) — recover a sweep interrupted by a usage-limit "
+             "window or an external kill without re-spending on completed scenarios",
+    )
     parser.add_argument(
         "--runner", choices=["claude", "generic"], default="claude",
         help="scenario-response producer; the judge always runs on the claude CLI",
@@ -1134,15 +1161,22 @@ def main() -> int:
             stage_dir = Path(stage) / "skill"
             stage_skill_copy(stage_dir)
             system_prompt = build_skill_system_prompt(stage_dir)
-        log.info("%d scenario(s) → %s (mode=%s model=%s runner=%s judge=%s jobs=%d)",
-                 len(paths), out_dir, args.mode, args.model, args.runner, args.judge_model, args.jobs)
-
         results: list[ScenarioResult] = []
+        todo = paths
+        if args.resume:
+            reused = load_resumable_results(out_dir, {p.stem for p in paths})
+            results.extend(reused.values())
+            todo = [p for p in paths if p.stem not in reused]
+            log.info("resume: %d reused (pass/partial/fail), %d to run",
+                     len(reused), len(todo))
+        log.info("%d scenario(s) → %s (mode=%s model=%s runner=%s judge=%s jobs=%d)",
+                 len(todo), out_dir, args.mode, args.model, args.runner, args.judge_model, args.jobs)
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
             futures = {
                 pool.submit(run_scenario, p, args.mode, args.model, args.judge_model,
                             args.timeout, system_prompt, runner): p
-                for p in paths
+                for p in todo
             }
             for future in concurrent.futures.as_completed(futures):
                 result = future.result()
