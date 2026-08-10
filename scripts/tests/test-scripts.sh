@@ -272,9 +272,12 @@ out = Path(tempfile.mkdtemp())
 (out / "b.json").write_text(json.dumps({"scenario": "b", "status": "partial"}))
 (out / "c.json").write_text(json.dumps({"scenario": "c", "status": "error"}))   # re-run
 (out / "d.json").write_text("{malformed")                                       # re-run
-r = m.load_resumable_results(out, {"a", "b", "c", "d", "e"})                     # e: no file
-assert sorted(r) == ["a", "b"], sorted(r)                                        # only good reused
-assert sorted({"a","b","c","d","e"} - set(r)) == ["c", "d", "e"]                 # rest re-run
+(out / "f.json").write_text(json.dumps({"scenario": "f", "status": "fail"}))    # fail is non-error → reuse
+(out / "g.json").write_text("[]")                                              # valid JSON, wrong type → re-run (no crash)
+names = {"a", "b", "c", "d", "e", "f", "g"}                                     # e: no file
+r = m.load_resumable_results(out, names)                                        # must NOT raise on g
+assert sorted(r) == ["a", "b", "f"], sorted(r)                                  # pass/partial/fail reused
+assert sorted(names - set(r)) == ["c", "d", "e", "g"], sorted(names - set(r))   # error/malformed/missing/wrong-type re-run
 PYEOF
 check "run-evals --resume reuses non-error checkpoints, re-runs errors/missing" 0 "$rc"
 

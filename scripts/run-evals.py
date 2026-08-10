@@ -1048,8 +1048,12 @@ def load_resumable_results(out_dir: Path, names: set[str]) -> dict[str, Scenario
         if not checkpoint.is_file():
             continue
         try:
-            prior: ScenarioResult = json.loads(checkpoint.read_text(encoding="utf-8"))
+            prior = json.loads(checkpoint.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
+            continue
+        # Valid JSON of a non-object type (`[]`, `123`, `"x"`) is as untrustworthy as
+        # malformed — guard before .get() so a stray checkpoint can't crash --resume.
+        if not isinstance(prior, dict):
             continue
         if prior.get("scenario") == name and prior.get("status") in ("pass", "partial", "fail"):
             reusable[name] = prior
