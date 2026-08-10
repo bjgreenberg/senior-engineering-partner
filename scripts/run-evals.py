@@ -250,6 +250,17 @@ def guard_settings_intact(workdir: Path) -> bool:
 # touch, before and after the run. A delta means something slipped BOTH the seatbelt and the
 # deny rules — it should never fire, which is exactly why it must (silence is only meaningful
 # from a control that could speak). Detection, never a substitute for the enforcement above.
+#
+# The directory snapshots (~/Library/LaunchAgents, ~/Applications) are the reliable signal.
+# `launchctl list` also carries the OS's OWN churn — Spotlight `com.apple.mdworker.shared.*`
+# and kin spin up and tear down on their own during a run — so those labels are filtered out;
+# leaving them in made the backstop cry wolf on every scenario (the skill's own monitoring
+# rule: allowlist benign noise, alert only on what is NEW and real). A scenario-installed
+# agent carries a non-Apple label (or drops a file the directory diff catches); OS-managed
+# `com.apple.*` / `application.com.apple.*` churn is not an escape.
+_LAUNCHCTL_NOISE_PREFIXES = ("com.apple.", "application.com.apple.")
+
+
 def _persistence_snapshot() -> dict[str, list[str]]:
     home = Path.home()
     surfaces = {
@@ -270,7 +281,11 @@ def _persistence_snapshot() -> dict[str, list[str]]:
                 check=False,
             ).stdout
             snap["launchctl"] = sorted(
-                line.split("\t")[-1] for line in out.splitlines()[1:] if line.strip()
+                label
+                for line in out.splitlines()[1:]
+                if line.strip()
+                for label in (line.split("\t")[-1],)
+                if not label.startswith(_LAUNCHCTL_NOISE_PREFIXES)
             )
     return snap
 
