@@ -130,6 +130,23 @@ SCENARIO_ALLOWED_TOOLS = "Bash,Edit,Write"
 # against the real home.
 _UNSANDBOXED_ENV = "EVAL_ALLOW_UNSANDBOXED"
 
+# System-mutating executables a scenario must never run: `launchctl` bootstraps agents over
+# XPC (no file write, so the write boundary alone misses it), `osascript` drives other apps,
+# `sudo` escalates, etc. Denied TWO ways from one list so they stay in sync: (1) as a
+# process-exec deny in the seatbelt profile — kernel-enforced for EVERY runner including the
+# foreign `generic` runner that ignores Claude settings; (2) as a Claude permissions.deny in
+# the workspace settings.json — a cleaner "denied" in the claude-runner trail. Basenames, so
+# the seatbelt regex is path-robust.
+_FORBIDDEN_EXEC_BASENAMES = (
+    "launchctl",
+    "osascript",
+    "sudo",
+    "systemsetup",
+    "spctl",
+    "csrutil",
+    "crontab",
+)
+
 
 def sandbox_available() -> bool:
     """True when the kernel write-boundary can be enforced (macOS + sandbox-exec on PATH)."""
@@ -170,6 +187,11 @@ def _seatbelt_profile(workdir: Path) -> str:
         ' (literal "/dev/null") (literal "/dev/stdout") (literal "/dev/stderr")'
         ' (literal "/dev/tty") (literal "/dev/dtracehelper") (subpath "/dev/fd"))'
     )
+    # Kernel-enforced exec deny for the system-mutating binaries, for EVERY runner — the
+    # generic runner ignores the Claude settings.json, so this is what actually stops it
+    # bootstrapping a workspace plist. Basename-anchored regex, path-robust.
+    exec_re = "/(" + "|".join(_FORBIDDEN_EXEC_BASENAMES) + ")$"
+    lines.append(f'(deny process-exec* (regex #"{exec_re}"))')
     return "\n".join(lines)
 
 
@@ -191,21 +213,12 @@ def _maybe_sandbox(cmd: list[str], workdir: Path) -> list[str]:
     return ["sandbox-exec", "-p", _seatbelt_profile(workdir), *cmd]
 
 
-# Deny rules the seatbelt cannot express: seatbelt bounds FILE writes, but a process-exec
-# like `launchctl bootstrap gui/$UID <workspace>.plist` mutates system state over XPC
-# without writing outside the workspace, and `osascript` can drive other apps. Runs pass
-# --setting-sources project, so a project settings.json in the workspace is honored; its
-# permissions.deny takes precedence over the --allowedTools grant. Defense in depth, not the
-# primary boundary — the seatbelt is (this list can never be exhaustive).
-_SCENARIO_DENY_TOOLS = [
-    "Bash(launchctl:*)",
-    "Bash(osascript:*)",
-    "Bash(sudo:*)",
-    "Bash(systemsetup:*)",
-    "Bash(spctl:*)",
-    "Bash(csrutil:*)",
-    "Bash(crontab:*)",
-]
+# The Claude-runner half of the exec deny: a workspace settings.json permissions.deny (runs
+# pass --setting-sources project). This is belt-and-suspenders — the seatbelt process-exec
+# deny above already blocks these for EVERY runner at the kernel — but it yields a clean
+# "denied" in the claude-runner tool trail. Derived from the same basename list so the two
+# never drift; the generic runner ignores this file and relies solely on the seatbelt.
+_SCENARIO_DENY_TOOLS = [f"Bash({name}:*)" for name in _FORBIDDEN_EXEC_BASENAMES]
 
 
 def write_scenario_guard_settings(workdir: Path) -> None:
@@ -251,16 +264,15 @@ def guard_settings_intact(workdir: Path) -> bool:
 # deny rules — it should never fire, which is exactly why it must (silence is only meaningful
 # from a control that could speak). Detection, never a substitute for the enforcement above.
 #
-# The directory snapshots (~/Library/LaunchAgents, ~/Applications) are the reliable signal.
-# `launchctl list` also carries the OS's OWN churn — Spotlight `com.apple.mdworker.shared.*`
-# and kin spin up and tear down on their own during a run — so those labels are filtered out;
-# leaving them in made the backstop cry wolf on every scenario (the skill's own monitoring
-# rule: allowlist benign noise, alert only on what is NEW and real). A scenario-installed
-# agent carries a non-Apple label (or drops a file the directory diff catches); OS-managed
-# `com.apple.*` / `application.com.apple.*` churn is not an escape.
-_LAUNCHCTL_NOISE_PREFIXES = ("com.apple.", "application.com.apple.")
-
-
+# We snapshot the persistence DIRECTORIES (~/Library/LaunchAgents, ~/Applications) — a
+# persistent agent or app needs a file there, so a new entry is a real, unambiguous signal.
+# We deliberately do NOT diff `launchctl list`: launchd labels are arbitrary strings (an
+# escaping scenario could pick an Apple-looking one, so any prefix filter is bypassable —
+# Copilot review, PR #140), the list churns with the OS's own transient jobs (false
+# positives), AND `launchctl` exec is now denied at the kernel for every runner (the seatbelt
+# process-exec deny), so a scenario cannot bootstrap a job in the first place. A noisy,
+# bypassable signal for an already-closed vector is worse than none — the directory diffs
+# carry the detection.
 def _persistence_snapshot() -> dict[str, list[str]]:
     home = Path.home()
     surfaces = {
@@ -271,22 +283,6 @@ def _persistence_snapshot() -> dict[str, list[str]]:
     for key, path in surfaces.items():
         with contextlib.suppress(OSError):
             snap[key] = sorted(p.name for p in path.iterdir()) if path.is_dir() else []
-    if sys.platform == "darwin" and shutil.which("launchctl"):
-        with contextlib.suppress(Exception):
-            out = subprocess.run(
-                ["launchctl", "list"],
-                capture_output=True,
-                text=True,
-                timeout=15,
-                check=False,
-            ).stdout
-            snap["launchctl"] = sorted(
-                label
-                for line in out.splitlines()[1:]
-                if line.strip()
-                for label in (line.split("\t")[-1],)
-                if not label.startswith(_LAUNCHCTL_NOISE_PREFIXES)
-            )
     return snap
 
 
