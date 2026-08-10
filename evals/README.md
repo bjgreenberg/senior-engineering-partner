@@ -99,13 +99,23 @@ run, so a user-level install can't auto-activate and contaminate either mode):
 
 Claude-runner scenario runs in **both** modes are granted `Bash,Edit,Write` (the judge gets no
 tool grants) — headless `claude -p` denies those tools by default, which silently converted
-every act-on-the-workspace expectation into "described a plan, did nothing." **Know what that
-grant means:** a scenario run executes model-chosen shell commands as *your user, with no
-sandbox* — the throwaway temp cwd bounds the default working directory, not what Bash can
-reach. Scenario `query`s are first-party fixtures, but run sweeps only on a machine and account
-you trust with that. With-skill runs read a **staged copy** of the skill tree that excludes
-`evals/` (a run must never be able to read its own grading criteria) and the private,
-uncommitted files.
+every act-on-the-workspace expectation into "described a plan, did nothing." **The write
+boundary:** every scenario child (and generic-runner child) runs under a macOS `sandbox-exec`
+seatbelt profile that **denies all file writes outside the scenario workspace** (+ system
+temp) — the temp cwd bounds only the *default* directory, so a Bash call using `~` or an
+absolute path would otherwise write to the real home, and once did (a "fix this LaunchAgent"
+scenario built a real `~/Library/LaunchAgents` agent + `~/Applications` bundle on the
+maintainer's Mac, 2026-08-09). The seatbelt is the enforcement layer; a workspace
+`.claude/settings.json` additionally denies system-mutating exec (`launchctl`, `osascript`,
+`sudo`, …) that a file-write boundary can't express, and a pre/post persistence-surface
+snapshot is the detection backstop. **Reads stay open** so the CLI reads its own auth from
+`~/.claude`; the residual — a Bash call *reading* the session token — cannot be closed at the
+sandbox layer (the reader is the CLI itself), so scenario `query`s remain first-party fixtures
+and sweeps still run only on an account you trust. On a platform without `sandbox-exec` the
+harness **fails closed** (refuses shell-granted scenarios) unless `EVAL_ALLOW_UNSANDBOXED=1`
+is set — an explicit override for a throwaway VM/account only. With-skill runs read a
+**staged copy** of the skill tree that excludes `evals/` (a run must never be able to read its
+own grading criteria) and the private, uncommitted files.
 
 Claude-runner scenario **and judge** runs are isolated from the invoking user's global agent
 context (`--setting-sources project`): user-level memory, hooks, and settings never load, so
