@@ -57,6 +57,40 @@ Also point the plist's `WorkingDirectory` at `$HOME`, never a TCC-protected path
 launchd `chdir`s into it *before* the process starts, producing `getcwd:
 Operation not permitted` noise on every run.
 
+## Display names — the executable basename is user-facing
+
+System Settings → General → **Login Items & Extensions** (Background Task
+Management) displays a launchd job as the **basename of its executable**
+(`ProgramArguments[0]`) whenever there is no app bundle. A proper `.app` shows
+its `CFBundleDisplayName`; everything else shows the raw filename. The failure
+mode this rule exists for: an owner opening Settings and finding five identical
+`run.sh` entries, three `runsvc.sh`, and a bare `python3` — each labeled "Item
+from unidentified developer," indistinguishable from malware, requiring an
+investigation just to map their own automation back to its jobs.
+
+Rules:
+
+- **Never use a generic name (`run.sh`, `start.sh`, `runsvc.sh`) or a bare
+  interpreter (`python3 script.py` — displays as "python3") as
+  `ProgramArguments[0]`.** The executable's filename must identify the job.
+- The `.app` bundle pattern above is the full fix (display name, icon, and a
+  TCC identity). For an interpreter-run job that touches no protected paths, a
+  **descriptively-named one-line `exec` wrapper** is the lightweight fix —
+  arguments stay in the plist and pass through `"$@"`:
+
+  ```bash
+  #!/bin/sh
+  # nightly-report.sh — Login Items shows this filename, not "run.sh"
+  exec "$HOME/src/nightly-report/run.sh" "$@"
+  ```
+
+- Third-party services whose scripts you don't own (e.g. a GitHub Actions
+  runner's `runsvc.sh`) get the same wrapper treatment; note that a reinstall
+  regenerating the plist reverts the name — re-point it.
+- The same principle applies to anything a human must identify out of context:
+  launchd labels, log filenames, menu-bar items. Name the artifact after the
+  job, not the mechanism.
+
 ## Required Info.plist keys
 
 Every bundle must have a complete `Info.plist`. Omitting it causes the app to appear as "unknown" in Login Items and Privacy panels.
