@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-07-28 07:48 AM CDT
+Last updated: 2026-08-13 11:24 PM CDT
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -233,8 +233,15 @@ judge reasons, with the response transcripts stripped — plus a `BASELINE.md` s
 headline numbers, the per-scenario gap table, and the harness caveats. Record one **before
 any large core edit** and validate the edit by re-running **both** modes under the same
 harness afterward; a baseline only covers the scenarios that existed when it was taken
-(added/edited scenarios re-baseline on the next sweep). **Current (harness v2, 56-scenario
-suite, recorded 2026-07-27/28):**
+(added/edited scenarios re-baseline on the next sweep). **Current (sandboxed harness v3,
+recorded 2026-08-10, amended 2026-08-14):**
+[`baselines/2026-08-10-fable/`](baselines/2026-08-10-fable/BASELINE.md) — with-skill
+**36/25/0/0 on 61 scenarios**, zero fails and zero sandbox escape; the first baseline on
+the sandboxed harness and the record that closed the four v1.25.0 `Eval-waiver`s (bare
+reference remains the 2026-07-28 run — same model, no bare re-sweep). The 2026-08-14
+amendment appended `launchd-descriptive-executable-name` (pass) per the coverage
+tripwire; details and the multi-cycle-assembly caveat in its `BASELINE.md`.
+**Prior (harness v2, 56-scenario suite, recorded 2026-07-27/28):**
 [`baselines/2026-07-27-opus/`](baselines/2026-07-27-opus/BASELINE.md) — bare 15/28/13/0 vs
 with-skill **42/13/1/0**;
 [`baselines/2026-07-28-fable/`](baselines/2026-07-28-fable/BASELINE.md) — bare 9/30/17/0 vs
