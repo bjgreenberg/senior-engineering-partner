@@ -17,6 +17,44 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.26.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.25.0...v1.26.0) (2026-08-14)
+
+The hardened-harness release. A scenario run escaped the eval workspace on 2026-08-09 —
+the harness passed no environment to its children, so a shell-granted scenario inherited
+the real `$HOME` and installed a real LaunchAgent on the maintainer's machine. This
+release ships the fix as defense-in-depth: a kernel-enforced write boundary
+(`sandbox-exec` seatbelt, fails closed), a process-exec deny on persistence tools
+(`launchctl`, `osascript`, …) for **every** runner, and a directory-diff backstop —
+verified zero-escape across a full 60-scenario sweep. `--resume` recovers an
+interrupted sweep from its per-scenario checkpoints without re-spending, which is how
+the new 60-scenario baseline (35/25/0/0 — zero fails) was assembled under an
+environment that kills long background tasks.
+
+Two smaller threads: the baseline's one actionable finding — the model never citing the
+`mypy`-ratchet linkage when introducing gates on a living codebase — closed as a
+matched pair (name the linkage in the core trigger; make the eval scenario actually
+contain the ratchet it asks the model to connect to), taking the criterion from
+fail/fail/fail to pass/pass/pass. And launchd jobs must now carry descriptive
+executable names: Login Items shows the executable's basename, so a generic `run.sh`
+is an anonymous, malware-indistinguishable background item — the `.app` bundle's
+display name is the standard, a descriptively-named `exec` wrapper the documented
+fallback (with its own guarding eval, baselined at pass 4/4).
+
+
+### Features
+
+* **evals:** --resume to recover an interrupted sweep without re-spending ([#142](https://github.com/bjgreenberg/senior-engineering-partner/issues/142)) ([448c26d](https://github.com/bjgreenberg/senior-engineering-partner/commit/448c26dd4e6ba187e52c105bbddb5f5f8398867b))
+* **macos:** require descriptive executable names for launchd jobs ([#137](https://github.com/bjgreenberg/senior-engineering-partner/issues/137)) ([3bcd845](https://github.com/bjgreenberg/senior-engineering-partner/commit/3bcd845db3d8fd470a8f880de097acd42591befb))
+
+
+### Bug Fixes
+
+* **core:** name the mypy-ratchet linkage in the gate-ladder trigger ([#144](https://github.com/bjgreenberg/senior-engineering-partner/issues/144)) ([b1e5277](https://github.com/bjgreenberg/senior-engineering-partner/commit/b1e5277f8b6734d829ded5c862feaa1d4f8b133f))
+* **evals:** establish the existing mypy ratchet in the gate-promotion-ladder scenario ([#145](https://github.com/bjgreenberg/senior-engineering-partner/issues/145)) ([53d3b62](https://github.com/bjgreenberg/senior-engineering-partner/commit/53d3b622f7b9890c659532f3694c3fcf085efb8d))
+* **evals:** filter OS launchd churn from the escape-detection backstop ([#140](https://github.com/bjgreenberg/senior-engineering-partner/issues/140)) ([711e4f5](https://github.com/bjgreenberg/senior-engineering-partner/commit/711e4f549d96dcc20f4d8b0f25af859875e59ff9))
+* **evals:** kernel exec-deny for all runners + directory-only backstop ([#140](https://github.com/bjgreenberg/senior-engineering-partner/issues/140) review) ([#141](https://github.com/bjgreenberg/senior-engineering-partner/issues/141)) ([bc285dc](https://github.com/bjgreenberg/senior-engineering-partner/commit/bc285dc808c578ab1bb554cad5130f615df87ef3))
+* **evals:** sandbox scenario runs — deny writes outside the workspace ([#138](https://github.com/bjgreenberg/senior-engineering-partner/issues/138)) ([69523e9](https://github.com/bjgreenberg/senior-engineering-partner/commit/69523e926229509cad737d1b676fc90f864d53ae))
+
 ## [1.25.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.24.0...v1.25.0) (2026-08-08)
 
 The two-analyses release. Two external repos were read at source level and mined for what this
