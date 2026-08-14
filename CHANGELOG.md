@@ -19,6 +19,27 @@ in your own `references/my-environment.md`.
 
 ## [1.26.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.25.0...v1.26.0) (2026-08-14)
 
+The hardened-harness release. A scenario run escaped the eval workspace on 2026-08-09 —
+the harness passed no environment to its children, so a shell-granted scenario inherited
+the real `$HOME` and installed a real LaunchAgent on the maintainer's machine. This
+release ships the fix as defense-in-depth: a kernel-enforced write boundary
+(`sandbox-exec` seatbelt, fails closed), a process-exec deny on persistence tools
+(`launchctl`, `osascript`, …) for **every** runner, and a directory-diff backstop —
+verified zero-escape across a full 60-scenario sweep. `--resume` recovers an
+interrupted sweep from its per-scenario checkpoints without re-spending, which is how
+the new 60-scenario baseline (35/25/0/0 — zero fails) was assembled under an
+environment that kills long background tasks.
+
+Two smaller threads: the baseline's one actionable finding — the model never citing the
+`mypy`-ratchet linkage when introducing gates on a living codebase — closed as a
+matched pair (name the linkage in the core trigger; make the eval scenario actually
+contain the ratchet it asks the model to connect to), taking the criterion from
+fail/fail/fail to pass/pass/pass. And launchd jobs must now carry descriptive
+executable names: Login Items shows the executable's basename, so a generic `run.sh`
+is an anonymous, malware-indistinguishable background item — the `.app` bundle's
+display name is the standard, a descriptively-named `exec` wrapper the documented
+fallback (with its own guarding eval, baselined at pass 4/4).
+
 
 ### Features
 
