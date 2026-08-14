@@ -71,3 +71,15 @@ Results curated from `evals/results/rebaseline-1250-clean/` (git-ignored) by
 `response`/`workspace_evidence`/`tool_trail` stripped). Execution shape as in
 `../2026-07-27-opus/BASELINE.md`; sandboxing per `evals/README.md` *The write boundary*.
 No splices — the assembled run had zero errors.
+
+## Amendment 2026-08-14 — `launchd-descriptive-executable-name` appended (61st scenario)
+
+PR #137 (the descriptive-executable-names rule) shipped with its guarding scenario but
+predated this baseline; the coverage tripwire correctly refused the merge until the
+scenario was baselined. Appended here from a single clean 2026-08-14 run (same harness,
+`fable` scenario / `opus` judge, sandboxed): **pass**, 4/4 criteria, all 3
+anti-behaviors clean, $1.04 / 64 s. Headline is now **36 pass / 25 partial / 0 fail /
+0 error on 61 scenarios**. Same multi-cycle-assembly caveat as the main sweep — this
+entry is from a different sitting than the other 60. (The 2026-08-14 scenario amendment
+to `gate-promotion-ladder` (#145) post-dates the recorded result for that scenario; its
+3× post-amendment evidence lives in PR #145.)
