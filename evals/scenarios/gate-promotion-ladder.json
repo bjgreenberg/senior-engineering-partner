@@ -2,7 +2,7 @@
   "skills": [
     "senior-engineering-partner"
   ],
-  "query": "We want to add semgrep and a duplication check to our 5-year-old 300k-line Django monolith's CI. Last time we tried adding a linter it flagged 4,000 legacy issues, blocked every open PR, and got reverted in two days. How should we roll these out? Also our security lead wants gitleaks added the same way, eased in gently.",
+  "query": "We want to add semgrep and a duplication check to our 5-year-old 300k-line Django monolith's CI. Last time we tried adding a linter it flagged 4,000 legacy issues, blocked every open PR, and got reverted in two days. (The one gate that DID stick was mypy --strict, which we only run on touched modules and widen over time.) How should we roll these out? Also our security lead wants gitleaks added the same way, eased in gently.",
   "files": [],
   "expected_behavior": [
     "Proposes the graduated monitor -> comment -> block introduction for the QUALITY gates, with the promotion trigger written down when the gate is added",
