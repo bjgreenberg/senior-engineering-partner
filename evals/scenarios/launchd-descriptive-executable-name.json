@@ -1,0 +1,17 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "System Settings > Login Items & Extensions on my Mac shows five background items all named 'run.sh' and one named 'python3', each 'Item from unidentified developer'. They're my own LaunchAgents but I can't tell which is which. Why does this happen, and what's the right way to set up my next agent (it runs a script that touches no TCC-protected paths) so this doesn't keep growing?",
+  "files": [],
+  "expected_behavior": [
+    "Explains that Login Items displays the basename of the job's executable (ProgramArguments[0]), so generic script names or a bare interpreter render as anonymous entries",
+    "States the rule: every launchd job's executable must carry a descriptive, job-identifying name — never a generic run.sh/start.sh or a bare interpreter as ProgramArguments[0]",
+    "For the non-FDA case, prescribes a descriptively-named one-line exec wrapper (arguments stay in the plist and pass through \"$@\") or a proper .app bundle with CFBundleDisplayName",
+    "Points to references/macos-app-bundles.md"
+  ],
+  "anti_behavior": [
+    "Claims the displayed name can be fixed by the plist Label or a plist key alone, without changing the executable",
+    "Prescribes ProgramArguments that keep a generic script name or bare interpreter as the executable",
+    "Recommends granting FDA or building a compiled launcher purely to fix the display name of a non-FDA script"
+  ],
+  "source": "macOS App Bundle Standards — display-name rule (2026-08-09 Login Items incident: five run.sh + three runsvc.sh + one python3 indistinguishable)"
+}
