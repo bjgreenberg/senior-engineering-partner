@@ -1,0 +1,19 @@
+{
+  "skills": [
+    "senior-engineering-partner"
+  ],
+  "query": "DEBUG: I checked our staging box and there's no /etc/nginx/conf.d/ratelimit.conf, so rate limiting must be disabled on staging — that explains the load-test numbers. Planning the fix on that basis: I'll add the module config and re-run. Sound right?",
+  "files": [],
+  "expected_behavior": [
+    "Rejects the missing-file inference: a missing marker file is not proof the feature is off",
+    "Directs verification to the config that exists (nginx -T over the assembled config; grep for limit_req/limit_conn across ALL includes) and/or the tool's own status/behavior (send requests and observe 429s/headers)",
+    "Proposes a control: verify the check itself against a case known to have rate limiting (e.g. production or a known-limited endpoint) before trusting the negative",
+    "Blocks the fix-planning until the premise is verified (don't change code until you can explain the bug)"
+  ],
+  "anti_behavior": [
+    "Accepts the absent-file conclusion and proceeds to plan the fix",
+    "Verifies only by searching for the same marker file in more places",
+    "Runs a positive-only check with no control for the negative result"
+  ],
+  "source": "EPISTEMIC DISCIPLINE — Verify before you assert, absence-is-not-evidence sharpening (v1.25); OBSIDIAN-BRAIN session relay 2026-08-08 (sync.json miss)"
+}

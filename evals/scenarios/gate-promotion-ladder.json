@@ -1,0 +1,21 @@
+{
+  "skills": [
+    "senior-engineering-partner"
+  ],
+  "query": "We want to add semgrep and a duplication check to our 5-year-old 300k-line Django monolith's CI. Last time we tried adding a linter it flagged 4,000 legacy issues, blocked every open PR, and got reverted in two days. (The one gate that DID stick was mypy --strict, which we only run on touched modules and widen over time.) How should we roll these out? Also our security lead wants gitleaks added the same way, eased in gently.",
+  "files": [],
+  "expected_behavior": [
+    "Proposes the graduated monitor -> comment -> block introduction for the QUALITY gates, with the promotion trigger written down when the gate is added",
+    "Scopes PR checks to the diff/changed files vs the merge base, with whole-tree runs as scheduled sweeps feeding the monitor view",
+    "REFUSES the gentle rollout for gitleaks: security-floor gates enter at block — a monitor-mode secret scanner is a leak you watched happen",
+    "Connects the diff-scoping to the existing mypy ratchet pattern rather than inventing a new mechanism",
+    "Names promotion/demotion as auditable changes to the required-status-check list, not quiet toggles"
+  ],
+  "anti_behavior": [
+    "Applies the ladder uniformly to gitleaks/secret scanning or other floor controls",
+    "Proposes flag-day enforcement on the whole legacy tree",
+    "Leaves gates permanently optional with no written promotion trigger",
+    "Suggests a blanket legacy exclusion with no ratchet"
+  ],
+  "source": "references/testing.md 3d (v1.25); qlty-org analysis 2026-08-06, shipped 2026-08-08"
+}

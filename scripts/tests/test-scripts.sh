@@ -260,6 +260,27 @@ sys.exit(1)
 PYEOF
 check "run-evals build_runner_cmd REJECTS a template without {prompt}" 0 "$rc"
 
+# --resume reuses only non-error checkpoints, re-runs errored/malformed/missing — so a
+# usage-limited or externally-killed sweep recovers without re-spending on completed work.
+rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, sys, tempfile, json
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+out = Path(tempfile.mkdtemp())
+(out / "a.json").write_text(json.dumps({"scenario": "a", "status": "pass"}))
+(out / "b.json").write_text(json.dumps({"scenario": "b", "status": "partial"}))
+(out / "c.json").write_text(json.dumps({"scenario": "c", "status": "error"}))   # re-run
+(out / "d.json").write_text("{malformed")                                       # re-run
+(out / "f.json").write_text(json.dumps({"scenario": "f", "status": "fail"}))    # fail is non-error → reuse
+(out / "g.json").write_text("[]")                                              # valid JSON, wrong type → re-run (no crash)
+names = {"a", "b", "c", "d", "e", "f", "g"}                                     # e: no file
+r = m.load_resumable_results(out, names)                                        # must NOT raise on g
+assert sorted(r) == ["a", "b", "f"], sorted(r)                                  # pass/partial/fail reused
+assert sorted(names - set(r)) == ["c", "d", "e", "g"], sorted(names - set(r))   # error/malformed/missing/wrong-type re-run
+PYEOF
+check "run-evals --resume reuses non-error checkpoints, re-runs errors/missing" 0 "$rc"
+
 # The generic runner's misuse paths must fail fast at argparse (exit 2), before any run.
 rc=0; python3 "$repo_root/scripts/run-evals.py" --runner generic --filter zz >/dev/null 2>&1 || rc=$?
 check "run-evals FAILS fast: --runner generic without --runner-cmd" 2 "$rc"
@@ -275,6 +296,126 @@ check "run-evals FAILS fast: --runner-instructions-file with a traversal path" 2
 rc=0; python3 "$repo_root/scripts/run-evals.py" --runner generic --runner-cmd 'x {prompt}' \
   --mode with-skill --runner-instructions-file '/tmp/abs.md' --filter zz >/dev/null 2>&1 || rc=$?
 check "run-evals FAILS fast: --runner-instructions-file with an absolute path" 2 "$rc"
+
+# --- run-evals.py scenario write-boundary (the 2026-08-09 escape regression) ---------------
+# A scenario child inherits the real HOME; a Bash call using ~ or an absolute path once
+# wrote a real LaunchAgent + app bundle on the maintainer's Mac. _run_cli(sandbox_root=…)
+# must block every write outside the workspace. No model — a plain `bash -c` stands in for
+# the scenario child, so the boundary is proven deterministically and for free. macOS only
+# (seatbelt); on other platforms the enforcement path can't run, so skip with a pass.
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  # The marker lives under $HOME (NOT a temp root — temp roots are allowed for CLI scratch),
+  # mirroring the real incident that wrote into ~. A dotfile name that can't collide.
+  escape_marker="$HOME/.sep-eval-escape-sentinel-$$"
+  rc=0; python3 - "$repo_root" "$escape_marker" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, sys, tempfile, os
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+marker = Path(sys.argv[2])                       # an absolute path OUTSIDE any workspace
+if not m.sandbox_available():
+    sys.exit(3)                                   # signal "cannot test here" (skip, not fail)
+ws = Path(tempfile.mkdtemp())
+# (a) write INSIDE the workspace must SUCCEED under the sandbox.
+m._run_cli(["bash", "-c", f"echo ok > '{ws}/inside.txt'"], 30, ws, sandbox_root=ws)
+assert (ws / "inside.txt").is_file(), "workspace write was blocked (too strict)"
+# (b) write OUTSIDE via an absolute path must be BLOCKED — _run_cli raises (bash exits nonzero).
+try:
+    m._run_cli(["bash", "-c", f"echo evil > '{marker}'"], 30, ws, sandbox_root=ws)
+    raise SystemExit("escape write returned success — BOUNDARY FAILED")
+except RuntimeError:
+    pass
+assert not marker.exists(), f"escape marker was created at {marker} — BOUNDARY FAILED"
+# (c) the same escape write WITHOUT the sandbox would succeed — proves the test can distinguish
+# (guarded: only run this if the marker path is writable; clean up immediately).
+os.environ["EVAL_ALLOW_UNSANDBOXED"] = "1"
+try:
+    m._run_cli(["bash", "-c", f"echo x > '{marker}'"], 30, ws, sandbox_root=ws)
+    proved = marker.exists()
+    if marker.exists():
+        marker.unlink()
+finally:
+    del os.environ["EVAL_ALLOW_UNSANDBOXED"]
+assert proved, "unsandboxed control did not write — test cannot distinguish enforcement"
+PYEOF
+  if [[ "$rc" -eq 3 ]]; then
+    note "SKIP: sandbox-exec unavailable — scenario write-boundary not exercised here"
+    pass=$((pass + 1))
+  else
+    check "run-evals sandbox BLOCKS a write outside the workspace (escape regression)" 0 "$rc"
+  fi
+  [[ -e "$escape_marker" ]] && rm -f "$escape_marker"
+
+  # Fail-closed: no sandbox + no explicit override => _run_cli must REFUSE (not run bare).
+  rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, sys, tempfile
+from pathlib import Path
+from unittest import mock
+spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+ws = Path(tempfile.mkdtemp())
+with mock.patch.object(m, "sandbox_available", return_value=False):
+    try:
+        m._maybe_sandbox(["bash", "-c", "true"], ws)
+    except RuntimeError:
+        sys.exit(0)          # refused, correct
+sys.exit(1)                  # ran bare — fail-open, WRONG
+PYEOF
+  check "run-evals _maybe_sandbox FAILS CLOSED when no sandbox and no override" 0 "$rc"
+
+  # The seatbelt must deny launchctl/osascript EXEC for every runner (kernel-enforced) — the
+  # generic runner ignores the Claude settings.json, so this is what stops it bootstrapping a
+  # workspace plist. A plain `bash -c launchctl` stands in for any runner's shell.
+  rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, sys, tempfile
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+if not m.sandbox_available():
+    sys.exit(3)
+ws = Path(tempfile.mkdtemp())
+# launchctl exec is blocked -> the child exits nonzero -> _run_cli raises.
+try:
+    m._run_cli(["bash", "-c", "launchctl list"], 30, ws, sandbox_root=ws)
+    raise SystemExit("launchctl ran under the sandbox — EXEC DENY FAILED")
+except RuntimeError:
+    pass
+# a benign binary still execs (the deny is targeted, not blanket).
+out = m._run_cli(["bash", "-c", "echo exec-control-ok"], 30, ws, sandbox_root=ws)
+assert "exec-control-ok" in out, out
+# the seatbelt regex is derived from the shared basename list (no drift).
+assert all(n in m._seatbelt_profile(ws) for n in m._FORBIDDEN_EXEC_BASENAMES)
+assert m._SCENARIO_DENY_TOOLS == [f"Bash({n}:*)" for n in m._FORBIDDEN_EXEC_BASENAMES]
+PYEOF
+  if [[ "$rc" -eq 3 ]]; then
+    note "SKIP: sandbox-exec unavailable — exec-deny not exercised here"
+    pass=$((pass + 1))
+  else
+    check "run-evals sandbox DENIES launchctl exec for any runner (kernel, not settings.json)" 0 "$rc"
+  fi
+fi
+
+# The detection backstop must fire on a REAL persistence write (a new LaunchAgent/app) and
+# stay silent otherwise. Tests the actual _persistence_snapshot against a mocked HOME whose
+# LaunchAgents dir gains a file between snapshots — proving the function itself detects, not
+# just the diff helper. Deterministic: no launchctl, no real HOME.
+rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, sys, tempfile
+from pathlib import Path
+from unittest import mock
+spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+fake_home = Path(tempfile.mkdtemp())
+(fake_home / "Library" / "LaunchAgents").mkdir(parents=True)
+(fake_home / "Applications").mkdir()
+with mock.patch.object(m.Path, "home", staticmethod(lambda: fake_home)):
+    before = m._persistence_snapshot()
+    assert m.diff_persistence(before, m._persistence_snapshot()) == []          # no change → silent
+    (fake_home / "Library" / "LaunchAgents" / "com.acme.evil.plist").write_text("x")  # a real escape
+    d = m.diff_persistence(before, m._persistence_snapshot())
+    assert d == ["LaunchAgents: +com.acme.evil.plist"], d                       # real write → alert
+PYEOF
+check "run-evals persistence backstop fires on a real LaunchAgents write, silent otherwise" 0 "$rc"
 
 # --- run-evals.py fixture harness (offline: pure logic only; no model runs) -----------------
 # The fixture gates must be ABLE to fail (§3c): suffix rule + manifest drift fire on planted
