@@ -79,6 +79,17 @@ lands) and prepends the new section to
    *(Learned the hard way: the 1.5.0 release PR stayed `autorelease: pending` and silently blocked the
    1.6.0 release PR across six green workflow runs until it was relabeled.)*
 
+> **Expect a bogus release PR in the merge-to-tag window — close it, don't merge it.**
+> release-please runs on the push to `main` that the release merge itself creates — i.e.
+> *before* a human can finish steps 3–4. In that window the just-merged release PR is
+> still `autorelease: pending` and the new tag doesn't exist, so release-please has no
+> version baseline and re-derives one from the **entire commit history** — the v1.26.0
+> cut produced a "release 1.11.0" PR 35 seconds after the merge, collecting every
+> feature back to the repo's origin. Once steps 3–4 are done, close the misfire and
+> **remove its `autorelease: pending` label** (a pending label on the closed PR can
+> confuse later runs). Verify on the next real merge that release-please derives the
+> correct next version; a wrong version *outside* this window is a real bug, not the race.
+
 ### Gotcha (historical here since the title-only flip; live wherever squash includes the PR body): a squash body can make release-please skip the commit entirely
 
 **Since 2026-07-02 this repo squashes with "Default to pull request title" only** (API:
