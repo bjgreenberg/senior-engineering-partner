@@ -19,6 +19,38 @@ in your own `references/my-environment.md`.
 
 ## [1.27.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.26.0...v1.27.0) (2026-09-05)
 
+The dependency-hygiene release: three rules the self-improvement loop earned in one
+night of fleet-wide dependency currency work, each shipped with its guarding scenario
+and baselined (the suite is now 64 scenarios, 39 pass / 25 partial / 0 fail).
+
+- **Lockstep pairs bump together.** Packages that pin each other's exact version
+  (`vitest` + `@vitest/coverage-v8`, a mutation framework's core + runner plugin) can
+  never merge one at a time: the lone Dependabot PR fails `npm ci` on the peer mismatch
+  and is re-opened after every rebase, reading as flakiness. One Dependabot `groups`
+  entry per family; a lone-member PR is closed and pair-bumped, never coerced green with
+  `--legacy-peer-deps` / `--force` / an `overrides` pin. Bit twice in one repo in one
+  night — the second-instance bar.
+- **The runtime image ships no package installer.** pip's own `_vendor/` tree carries
+  private copies of `msgpack`, `urllib3`, `requests`, `certifi`, … that no manifest pins
+  and no `pip-audit` sees, while the image scanner correctly reports their CVEs. The
+  skill's emphatic manifest-audit rule made "scanner false positive, dismiss" the
+  tempting reading; it is the fourth scanner blind spot, the mirror image of the other
+  three. `python -m pip uninstall -y pip` after the locked install (setuptools/wheel
+  too once a start-up smoke test proves nothing imports them); distroless does it by
+  construction.
+- **A release-age cooldown is a rolling window, never a frozen resolver cutoff.** A
+  committed `uv lock --exclude-newer <timestamp>` set up to stop live-index drift
+  deadlocked the whole supply-chain gate set two months later: the security fix
+  post-dated the cutoff, every PR inherited the red, and the alert sat unfixable. The
+  cutoff is computed from a rolling window or carries a bump cadence and an owner, and
+  the security lane moves it in the same PR as the bump. Also removes a broken
+  pin-from-environment one-liner whose `awk` printed `==` per line.
+
+The core stays under its 12 700-word ceiling (12 694 after all three): each rule is one
+sentence in `SKILL.md`, paid for by trimming restatements in the same sections, with
+the mechanics in `references/package-managers.md`, `containers-and-orchestration.md`
+and `foss-adoption.md`.
+
 
 ### Features
 
