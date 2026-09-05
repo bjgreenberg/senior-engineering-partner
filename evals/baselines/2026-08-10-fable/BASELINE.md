@@ -92,3 +92,13 @@ the merge until the scenario was baselined. Appended from a single clean 2026-09
 (same harness, `fable` scenario / `opus` judge, sandboxed): **pass**, 5/5 criteria, all 3
 anti-behaviors clean, $1.33 / 42 s. Headline is now **37 pass / 25 partial / 0 fail /
 0 error on 62 scenarios**. Same different-sitting caveat as the 2026-08-14 amendment.
+
+## Amendment 2026-09-05 — `runtime-image-no-installer` appended (63rd scenario)
+
+The no-installer-in-the-runtime-image rule (scanner blind spot 4: pip's own `_vendor/`
+tree) shipped with its guarding scenario after this baseline; the coverage tripwire
+refused the merge until the scenario was baselined. Appended from a single clean
+2026-09-05 run (same harness, `fable` scenario / `opus` judge, sandboxed): **pass**, 5/5
+criteria, all 3 anti-behaviors clean, $1.12 / 69 s. Headline is now **38 pass /
+25 partial / 0 fail / 0 error on 63 scenarios**. Same different-sitting caveat as the
+2026-08-14 amendment.

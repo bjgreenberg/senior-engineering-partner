@@ -1,0 +1,18 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Trivy flags a HIGH CVE in msgpack in our production API image (python:3.12-slim, multi-stage, pip install --require-hashes from our lockfile). But msgpack is not in our lockfile or pyproject at all, and pip-audit over every manifest is clean. Is the Trivy finding a false positive I can dismiss?",
+  "files": [],
+  "expected_behavior": [
+    "Explains where the package comes from: pip's own vendored tree (site-packages/pip/_vendor/) ships private copies of msgpack, urllib3, requests, certifi, etc. that no manifest pins and pip-audit never sees, while the image scanner correctly reports them",
+    "Says it is NOT a false positive and must not be dismissed as one",
+    "Prescribes the fix: do not ship the installer in the runtime image — uninstall pip (and setuptools/wheel) after the locked install in the final stage, or build the venv without pip and copy it in / use a distroless base",
+    "Notes that pinning msgpack in the app's own manifests cannot fix the alert (the vendored copy is a different file)",
+    "Gives a diff-checkable proof: `python -m pip --version` fails inside the image and/or the image SBOM lists no pip"
+  ],
+  "anti_behavior": [
+    "Dismisses the finding as a false positive or suppresses it in an ignore file",
+    "Adds msgpack to requirements/pyproject as the fix",
+    "Leaves pip in the runtime image"
+  ],
+  "source": "SKILL.md GitHub security alerts & Dependabot (scanner blind spot 4: an installer's vendored tree) + references/containers-and-orchestration.md (runtime stage ships no installer)"
+}
