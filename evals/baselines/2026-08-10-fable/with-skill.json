@@ -1,6 +1,6 @@
 {
   "tally": {
-    "pass": 36,
+    "pass": 37,
     "partial": 25,
     "fail": 0,
     "error": 0
@@ -905,6 +905,61 @@
       "judge_reason": "The delivered code implements explicit timeouts, capped jittered backoff on transient-only failures, a labeled degraded 200 path, and loud structured logging, but never addresses bulkhead isolation or a circuit breaker for a chronically failing provider.",
       "cost_usd": 3.154901,
       "duration_s": 309.5
+    },
+    {
+      "scenario": "dependabot-lockstep-pair",
+      "mode": "with-skill",
+      "model": "fable",
+      "runner": "claude",
+      "judge_model": "opus",
+      "status": "pass",
+      "expected": [
+        {
+          "behavior": "Identifies this as a lockstep pair: @vitest/coverage-v8 is pinned to the exact vitest version, so a single-package bump can never install \u2014 the PR is not flaky and not a breaking change",
+          "verdict": "pass",
+          "evidence": "\"`vitest` and `@vitest/coverage-v8` are a lockstep pair. The coverage package declares an exact peer dependency... A PR that bumps only one member can never install cleanly\"; explains the three reopenings as root-cause, not flakiness"
+        },
+        {
+          "behavior": "Prescribes the pair-bump: vitest AND @vitest/coverage-v8 to the same version in ONE commit/PR, with npm ci kept strict",
+          "verdict": "pass",
+          "evidence": "\"Bump both members in one commit, exact-pinned\" with `npm install vitest@4.0.1 @vitest/coverage-v8@4.0.1 --save-exact` then `npm ci && npm test`; no flag added to CI install"
+        },
+        {
+          "behavior": "Prescribes a Dependabot `groups` entry (patterns vitest + @vitest/*), or the Renovate groupName equivalent, so the family is bumped as one PR from now on \u2014 added in the same PR as the fix",
+          "verdict": "pass",
+          "evidence": "\"In the same PR, add a `groups` entry to `.github/dependabot.yml`\" with patterns [\"vitest\", \"@vitest/*\"]"
+        },
+        {
+          "behavior": "Says the single-member Dependabot PR is closed (superseded), not coerced green",
+          "verdict": "pass",
+          "evidence": "\"Close the Dependabot PR with a comment saying it is a lockstep pair and will be bumped together.\""
+        },
+        {
+          "behavior": "Names why the coercions are wrong: --legacy-peer-deps / --force / an overrides pin ship the mismatched pair the tool's own check exists to refuse",
+          "verdict": "pass",
+          "evidence": "\"You would ship vitest 3.2.4 with a 4.0.1 coverage provider, which is exactly the mismatch the peer check exists to refuse... The same applies to `--force` and to an `overrides` pin.\""
+        }
+      ],
+      "anti": [
+        {
+          "behavior": "Recommends --legacy-peer-deps, --force, or an overrides/resolutions pin to make the lone bump install",
+          "verdict": "clean",
+          "evidence": "Opens with \"No. Do not add `--legacy-peer-deps`.\" and rejects --force/overrides too"
+        },
+        {
+          "behavior": "Treats the repeated re-opening as flakiness to retry, or advises auto-merge / ignoring the PR",
+          "verdict": "clean",
+          "evidence": "Reopenings attributed to structural root cause; PR is closed as superseded with an explanatory comment, not ignored or auto-merged"
+        },
+        {
+          "behavior": "Bumps only one member of the pair",
+          "verdict": "clean",
+          "evidence": "Both members bumped to 4.0.1 in one command/commit"
+        }
+      ],
+      "judge_reason": "The response correctly diagnoses the lockstep pair, refuses the coercion flags with reasons, prescribes a same-version pair bump in one commit plus a Dependabot groups entry in the same PR, and closes the superseded single-member PR \u2014 all checklist items pass with no anti-behaviors.",
+      "cost_usd": 1.33084275,
+      "duration_s": 41.9
     },
     {
       "scenario": "dependency-currency-not-just-pinned",

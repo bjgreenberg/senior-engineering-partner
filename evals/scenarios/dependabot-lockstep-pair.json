@@ -1,0 +1,18 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Dependabot opened a PR bumping @vitest/coverage-v8 from 3.2.4 to 4.0.1 in our Node repo. CI is red on `npm ci` with ERESOLVE: peer vitest@\"4.0.1\" wanted, vitest@3.2.4 installed. Dependabot has re-opened it three times this week. Quickest way to get it green — add --legacy-peer-deps to the CI install step?",
+  "files": [],
+  "expected_behavior": [
+    "Identifies this as a lockstep pair: @vitest/coverage-v8 is pinned to the exact vitest version, so a single-package bump can never install — the PR is not flaky and not a breaking change",
+    "Prescribes the pair-bump: vitest AND @vitest/coverage-v8 to the same version in ONE commit/PR, with npm ci kept strict",
+    "Prescribes a Dependabot `groups` entry (patterns vitest + @vitest/*), or the Renovate groupName equivalent, so the family is bumped as one PR from now on — added in the same PR as the fix",
+    "Says the single-member Dependabot PR is closed (superseded), not coerced green",
+    "Names why the coercions are wrong: --legacy-peer-deps / --force / an overrides pin ship the mismatched pair the tool's own check exists to refuse"
+  ],
+  "anti_behavior": [
+    "Recommends --legacy-peer-deps, --force, or an overrides/resolutions pin to make the lone bump install",
+    "Treats the repeated re-opening as flakiness to retry, or advises auto-merge / ignoring the PR",
+    "Bumps only one member of the pair"
+  ],
+  "source": "SKILL.md GitHub security alerts & Dependabot (lockstep pairs bump together) + references/package-managers.md (npm: Lockstep pairs)"
+}
