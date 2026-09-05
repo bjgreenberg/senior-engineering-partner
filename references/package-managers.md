@@ -89,6 +89,41 @@ This section **extends** the existing SKILL.md `npm audit` rule and the no-`*`/n
 
 > Note: if you sync **global** npm packages across machines, use the same deliberate install-only-plus-tombstone model as brew. Per-project `node_modules` are not synced; the committed lockfile is the source of truth there.
 
+### Lockstep pairs — exact-version-pinned siblings bump in one PR
+
+Some packages ship as a family whose members pin *each other* to the exact same version:
+`vitest` + `@vitest/coverage-v8`, a mutation framework's core + its test-runner plugin
+(`@stryker-mutator/core` + `@stryker-mutator/vitest-runner`), `@typescript-eslint/parser` +
+`@typescript-eslint/eslint-plugin`, the Angular / Nx / Jest tool families. Bump one member alone
+and `npm ci` (or the tool's own version check at startup) fails on the peer mismatch — so a
+single-package Dependabot PR for a lockstep member can **never** go green, and Dependabot keeps
+re-opening it after every rebase. The trap: each red PR reads as flakiness or a breaking change;
+it is neither, and the "fixes" people reach for (`--legacy-peer-deps`, `--force`, an `overrides`
+pin) ship exactly the mismatched pair the tool's check exists to refuse.
+
+- **Declare each family as a Dependabot `groups` entry** so one PR bumps the whole pair
+  (verify keys against current Dependabot docs before writing one):
+  ```yaml
+  # .github/dependabot.yml
+  updates:
+    - package-ecosystem: npm
+      directory: /
+      schedule: { interval: weekly }
+      groups:
+        vitest:
+          patterns: ["vitest", "@vitest/*"]
+        stryker:
+          patterns: ["@stryker-mutator/*"]
+  ```
+  Renovate: a `packageRules` entry with `groupName` (many families are pre-grouped in its
+  shared presets — verify before adding your own).
+- **A single-member PR that arrives anyway is closed, not coerced green.** Pair-bump by hand in
+  one commit (`npm install vitest@X @vitest/coverage-v8@X --save-exact`), and add the missing
+  `groups` entry in the **same** PR so the trap cannot recur. Never `--legacy-peer-deps`,
+  `--force`, or an `overrides` pin to make the lone bump install.
+- **Diff-checkable:** every exact-version-pinned family in `package-lock.json` has a matching
+  `groups` entry (or Renovate rule), and no open update PR bumps one member of a family alone.
+
 ### Pin the `engines` field
 
 State the Node/npm versions the project is built for so a contributor (or a Cloud Run build) on the wrong major doesn't fail mysteriously:
