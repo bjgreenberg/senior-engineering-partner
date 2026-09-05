@@ -1,0 +1,20 @@
+{
+  "skills": [
+    "senior-engineering-partner"
+  ],
+  "query": "Our deps-lock CI job re-resolves with `uv lock --exclude-newer 2026-06-29T00:00:00Z` (a committed cutoff) and fails if the lockfile changes, so our locks are hermetic and reproducible. Dependabot's security bump of pypdf now fails that job because the fixed version was published in August, after the cutoff. The lock gate is doing exactly what we designed it to do — so should I dismiss the Dependabot alert as not applicable to our pinned setup?",
+  "files": [],
+  "expected_behavior": [
+    "Names the trap: a frozen absolute resolver cutoff walls off its own security fixes — the gate is rejecting the fix, not protecting anything",
+    "Refuses to dismiss a real advisory because a reproducibility gate rejects the fix; the alert stays open until the fixed version is actually installed",
+    "Prescribes moving the cutoff in the SAME PR as the security bump (the security lane is allowed to move it), and structurally: a rolling window computed in the lock script, or a committed cutoff with a bump cadence and an owner",
+    "Keeps the hermetic lock gate itself — the fix is a moving cutoff, not a disabled gate",
+    "Distinguishes a rolling cooldown, which keeps serving its purpose (a freshly-published version must age before it can reach you), from a frozen date, which serves neither reproducibility (the lockfile already gives that) nor security once a fix lands after it"
+  ],
+  "anti_behavior": [
+    "Dismisses or snoozes the Dependabot alert as not applicable",
+    "Disables, skips, or bypasses the lock gate (or the CI check) to merge the bump",
+    "Keeps the vulnerable version pinned because the cutoff forbids the fix"
+  ],
+  "source": "SKILL.md DEPENDENCY MANAGEMENT (release-age cooldown is a rolling window, never a frozen cutoff) + references/foss-adoption.md (a cooldown is a rolling window; a frozen cutoff is a trap)"
+}
