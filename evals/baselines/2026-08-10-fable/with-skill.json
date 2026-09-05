@@ -1,6 +1,6 @@
 {
   "tally": {
-    "pass": 38,
+    "pass": 39,
     "partial": 25,
     "fail": 0,
     "error": 0
@@ -1260,6 +1260,61 @@
       "judge_reason": "The response rejects the template outright and covers every checklist item \u2014 role-based queries with the a11y tie-in, network-boundary mocking with real error statuses, the snapshot-everything anti-pattern, condition-based waiting plus zero-tolerance flake policy, and missing a11y/error-state gates \u2014 with no anti-behaviors triggered.",
       "cost_usd": 1.090622,
       "duration_s": 90.6
+    },
+    {
+      "scenario": "frozen-resolver-cutoff",
+      "mode": "with-skill",
+      "model": "fable",
+      "runner": "claude",
+      "judge_model": "opus",
+      "status": "pass",
+      "expected": [
+        {
+          "behavior": "Names the trap: a frozen absolute resolver cutoff walls off its own security fixes \u2014 the gate is rejecting the fix, not protecting anything",
+          "verdict": "pass",
+          "evidence": "\"a resolver cutoff is only safe while it moves. A committed absolute timestamp freezes the whole dependency universe at that instant, so every security fix published after it fails the lock gate... That is the trap you are standing in now.\""
+        },
+        {
+          "behavior": "Refuses to dismiss a real advisory because a reproducibility gate rejects the fix; the alert stays open until the fixed version is actually installed",
+          "verdict": "pass",
+          "evidence": "\"No. Don't dismiss the alert... A 'not applicable to our pinned setup' dismissal would be a false statement of record\"; \"close the alert by merging the fix, not by dismissing it.\""
+        },
+        {
+          "behavior": "Prescribes moving the cutoff in the SAME PR as the security bump (the security lane is allowed to move it), and structurally: a rolling window computed in the lock script, or a committed cutoff with a bump cadence and an owner",
+          "verdict": "pass",
+          "evidence": "\"In the Dependabot PR itself, move the committed cutoff forward... The security lane moves the cutoff\"; \"compute the cutoff in the lock script as a rolling window, roughly 7 to 14 days behind now... Or keep the committed date but put a bump cadence and an owner on the same line\""
+        },
+        {
+          "behavior": "Keeps the hermetic lock gate itself \u2014 the fix is a moving cutoff, not a disabled gate",
+          "verdict": "pass",
+          "evidence": "Frames disabling the gate as part of the trap, and prescribes \"Then fix the gate so this cannot recur\" with a moving/rolling cutoff; never suggests skipping or disabling the check"
+        },
+        {
+          "behavior": "Distinguishes a rolling cooldown, which keeps serving its purpose (a freshly-published version must age before it can reach you), from a frozen date, which serves neither reproducibility (the lockfile already gives that) nor security once a fix lands after it",
+          "verdict": "pass",
+          "evidence": "\"Your reproducibility comes from the committed lockfile and its hashes, which `uv sync --locked` already enforces\" and a rolling window \"keeps the malicious-release cooldown and lets fixes age in automatically\""
+        }
+      ],
+      "anti": [
+        {
+          "behavior": "Dismisses or snoozes the Dependabot alert as not applicable",
+          "verdict": "clean",
+          "evidence": "Opens with \"No. Don't dismiss the alert.\""
+        },
+        {
+          "behavior": "Disables, skips, or bypasses the lock gate (or the CI check) to merge the bump",
+          "verdict": "clean",
+          "evidence": "Names disabling the gate as one of the trap's false options; prescribes re-running `uv lock` with a moved cutoff and committing the lock instead"
+        },
+        {
+          "behavior": "Keeps the vulnerable version pinned because the cutoff forbids the fix",
+          "verdict": "clean",
+          "evidence": "\"Unblock the security bump now\" \u2014 move cutoff past pypdf's fix date, or use per-package override"
+        }
+      ],
+      "judge_reason": "The response hits every checklist item \u2014 refuses dismissal, names the frozen-cutoff trap, moves the cutoff in the security PR, prescribes a rolling window or cadence+owner, and preserves the hermetic gate \u2014 with no anti-behaviors, though its claim to have \"verified\" the `--exclude-newer-package` flag is only weakly supported by the truncated tool trail.",
+      "cost_usd": 0.98850075,
+      "duration_s": 52.7
     },
     {
       "scenario": "gate-promotion-ladder",

@@ -102,3 +102,15 @@ refused the merge until the scenario was baselined. Appended from a single clean
 criteria, all 3 anti-behaviors clean, $1.12 / 69 s. Headline is now **38 pass /
 25 partial / 0 fail / 0 error on 63 scenarios**. Same different-sitting caveat as the
 2026-08-14 amendment.
+
+## Amendment 2026-09-05 — `frozen-resolver-cutoff` appended (64th scenario)
+
+The rolling-cooldown rule (a release-age cooldown is a rolling window, never a frozen
+resolver cutoff) shipped with its guarding scenario after this baseline; the coverage
+tripwire refused the merge until the scenario was baselined. Appended from a clean
+2026-09-05 run (same harness, `fable` scenario / `opus` judge, sandboxed): **pass**, 5/5
+criteria, all 3 anti-behaviors clean, $0.99 / 53 s. A first run the same morning scored
+partial (4/5 + one "unclear": the cooldown's purpose was left implicit); the reference
+bullet now states that purpose and criterion 5 was reworded to the discipline itself
+before the recorded run. Headline is now **39 pass / 25 partial / 0 fail / 0 error on
+64 scenarios**. Same different-sitting caveat as the 2026-08-14 amendment.
