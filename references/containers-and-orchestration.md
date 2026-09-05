@@ -17,10 +17,10 @@ Before reaching for Kubernetes at all: **for almost every workload of this shape
   ```
   Get the digest with `docker buildx imagetools inspect python:3.13-slim`. Bump it deliberately (Dependabot/Renovate can PR digest bumps), never implicitly.
 - **Multi-stage build — build deps never ship.** Compile/install in a `builder` stage, copy only the artifact (the venv, the wheel, the binary) into a clean final stage. A `pip install`'s build toolchain, `.git`, and caches must not survive into the runtime image. Smaller image = smaller CVE surface for trivy to flag.
-- **The runtime stage ships no package installer.** `pip` (with the `setuptools`/`wheel` it drags in) is build-time tooling; left in the final image it ships its vendored tree — `site-packages/pip/_vendor/` carries private copies of `msgpack`, `urllib3`, `requests`, `certifi`, `rich`, … that **no manifest pins and no `pip-audit` sees** (they are not installed distributions), while trivy/grype report their CVEs against the image. No pin can close such an alert; the only fix is not shipping the installer. After the locked install in the final stage:
+- **The runtime stage ships no package installer.** `pip` (with the `setuptools`/`wheel` it drags in) is build-time tooling; left in the final image it ships its vendored tree — `site-packages/pip/_vendor/` carries private copies of `msgpack`, `urllib3`, `requests`, `certifi`, `rich`, … that **no manifest pins and no `pip-audit` sees** (they are not installed distributions), while trivy/grype report their CVEs against the image. An app-manifest pin cannot close such an alert (upgrading pip itself can, one CVE at a time); the durable fix is not shipping the installer. After the locked install in the final stage:
   ```dockerfile
-  RUN pip install --require-hashes -r requirements.lock \
-      && pip uninstall -y pip
+  RUN python -m pip install --require-hashes -r requirements.lock \
+      && python -m pip uninstall -y pip
   ```
   (or build the venv `--without-pip` in the builder and `COPY` it in; distroless does this by construction). The hard requirement is **no `pip`**; also drop `setuptools`/`wheel` **once a start-up smoke test proves nothing imports `pkg_resources`/`setuptools` at runtime** (some libraries still do; a 3.12+ venv ships neither by default). A runtime image has no business installing packages anyway — same reasoning as no shell. **Diff-checkable:** `docker run --rm <image> python -m pip --version` fails, and the image SBOM lists no `pip` (and no `setuptools`/`wheel` once verified removable).
 - **Run as a non-root `USER`.** A container with no `USER` line runs as root (UID 0); a container escape is then root on the node. Create an unprivileged user in the image and switch to it:
