@@ -20,9 +20,9 @@ Before reaching for Kubernetes at all: **for almost every workload of this shape
 - **The runtime stage ships no package installer.** `pip` (with the `setuptools`/`wheel` it drags in) is build-time tooling; left in the final image it ships its vendored tree — `site-packages/pip/_vendor/` carries private copies of `msgpack`, `urllib3`, `requests`, `certifi`, `rich`, … that **no manifest pins and no `pip-audit` sees** (they are not installed distributions), while trivy/grype report their CVEs against the image. No pin can close such an alert; the only fix is not shipping the installer. After the locked install in the final stage:
   ```dockerfile
   RUN pip install --require-hashes -r requirements.lock \
-      && pip uninstall -y pip
+      && pip uninstall -y pip setuptools wheel
   ```
-  (or build the venv `--without-pip` in the builder and `COPY` it in; distroless does this by construction). A runtime image has no business installing packages anyway — same reasoning as no shell. **Diff-checkable:** `docker run --rm <image> python -m pip --version` fails, and the image SBOM lists no `pip`.
+  (or build the venv `--without-pip` in the builder and `COPY` it in; distroless does this by construction). A runtime image has no business installing packages anyway — same reasoning as no shell. **Diff-checkable:** `docker run --rm <image> python -m pip --version` fails, and the image SBOM lists no `pip`, `setuptools`, or `wheel`.
 - **Run as a non-root `USER`.** A container with no `USER` line runs as root (UID 0); a container escape is then root on the node. Create an unprivileged user in the image and switch to it:
   ```dockerfile
   RUN useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin app
