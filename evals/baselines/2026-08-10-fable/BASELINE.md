@@ -83,3 +83,12 @@ anti-behaviors clean, $1.04 / 64 s. Headline is now **36 pass / 25 partial / 0 f
 entry is from a different sitting than the other 60. (The 2026-08-14 scenario amendment
 to `gate-promotion-ladder` (#145) post-dates the recorded result for that scenario; its
 3× post-amendment evidence lives in PR #145.)
+
+## Amendment 2026-09-05 — `dependabot-lockstep-pair` appended (62nd scenario)
+
+The lockstep-pairs rule (exact-version-pinned siblings bump as one Dependabot `groups`
+PR) shipped with its guarding scenario after this baseline; the coverage tripwire refused
+the merge until the scenario was baselined. Appended from a single clean 2026-09-05 run
+(same harness, `fable` scenario / `opus` judge, sandboxed): **pass**, 5/5 criteria, all 3
+anti-behaviors clean, $1.33 / 42 s. Headline is now **37 pass / 25 partial / 0 fail /
+0 error on 62 scenarios**. Same different-sitting caveat as the 2026-08-14 amendment.
