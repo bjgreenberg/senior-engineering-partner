@@ -17,6 +17,15 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.27.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.26.0...v1.27.0) (2026-09-05)
+
+
+### Features
+
+* **containers:** the runtime image ships no package installer (pip's vendored tree is scanner-visible) ([#149](https://github.com/bjgreenberg/senior-engineering-partner/issues/149)) ([1014100](https://github.com/bjgreenberg/senior-engineering-partner/commit/1014100484eafc4ba7aeb9fdcc0e9e1ead0a698a))
+* **deps:** a release-age cooldown is a rolling window, never a frozen resolver cutoff ([#150](https://github.com/bjgreenberg/senior-engineering-partner/issues/150)) ([066abfd](https://github.com/bjgreenberg/senior-engineering-partner/commit/066abfdba9cd3b6ab69962738dbdde78113fc604))
+* **deps:** lockstep pairs — exact-version-pinned siblings bump as one Dependabot group ([#148](https://github.com/bjgreenberg/senior-engineering-partner/issues/148)) ([6008051](https://github.com/bjgreenberg/senior-engineering-partner/commit/6008051512a14c823f013204b3e80cbd4de1e5e0))
+
 ## [1.26.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.25.0...v1.26.0) (2026-08-14)
 
 The hardened-harness release. A scenario run escaped the eval workspace on 2026-08-09 —
