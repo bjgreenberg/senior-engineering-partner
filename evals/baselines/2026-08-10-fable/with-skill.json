@@ -1,6 +1,6 @@
 {
   "tally": {
-    "pass": 36,
+    "pass": 37,
     "partial": 25,
     "fail": 0,
     "error": 0
@@ -2277,6 +2277,61 @@
       "judge_reason": "The response correctly identifies the superuser-vs-Cloud-SQL privilege-parity gap and proposes a mirrored-role gate, but it misattributes the definer functions' RLS bypass to ownership/grants under FORCE and prescribes a NOBYPASSRLS owner \u2014 inverting the actual fix \u2014 and omits the fail-first negative scenario and the CREATE EXTENSION gotcha.",
       "cost_usd": 1.157549,
       "duration_s": 116.3
+    },
+    {
+      "scenario": "runtime-image-no-installer",
+      "mode": "with-skill",
+      "model": "fable",
+      "runner": "claude",
+      "judge_model": "opus",
+      "status": "pass",
+      "expected": [
+        {
+          "behavior": "Explains where the package comes from: pip's own vendored tree (site-packages/pip/_vendor/) ships private copies of msgpack, urllib3, requests, certifi, etc. that no manifest pins and pip-audit never sees, while the image scanner correctly reports them",
+          "verdict": "pass",
+          "evidence": "\"pip carries private copies of its own dependencies under `site-packages/pip/_vendor/`. That tree includes `msgpack` ... plus `urllib3`, `requests`, `certifi` ... no `.dist-info`, so `pip-audit`, your lockfile, and `pyproject.toml` are all blind ... Trivy scans the image filesystem and sees the code.\""
+        },
+        {
+          "behavior": "Says it is NOT a false positive and must not be dismissed as one",
+          "verdict": "pass",
+          "evidence": "\"Short answer: no, don't dismiss it. It is almost certainly real\" and \"Both tools are reporting correctly.\""
+        },
+        {
+          "behavior": "Prescribes the fix: do not ship the installer in the runtime image \u2014 uninstall pip (and setuptools/wheel) after the locked install in the final stage, or build the venv without pip and copy it in / use a distroless base",
+          "verdict": "pass",
+          "evidence": "\"RUN pip install --require-hashes ... && pip uninstall -y pip\"; \"Or build the venv `--without-pip` ... Also remove `setuptools` and `wheel`\""
+        },
+        {
+          "behavior": "Notes that pinning msgpack in the app's own manifests cannot fix the alert (the vendored copy is a different file)",
+          "verdict": "pass",
+          "evidence": "\"No pin can close this alert ... Bumping msgpack in your lockfile would install a second, unrelated copy and leave the vendored one untouched.\""
+        },
+        {
+          "behavior": "Gives a diff-checkable proof: `python -m pip --version` fails inside the image and/or the image SBOM lists no pip",
+          "verdict": "pass",
+          "evidence": "\"docker run --rm <image> python -m pip --version   # must FAIL\" plus re-scan check and a CI must-fail gate"
+        }
+      ],
+      "anti": [
+        {
+          "behavior": "Dismisses the finding as a false positive or suppresses it in an ignore file",
+          "verdict": "clean",
+          "evidence": "Explicitly rejects dismissal; calls a reasoned exception worse than the fix, no .trivyignore suggested"
+        },
+        {
+          "behavior": "Adds msgpack to requirements/pyproject as the fix",
+          "verdict": "clean",
+          "evidence": "Explicitly says bumping msgpack in the lockfile leaves the vendored copy untouched"
+        },
+        {
+          "behavior": "Leaves pip in the runtime image",
+          "verdict": "clean",
+          "evidence": "Prescribes `pip uninstall -y pip` / venv `--without-pip` in the final stage"
+        }
+      ],
+      "judge_reason": "The response correctly identifies the pip vendored tree as the real source, refuses to dismiss the finding, prescribes removing the installer from the runtime image, rules out manifest pinning, and supplies a verifiable must-fail `python -m pip --version` check.",
+      "cost_usd": 1.1158422499999998,
+      "duration_s": 69.3
     },
     {
       "scenario": "sbom-provenance-on-release",
