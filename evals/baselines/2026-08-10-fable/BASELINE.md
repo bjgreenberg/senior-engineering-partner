@@ -84,7 +84,26 @@ entry is from a different sitting than the other 60. (The 2026-08-14 scenario am
 to `gate-promotion-ladder` (#145) post-dates the recorded result for that scenario; its
 3× post-amendment evidence lives in PR #145.)
 
-## Amendment 2026-09-05 — `frozen-resolver-cutoff` appended (62nd scenario)
+## Amendment 2026-09-05 — `dependabot-lockstep-pair` appended (62nd scenario)
+
+The lockstep-pairs rule (exact-version-pinned siblings bump as one Dependabot `groups`
+PR) shipped with its guarding scenario after this baseline; the coverage tripwire refused
+the merge until the scenario was baselined. Appended from a single clean 2026-09-05 run
+(same harness, `fable` scenario / `opus` judge, sandboxed): **pass**, 5/5 criteria, all 3
+anti-behaviors clean, $1.33 / 42 s. Headline is now **37 pass / 25 partial / 0 fail /
+0 error on 62 scenarios**. Same different-sitting caveat as the 2026-08-14 amendment.
+
+## Amendment 2026-09-05 — `runtime-image-no-installer` appended (63rd scenario)
+
+The no-installer-in-the-runtime-image rule (scanner blind spot 4: pip's own `_vendor/`
+tree) shipped with its guarding scenario after this baseline; the coverage tripwire
+refused the merge until the scenario was baselined. Appended from a single clean
+2026-09-05 run (same harness, `fable` scenario / `opus` judge, sandboxed): **pass**, 5/5
+criteria, all 3 anti-behaviors clean, $1.12 / 69 s. Headline is now **38 pass /
+25 partial / 0 fail / 0 error on 63 scenarios**. Same different-sitting caveat as the
+2026-08-14 amendment.
+
+## Amendment 2026-09-05 — `frozen-resolver-cutoff` appended (64th scenario)
 
 The rolling-cooldown rule (a release-age cooldown is a rolling window, never a frozen
 resolver cutoff) shipped with its guarding scenario after this baseline; the coverage
@@ -93,5 +112,5 @@ tripwire refused the merge until the scenario was baselined. Appended from a cle
 criteria, all 3 anti-behaviors clean, $0.99 / 53 s. A first run the same morning scored
 partial (4/5 + one "unclear": the cooldown's purpose was left implicit); the reference
 bullet now states that purpose and criterion 5 was reworded to the discipline itself
-before the recorded run. Headline is now **37 pass / 25 partial / 0 fail / 0 error on
-62 scenarios**. Same different-sitting caveat as the 2026-08-14 amendment.
+before the recorded run. Headline is now **39 pass / 25 partial / 0 fail / 0 error on
+64 scenarios**. Same different-sitting caveat as the 2026-08-14 amendment.

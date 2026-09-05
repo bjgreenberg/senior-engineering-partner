@@ -1,6 +1,6 @@
 {
   "tally": {
-    "pass": 37,
+    "pass": 39,
     "partial": 25,
     "fail": 0,
     "error": 0
@@ -905,6 +905,61 @@
       "judge_reason": "The delivered code implements explicit timeouts, capped jittered backoff on transient-only failures, a labeled degraded 200 path, and loud structured logging, but never addresses bulkhead isolation or a circuit breaker for a chronically failing provider.",
       "cost_usd": 3.154901,
       "duration_s": 309.5
+    },
+    {
+      "scenario": "dependabot-lockstep-pair",
+      "mode": "with-skill",
+      "model": "fable",
+      "runner": "claude",
+      "judge_model": "opus",
+      "status": "pass",
+      "expected": [
+        {
+          "behavior": "Identifies this as a lockstep pair: @vitest/coverage-v8 is pinned to the exact vitest version, so a single-package bump can never install \u2014 the PR is not flaky and not a breaking change",
+          "verdict": "pass",
+          "evidence": "\"`vitest` and `@vitest/coverage-v8` are a lockstep pair. The coverage package declares an exact peer dependency... A PR that bumps only one member can never install cleanly\"; explains the three reopenings as root-cause, not flakiness"
+        },
+        {
+          "behavior": "Prescribes the pair-bump: vitest AND @vitest/coverage-v8 to the same version in ONE commit/PR, with npm ci kept strict",
+          "verdict": "pass",
+          "evidence": "\"Bump both members in one commit, exact-pinned\" with `npm install vitest@4.0.1 @vitest/coverage-v8@4.0.1 --save-exact` then `npm ci && npm test`; no flag added to CI install"
+        },
+        {
+          "behavior": "Prescribes a Dependabot `groups` entry (patterns vitest + @vitest/*), or the Renovate groupName equivalent, so the family is bumped as one PR from now on \u2014 added in the same PR as the fix",
+          "verdict": "pass",
+          "evidence": "\"In the same PR, add a `groups` entry to `.github/dependabot.yml`\" with patterns [\"vitest\", \"@vitest/*\"]"
+        },
+        {
+          "behavior": "Says the single-member Dependabot PR is closed (superseded), not coerced green",
+          "verdict": "pass",
+          "evidence": "\"Close the Dependabot PR with a comment saying it is a lockstep pair and will be bumped together.\""
+        },
+        {
+          "behavior": "Names why the coercions are wrong: --legacy-peer-deps / --force / an overrides pin ship the mismatched pair the tool's own check exists to refuse",
+          "verdict": "pass",
+          "evidence": "\"You would ship vitest 3.2.4 with a 4.0.1 coverage provider, which is exactly the mismatch the peer check exists to refuse... The same applies to `--force` and to an `overrides` pin.\""
+        }
+      ],
+      "anti": [
+        {
+          "behavior": "Recommends --legacy-peer-deps, --force, or an overrides/resolutions pin to make the lone bump install",
+          "verdict": "clean",
+          "evidence": "Opens with \"No. Do not add `--legacy-peer-deps`.\" and rejects --force/overrides too"
+        },
+        {
+          "behavior": "Treats the repeated re-opening as flakiness to retry, or advises auto-merge / ignoring the PR",
+          "verdict": "clean",
+          "evidence": "Reopenings attributed to structural root cause; PR is closed as superseded with an explanatory comment, not ignored or auto-merged"
+        },
+        {
+          "behavior": "Bumps only one member of the pair",
+          "verdict": "clean",
+          "evidence": "Both members bumped to 4.0.1 in one command/commit"
+        }
+      ],
+      "judge_reason": "The response correctly diagnoses the lockstep pair, refuses the coercion flags with reasons, prescribes a same-version pair bump in one commit plus a Dependabot groups entry in the same PR, and closes the superseded single-member PR \u2014 all checklist items pass with no anti-behaviors.",
+      "cost_usd": 1.33084275,
+      "duration_s": 41.9
     },
     {
       "scenario": "dependency-currency-not-just-pinned",
@@ -2332,6 +2387,61 @@
       "judge_reason": "The response correctly identifies the superuser-vs-Cloud-SQL privilege-parity gap and proposes a mirrored-role gate, but it misattributes the definer functions' RLS bypass to ownership/grants under FORCE and prescribes a NOBYPASSRLS owner \u2014 inverting the actual fix \u2014 and omits the fail-first negative scenario and the CREATE EXTENSION gotcha.",
       "cost_usd": 1.157549,
       "duration_s": 116.3
+    },
+    {
+      "scenario": "runtime-image-no-installer",
+      "mode": "with-skill",
+      "model": "fable",
+      "runner": "claude",
+      "judge_model": "opus",
+      "status": "pass",
+      "expected": [
+        {
+          "behavior": "Explains where the package comes from: pip's own vendored tree (site-packages/pip/_vendor/) ships private copies of msgpack, urllib3, requests, certifi, etc. that no manifest pins and pip-audit never sees, while the image scanner correctly reports them",
+          "verdict": "pass",
+          "evidence": "\"pip carries private copies of its own dependencies under `site-packages/pip/_vendor/`. That tree includes `msgpack` ... plus `urllib3`, `requests`, `certifi` ... no `.dist-info`, so `pip-audit`, your lockfile, and `pyproject.toml` are all blind ... Trivy scans the image filesystem and sees the code.\""
+        },
+        {
+          "behavior": "Says it is NOT a false positive and must not be dismissed as one",
+          "verdict": "pass",
+          "evidence": "\"Short answer: no, don't dismiss it. It is almost certainly real\" and \"Both tools are reporting correctly.\""
+        },
+        {
+          "behavior": "Prescribes the fix: do not ship the installer in the runtime image \u2014 uninstall pip (and setuptools/wheel) after the locked install in the final stage, or build the venv without pip and copy it in / use a distroless base",
+          "verdict": "pass",
+          "evidence": "\"RUN pip install --require-hashes ... && pip uninstall -y pip\"; \"Or build the venv `--without-pip` ... Also remove `setuptools` and `wheel`\""
+        },
+        {
+          "behavior": "Notes that pinning msgpack in the app's own manifests cannot fix the alert (the vendored copy is a different file)",
+          "verdict": "pass",
+          "evidence": "\"No pin can close this alert ... Bumping msgpack in your lockfile would install a second, unrelated copy and leave the vendored one untouched.\""
+        },
+        {
+          "behavior": "Gives a diff-checkable proof: `python -m pip --version` fails inside the image and/or the image SBOM lists no pip",
+          "verdict": "pass",
+          "evidence": "\"docker run --rm <image> python -m pip --version   # must FAIL\" plus re-scan check and a CI must-fail gate"
+        }
+      ],
+      "anti": [
+        {
+          "behavior": "Dismisses the finding as a false positive or suppresses it in an ignore file",
+          "verdict": "clean",
+          "evidence": "Explicitly rejects dismissal; calls a reasoned exception worse than the fix, no .trivyignore suggested"
+        },
+        {
+          "behavior": "Adds msgpack to requirements/pyproject as the fix",
+          "verdict": "clean",
+          "evidence": "Explicitly says bumping msgpack in the lockfile leaves the vendored copy untouched"
+        },
+        {
+          "behavior": "Leaves pip in the runtime image",
+          "verdict": "clean",
+          "evidence": "Prescribes `pip uninstall -y pip` / venv `--without-pip` in the final stage"
+        }
+      ],
+      "judge_reason": "The response correctly identifies the pip vendored tree as the real source, refuses to dismiss the finding, prescribes removing the installer from the runtime image, rules out manifest pinning, and supplies a verifiable must-fail `python -m pip --version` check.",
+      "cost_usd": 1.1158422499999998,
+      "duration_s": 69.3
     },
     {
       "scenario": "sbom-provenance-on-release",

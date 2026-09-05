@@ -175,11 +175,11 @@ Run or prescribe security tooling in every deliverable — never wait to be aske
 - **General:** check for exposed secrets (`git-secrets` or equivalent) before any commit guidance.
 
 ## GitHub security alerts & Dependabot (ENFORCED — keep the alert tab at zero)
-Every GitHub repo gets supply-chain alerting *turned on and acted on* — advisories are work items, not a dashboard. (Other hosts: GitLab dependency scanning + secret detection, else Renovate + gitleaks in CI — alerting on, count zero.)
+Every GitHub repo gets supply-chain alerting *turned on and acted on* — advisories are work items, not a dashboard. (Other hosts: GitLab dependency scanning + secret detection, else Renovate + gitleaks in CI.)
 - **Enable the trio**: Dependabot **alerts**, **security updates**, and **secret scanning + push protection**. Commit `.github/dependabot.yml` covering *every* ecosystem (`pip`, `npm`, `github-actions`, `docker`, …) so SHA-pinned actions and digest-pinned images don't fall behind.
-- **Triage every alert; zero open.** Bump the pin (and any drifted manifest — below), or dismiss a false positive/unreachable path *with a written reason*. An ignored alert tab is an unowned, growing liability.
-- **Review Dependabot's PRs as code** — CI gates them, read the changelog for breaking changes, then merge. No blind auto-merge; no rot.
-- **Scanners are necessary but NOT sufficient — know each one's blind spots.** An image/OS scanner (Trivy/grype) sees only built-image packages, usually floored at HIGH/CRITICAL — it misses (1) **MEDIUM/LOW advisories** (still real on a hostile-input path, e.g. a PDF/zip parser), (2) a **manifest in no image** (legacy/dev-only requirements), (3) **manifest drift** (`pyproject.toml` behind `requirements.txt`). Gate the *manifests themselves* (below); never present "image scan green" as "no known vulns."
+- **Triage every alert; zero open.** Bump the pin (and any drifted manifest — below), or dismiss a false positive/unreachable path *with a written reason*.
+- **Review Dependabot's PRs as code** — CI gates them, read the changelog for breaking changes, then merge. No blind auto-merge; no rot. **Lockstep pairs bump together:** exact-version-pinned siblings (`vitest`/`@vitest/coverage-v8`) never merge singly — one `groups` entry per pair (`references/package-managers.md`).
+- **Scanners are necessary but NOT sufficient — know each one's blind spots.** An image/OS scanner (Trivy/grype) sees only built-image packages, usually floored at HIGH/CRITICAL — it misses (1) **MEDIUM/LOW advisories** (real on a hostile-input path: a PDF/zip parser), (2) a **manifest in no image** (legacy/dev-only requirements), (3) **manifest drift** (`pyproject.toml` behind `requirements.txt`); the manifest gates miss (4) **pip's own `_vendor/` tree**, unpinned — ship no installer at runtime (`references/containers-and-orchestration.md`). Gate the *manifests themselves* (below); never present "image scan green" as "no known vulns."
 
 ## Dependency-audit gate (manifest-level, all severities) — REQUIRED where deps are pinned
 Gate pinned manifests at *every* severity, in CI **and** the same script locally — a vulnerable pin fails the PR at the source.
@@ -245,7 +245,7 @@ Isolate by default — the floor that holds at every rigor tier.
 
 Each toolchain below carries its own discipline reference — best practices, QA/quality gates, test cases, and security testing — for progressive disclosure. The trigger paragraph states the non-negotiables; **read the linked reference before doing related work.** (The macOS app-bundle and multi-agent references that follow are part of this same set.)
 
-- **Docker & Kubernetes.** Digest-pinned (never `:latest`), multi-stage, non-root, secret-free layers; scan/lint/validate images AND manifests as failing CI gates. Every K8s workload: requests+limits, restricted `securityContext`, default-deny `NetworkPolicy`, least-privilege RBAC; runtime secrets via External Secrets/CSI, never a base64 `Secret`. Most workloads: scale-to-zero serverless (e.g. Cloud Run), not a cluster. **Read `references/containers-and-orchestration.md`.**
+- **Docker & Kubernetes.** Digest-pinned (never `:latest`), multi-stage, non-root, secret-free layers; scan/lint/validate images AND manifests as failing CI gates. Every K8s workload: requests+limits, restricted `securityContext`, default-deny `NetworkPolicy`, least-privilege RBAC; runtime secrets via External Secrets/CSI, never a base64 `Secret`. Most workloads: scale-to-zero serverless (Cloud Run), not a cluster. **Read `references/containers-and-orchestration.md`.**
 
 - **Google Cloud Platform.** Dedicated least-privilege SAs — never the default compute SA, never a long-lived SA key (Workload Identity / ADC / impersonation); secrets from Secret Manager; parameterized BigQuery with cost guardrails; every bucket locked (UBLA + public-access prevention) or documented-public — never blanket-relock; separate projects per environment. **Read `references/gcp.md`.**
 
@@ -427,8 +427,7 @@ A second writer — agent or human — in the tree overrides the solo-speed Defi
 
 ### Changelog
 
-The changelog lives in [`CHANGELOG.md`](CHANGELOG.md) (Keep a Changelog format). Releases are
-automated with [release-please](https://github.com/googleapis/release-please): the version bump
-and changelog entry are prepared from the [Conventional Commits](https://www.conventionalcommits.org/)
-on `main`, then a maintainer cuts the **signed** tag + GitHub Release
-(see [`MAINTAINERS.md`](MAINTAINERS.md) -> *Cutting a release*).
+The changelog lives in [`CHANGELOG.md`](CHANGELOG.md);
+[release-please](https://github.com/googleapis/release-please) derives the version bump and entry
+from the [Conventional Commits](https://www.conventionalcommits.org/) on `main`, then a maintainer
+cuts the **signed** tag + GitHub Release ([`MAINTAINERS.md`](MAINTAINERS.md) -> *Cutting a release*).
