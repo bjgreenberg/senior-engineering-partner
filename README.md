@@ -202,6 +202,7 @@ version-specific commands.
 | | `secure-data-processing.md` | Hostile-file parsing, prompt-injection fencing (two-zone worked example), RAG/vector-store isolation, multi-tenant data handling |
 | | `frontend-web-security.md` | Token storage, CSP, output sanitization, security headers |
 | | `secrets-and-key-rotation.md` | Rotation lifecycle, zero-downtime overlap, KMS key-version re-wrap |
+| | `action-identity-and-audit.md` | Every action identified, signed, recorded: threat model, enforce-not-record, the agent's own host identity, hash-chained off-host action log, provenance, drills, fleet conformance gate |
 | | `data-protection.md` | GDPR/UK-GDPR/CCPA as code: DSAR, erasure cascade, retention, DPIA |
 | | `compliance.md` | NIST CSF 2.0 + **SSDF (800-218)** / OWASP / SOC 2 / **Well-Architected** as enforceable review checklists, incl. crypto-agility + **post-quantum readiness** (FIPS 203–205, harvest-now-decrypt-later triage) |
 | | `agentic-ai-security.md` | Products that ARE agents: least agency, human-in-the-loop on the resolved call, memory as a poisoning surface, OWASP Agentic Top 10 + CSA MAESTRO mapping |

@@ -531,6 +531,28 @@ assert "a\\x00b" in out, out
 PYEOF
 check "run-evals _run_cli escapes a NUL in argv instead of crashing the scenario" 0 "$rc"
 
+# A with-skill scenario run must be able to READ the staged skill references: the run is
+# granted Bash/Edit/Write only and the stage dir is outside the cwd, so without --add-dir
+# every references/<name>.md read was denied in headless mode (2026-09-14; proven red on the
+# unpatched harness — run_scenario_claude had no add_dirs parameter at all).
+rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, pathlib, sys
+spec = importlib.util.spec_from_file_location("m", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+seen = {}
+def fake_run_cli(cmd, timeout, cwd, **kw):
+    seen["cmd"] = list(cmd); raise RuntimeError("captured")
+m._run_cli = fake_run_cli
+try:
+    m.run_scenario_claude("q", "haiku", 5, pathlib.Path("/tmp"), "sys", add_dirs=["/tmp/stage/skill"])
+except RuntimeError as e:
+    assert str(e) == "captured", e
+cmd = seen["cmd"]
+i = cmd.index("--add-dir"); assert cmd[i + 1] == "/tmp/stage/skill", cmd
+assert "Read" not in cmd[cmd.index("--allowedTools") + 1], cmd  # reads are scoped, not global
+PYEOF
+check "with-skill scenario runs pass the staged skill dir via --add-dir (references readable)" 0 "$rc"
+
 # --- the real repo passes its own gates (precondition assert, not print — §3c) --------------
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$repo_root/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint PASSES the real SKILL.md" 0 "$rc"

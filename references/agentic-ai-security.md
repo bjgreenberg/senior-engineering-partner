@@ -36,6 +36,7 @@ The agentic form of least privilege (SKILL.md *Principle of Least Privilege*): t
 - **Scoped, attributable identity — never a shared god-credential.** Each agent (and, multi-tenant, each *tenant's* run) uses a least-privilege per-workload credential, DI'd not read from the process env (SKILL.md *one credential per app/workload*; `secure-data-processing.md` §2). A hijacked agent then reaches exactly its scope, attributed to the right principal.
 - **Secrets never enter model context — reference, don't resolve** (`local-and-agentic-ai-tools.md`): the runtime resolves an `op://`-style reference at tool-exec time, outside the model's view. A secret the model can read is one an injected instruction can exfiltrate through the next tool call.
 - **No privilege escalation across the loop.** The agent's authority at step N equals its authority at step 1 — no tool grants new scope mid-run, no "the model asked nicely" widening.
+- The agent that *builds* products is itself an actor on the developer's machine: its sessions need their own host identity, signing key and tamper-evident action record, or its work is indistinguishable from the human's. See `references/action-identity-and-audit.md`.
 
 ## 5. Memory & context poisoning
 
