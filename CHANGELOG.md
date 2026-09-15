@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.28.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.27.0...v1.28.0) (2026-09-15)
+
+
+### Features
+
+* action identity and audit — every action identified, signed, recorded ([#152](https://github.com/bjgreenberg/senior-engineering-partner/issues/152)) ([fc31485](https://github.com/bjgreenberg/senior-engineering-partner/commit/fc31485746a1ded48c31de23eb51af34982b9b77))
+
 ## [1.27.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.26.0...v1.27.0) (2026-09-05)
 
 The dependency-hygiene release: three rules the self-improvement loop earned in one
