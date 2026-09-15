@@ -89,6 +89,13 @@ lands) and prepends the new section to
 > **remove its `autorelease: pending` label** (a pending label on the closed PR can
 > confuse later runs). Verify on the next real merge that release-please derives the
 > correct next version; a wrong version *outside* this window is a real bug, not the race.
+> The same race leaves **two red `eval-guard` runs with zero jobs** on the release-please
+> branch: release-please creates the branch at the `main` sha and pushes the real commit a
+> second later, so the `pull_request` run fires on a sha that no longer exists and fails at
+> start-up (v1.28.0: runs 34925083967 and 34925273492). They are not guard failures — the
+> guard passes on the surviving sha and reproduces green locally with `scripts/eval-guard.py`
+> — and they are why the README carries no `eval-guard` badge: a `pull_request`-only
+> workflow cannot be filtered to `main`, so its badge would report these phantom runs.
 
 ### Gotcha (historical here since the title-only flip; live wherever squash includes the PR body): a squash body can make release-please skip the commit entirely
 
