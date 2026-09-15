@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-08-08 06:35 PM CDT
+Last updated: 2026-09-14 10:38 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -11,7 +11,6 @@ Last updated: 2026-08-08 06:35 PM CDT
 [![actions-lint](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/actions-lint.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/actions-lint.yml)
 [![script-tests](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/script-tests.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/script-tests.yml)
 [![citation-validate](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/citation-validate.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/citation-validate.yml)
-[![eval-guard](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/eval-guard.yml/badge.svg)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/eval-guard.yml)
 [![plugin-validate](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/plugin-validate.yml/badge.svg?branch=main)](https://github.com/bjgreenberg/senior-engineering-partner/actions/workflows/plugin-validate.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/bjgreenberg/senior-engineering-partner/badge)](https://scorecard.dev/viewer/?uri=github.com/bjgreenberg/senior-engineering-partner)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13458/badge)](https://www.bestpractices.dev/projects/13458)
