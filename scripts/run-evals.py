@@ -336,6 +336,7 @@ class RunnerSpec(TypedDict, total=False):
     kind: str  # "claude" | "generic"
     cmd_template: str  # generic only: shell-style template with {prompt}/{model} placeholders
     instructions_file: str  # generic only: with-skill body lands here in the scenario cwd
+    add_dirs: list[str]  # claude only: extra dirs the run may READ without a permission prompt
 
 
 class ScenarioResult(TypedDict, total=False):
@@ -484,8 +485,18 @@ def run_scenario_claude(
     timeout: int,
     cwd: Path,
     system_prompt: str | None,
+    add_dirs: list[str] | None = None,
 ) -> tuple[str, float | None, str]:
     """One tool-granted claude scenario run; returns (response, cost_usd, tool_trail).
+
+    ``add_dirs``: directories the run may READ without a permission prompt. The with-skill
+    staging dir MUST be here: scenario runs are granted Bash/Edit/Write but not Read, and
+    the staged skill copy lives outside the scenario cwd, so without ``--add-dir`` every
+    `references/<name>.md` the skill points at was silently DENIED in headless mode
+    ("requested permissions to read … but you haven't granted it yet" in the trail) — the
+    model was graded on the SKILL.md body alone. Found 2026-09-14 when a new
+    reference-backed scenario's trail showed the denial; reference-sourced scenarios were
+    partial at ~44% vs ~25% for core-sourced in the 2026-08-10 baseline.
 
     Captured as ``--output-format stream-json`` so the ORDERED tool-call trail survives:
     workspace diffs prove final state, never sequencing, and several scenarios judge order
@@ -508,6 +519,8 @@ def run_scenario_claude(
         "--setting-sources",
         "project",
     ]
+    for d in add_dirs or []:
+        cmd += ["--add-dir", str(d)]
     if system_prompt is not None:
         cmd += ["--append-system-prompt", system_prompt]
     # Shell-granted: the write boundary is mandatory (see _maybe_sandbox).
@@ -606,7 +619,9 @@ def run_scenario_prompt(
     with-skill + generic carries an instructions_file, so a missing one here is a
     programming error."""
     if runner.get("kind", "claude") == "claude":
-        return run_scenario_claude(prompt, model, timeout, cwd, system_prompt)
+        return run_scenario_claude(
+            prompt, model, timeout, cwd, system_prompt, runner.get("add_dirs")
+        )
     if system_prompt is not None:
         (cwd / runner["instructions_file"]).write_text(system_prompt, encoding="utf-8")
     response, cost = run_generic(prompt, model, timeout, cwd, runner["cmd_template"])
@@ -1165,6 +1180,8 @@ def main() -> int:
             stage_dir = Path(stage) / "skill"
             stage_skill_copy(stage_dir)
             system_prompt = build_skill_system_prompt(stage_dir)
+            # The preamble tells the model to read references from stage_dir; grant it.
+            runner["add_dirs"] = [str(stage_dir)]
         results: list[ScenarioResult] = []
         todo = paths
         if args.resume:
