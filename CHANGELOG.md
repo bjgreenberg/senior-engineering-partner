@@ -17,6 +17,45 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.28.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.27.0...v1.28.0) (2026-09-15)
+
+The action-identity release: one new reference, a net-zero core trigger, and a harness
+defect the reference's own eval exposed and this release fixes.
+
+- **Every action identified, signed, recorded** (`references/action-identity-and-audit.md`,
+  [#152]). One credential per workload, signed commits, build provenance and log discipline
+  were four rules with no common statement. This reference gives them one, and extends it
+  to the actor the four forgot: the agent session itself, which acts on the maintainer's
+  machine with the maintainer's keys. Threat model first (what a borrowed or shared
+  identity lets an attacker deny or fabricate), then the controls: enforce rather than
+  record; the agent's own host identity; a hash-chained action log with an off-host anchor
+  for its tail; provenance for what the session ships; restore-style drills for the log;
+  a fleet conformance gate. The diff-checkable violation is an interactive session reading
+  an automation credential.
+- **Core trigger at net zero words** (12 699 / 12 700). The existing one-credential bullet in
+  *Secrets Management* now ends by pointing at the reference; three same-bullet trims paid
+  for it, keeping both reasons, the non-retroactivity point and the deploy-key pointer.
+  The next core addition must be paid for the same way.
+- **Eval and a disclosed baseline.** New scenario
+  `agent-uses-automation-credential-interactively` (advisory: the agent is asked whether
+  to borrow the steward token, not told to). Baseline `2026-09-14-fable` is a one-scenario
+  increment on 2026-08-10: 65 scenarios, 39 pass / 26 partial / 0 fail; the new scenario
+  is partial at 3/5 with 4/4 anti-patterns clean, and its `BASELINE.md` records the
+  sharpening candidate.
+- **Harness fix: with-skill runs could not read the staged references.** `run-evals.py`
+  granted `Bash,Edit,Write` but not `Read`, and the staged skill copy lived outside the
+  scenario's working directory, so every reference-backed scenario since 2026-07-04 was
+  graded on the core alone. Found by this release's own eval (two red runs kept as
+  evidence), fixed at the source with `--add-dir <stage>` and a red-first test that fails
+  without it. The grant is set only in the with-skill branch, so a without-skill baseline
+  run can never receive it. **Follow-up, not this release:** a full re-sweep of the
+  2026-07-04 to 2026-08-10 baselines on the fixed harness; until then, reference-backed
+  partials in those baselines are a lower bound.
+
+Reviewed pre-merge by an independent session with the verdict recorded in the PR; the
+release itself was cut under the rule it ships (signed tag, maintainer-held key, the
+interactive credential widened so no automation token is read from a session).
+
 ## [1.27.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.26.0...v1.27.0) (2026-09-05)
 
 The dependency-hygiene release: three rules the self-improvement loop earned in one
