@@ -6,15 +6,23 @@ and `MAINTAINERS.md` — this file is the agent-facing distillation.
 
 ## Model requirement (read before editing anything)
 
-**All authoring in this repo is done with the Fable model (`claude-fable-5`).**
+**Authoring in this repo is done by the designated writer model, and a second
+model reviews every change.** Today the writer is Fable 5.1 (`claude-fable-5-1`,
+alias `fable`) and the reviewer is Opus 5.5 (`claude-opus-5-5`, alias `opus`).
 Reading, auditing, and *proposing* changes are fine on any model; **writing** to
-`SKILL.md`, `references/`, `scripts/`, `evals/`, or the repo docs is not. On any
-other model, say so and stop before editing — offer to switch
-(`/model claude-fable-5`) or resume in a Fable session. Proceed otherwise only on an
+`SKILL.md`, `references/`, `scripts/`, `evals/`, or the repo docs is done by the
+writer. On any other model, delegate the writing to a writer subagent (Claude
+Code's Agent tool with `model: "fable"`), give it the brief, the current text,
+and the evidence, and review what comes back; if that route is unavailable, say
+so and stop before editing. Before the PR, get the reviewer model's read
+(unverified paths, flags, and commands; dense prose; overreach past the
+evidence) and record the verdict in the PR body. Proceed otherwise only on an
 express, per-change instruction from the maintainer; a general "go ahead"
-earlier in the session is not one. Rationale: the skill's authored content
-stays consistent in voice, judgment, and rule-wording instead of drifting with
-whichever model happens to be loaded.
+earlier in the session is not one. The writer changes only after a blind
+head-to-head on real work; when the names change, update this section.
+Rationale: one writer keeps the skill's authored content consistent in voice,
+judgment, and rule-wording instead of drifting with whichever model happens to
+be loaded, and a second model catches what the writer misses.
 
 ## Repo shape
 
