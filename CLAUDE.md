@@ -13,8 +13,10 @@ Reading, auditing, and *proposing* changes are fine on any model; **writing** to
 `SKILL.md`, `references/`, `scripts/`, `evals/`, or the repo docs is done by the
 writer. On any other model, delegate the writing to a writer subagent (Claude
 Code's Agent tool with `model: "fable"`), give it the brief, the current text,
-and the evidence, and review what comes back; if that route is unavailable, say
-so and stop before editing. Before the PR, get the reviewer model's read
+and the evidence, and review what comes back. If the writer is unavailable
+(usage limits or an outage), the reviewer model writes as a fallback: say
+"fallback-written" in the commit and the PR body, and have the writer re-read
+the change when it is back. Before the PR, get the reviewer model's read
 (unverified paths, flags, and commands; dense prose; overreach past the
 evidence) and record the verdict in the PR body. Proceed otherwise only on an
 express, per-change instruction from the maintainer; a general "go ahead"
