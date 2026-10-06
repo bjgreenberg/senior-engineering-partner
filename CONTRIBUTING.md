@@ -57,7 +57,11 @@ regular collaborators use a branch on the repo. Either way:
    un-committed `references/leakage-denylist.local` (copy it from the `.template`) — that file guards
    the tree locally without ever being published. When a co-maintainer joins, add their **public**
    handle to CODEOWNERS/attribution (don't denylist it), but add **their** personal hosts / private-repo
-   names / email to their own local denylist.
+   names / email to their own local denylist. **Cite only this repo:** the issues, PRs, and files you
+   name are this repo's own — never another repository, product, or an issue number from outside the
+   skill. Tell an origin incident generically (what happened, what it cost, why the existing rules
+   missed it). Commit messages and PR bodies are public too, and `leakage-guard` does not scan them, so
+   the rule holds there by care alone.
 7. **If you encode a discipline, guard it with an eval.** New or changed rules should add or extend
    a scenario in `evals/` — the project's "changelog is the spec, evals are the tests" model.
 8. **Run the gates locally** before opening the PR: `bash scripts/leakage-guard.sh`,

@@ -27,6 +27,12 @@ whichever model happens to be loaded.
   commit private identifiers (employers, hosts, domains, real names beyond
   the author) into code, commits, PR text, or eval baselines** — the CI
   denylist is only a partial guard, not a substitute for care.
+- **Cite only this repo.** An issue, PR, or file named in a tracked file is
+  one of this repo's own. Never name another repository, product, or an
+  issue number from outside the skill; tell an origin incident generically
+  (what happened, what it cost, why the existing rules missed it). Commit
+  messages and PR bodies are public too, and the leakage guard does not
+  scan them — the rule holds there by care alone.
 
 ## PR rules
 
