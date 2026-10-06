@@ -4,17 +4,23 @@ Agent/contributor guide for working **on** this repo (the skill itself lives
 in `SKILL.md` + `references/`). Human-facing process docs: `CONTRIBUTING.md`
 and `MAINTAINERS.md` — this file is the agent-facing distillation.
 
-## Model requirement (read before editing anything)
+## Writer and reviewer (read before editing anything)
 
-**All authoring in this repo is done with the Fable model (`claude-fable-5`).**
-Reading, auditing, and *proposing* changes are fine on any model; **writing** to
-`SKILL.md`, `references/`, `scripts/`, `evals/`, or the repo docs is not. On any
-other model, say so and stop before editing — offer to switch
-(`/model claude-fable-5`) or resume in a Fable session. Proceed otherwise only on an
-express, per-change instruction from the maintainer; a general "go ahead"
-earlier in the session is not one. Rationale: the skill's authored content
-stays consistent in voice, judgment, and rule-wording instead of drifting with
-whichever model happens to be loaded.
+**One model writes a change, and a different reader reviews it before the PR.**
+Reading, auditing, and *proposing* changes are fine on any model. **Writing** to
+`SKILL.md`, `references/`, `scripts/`, `evals/`, or the repo docs is done by one
+writer per change; before the PR opens, a second reader — another model, or a
+human — reads the diff for unverified paths, flags, and commands; dense prose;
+and overreach past the evidence. The PR body records who wrote, who reviewed,
+and the reviewer's verdict. Any model may be the writer; this file names none.
+A private environment profile (`references/my-environment.md`) MAY name a
+writer, a reviewer, and the fallback for when the writer is unavailable; when
+it does, sessions in that environment follow it. Skipping the second read, or
+departing from a profile's named models, takes an express, per-change
+instruction from the maintainer; a general "go ahead" earlier in the session is
+not one. Rationale: one writer per change keeps its voice, judgment, and
+rule-wording consistent instead of a patchwork of whichever models were loaded,
+and a second reader catches what the writer misses.
 
 ## Repo shape
 
