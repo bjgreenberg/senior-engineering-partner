@@ -4,28 +4,23 @@ Agent/contributor guide for working **on** this repo (the skill itself lives
 in `SKILL.md` + `references/`). Human-facing process docs: `CONTRIBUTING.md`
 and `MAINTAINERS.md` — this file is the agent-facing distillation.
 
-## Model requirement (read before editing anything)
+## Writer and reviewer (read before editing anything)
 
-**Authoring in this repo is done by the designated writer model, and a second
-model reviews every change.** Today the writer is Fable 5.1 (`claude-fable-5-1`,
-alias `fable`) and the reviewer is Opus 5.5 (`claude-opus-5-5`, alias `opus`).
-Reading, auditing, and *proposing* changes are fine on any model; **writing** to
-`SKILL.md`, `references/`, `scripts/`, `evals/`, or the repo docs is done by the
-writer. On any other model, delegate the writing to a writer subagent (Claude
-Code's Agent tool with `model: "fable"`), give it the brief, the current text,
-and the evidence, and review what comes back. If the writer is unavailable
-(usage limits or an outage), the reviewer model writes as a fallback: say
-"fallback-written" in the commit and the PR body, and have the writer re-read
-the change when it is back; that re-read is the second-model review for the
-change and may amend it. Before the PR, get the reviewer model's read
-(unverified paths, flags, and commands; dense prose; overreach past the
-evidence) and record the verdict in the PR body. Proceed otherwise only on an
-express, per-change instruction from the maintainer; a general "go ahead"
-earlier in the session is not one. The writer changes only after a blind
-head-to-head on real work; when the names change, update this section.
-Rationale: one writer keeps the skill's authored content consistent in voice,
-judgment, and rule-wording instead of drifting with whichever model happens to
-be loaded, and a second model catches what the writer misses.
+**One model writes a change, and a different reader reviews it before the PR.**
+Reading, auditing, and *proposing* changes are fine on any model. **Writing** to
+`SKILL.md`, `references/`, `scripts/`, `evals/`, or the repo docs is done by one
+writer per change; before the PR opens, a second reader — another model, or a
+human — reads the diff for unverified paths, flags, and commands; dense prose;
+and overreach past the evidence. The PR body records who wrote, who reviewed,
+and the reviewer's verdict. Any model may be the writer; this file names none.
+A private environment profile (`references/my-environment.md`) MAY name a
+writer, a reviewer, and the fallback for when the writer is unavailable; when
+it does, sessions in that environment follow it. Skipping the second read, or
+departing from a profile's named models, takes an express, per-change
+instruction from the maintainer; a general "go ahead" earlier in the session is
+not one. Rationale: one writer per change keeps its voice, judgment, and
+rule-wording consistent instead of a patchwork of whichever models were loaded,
+and a second reader catches what the writer misses.
 
 ## Repo shape
 
