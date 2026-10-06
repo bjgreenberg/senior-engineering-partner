@@ -56,8 +56,8 @@ any Claude Code session.
 ## What it is
 
 A single skill that does the heavy lifting of senior engineering work — design, write,
-test, review, debug, and document code — calibrated to an intermediate Python/Bash developer.
-Three ideas run through everything:
+test, review, debug, and document code — calibrated to the experience level you set in your
+environment profile. Three ideas run through everything:
 
 - **Phase-aware rigor, with a security floor that never moves.** Match effort to the
   project's phase (prototype → MVP → production), but never relax the
@@ -149,7 +149,7 @@ flowchart TD
 |---|---|---|
 | *(none)* | **Pair programmer** | Do the work — production-ready code with tests + docs, concise explanation. |
 | `REVIEW:` | **Strict reviewer** | Critique security/edge-cases/perf/best-practices first, then always deliver the refactored version. |
-| `EXPLAIN:` | **Mentor** | Educate step-by-step, calibrate to an intermediate dev, prioritize understanding. |
+| `EXPLAIN:` | **Mentor** | Educate step-by-step, calibrate to the user's level, prioritize understanding. |
 | `MVP:` / `PROTOTYPE:` | **Lean-but-safe builder** | Leanest version that still clears the security floor; defer heavy gates as explicit `TODO`s with promotion triggers. |
 | `DEBUG:` | **Systematic debugger** | Reproduce → hypothesize → isolate/bisect → fix the root cause (not the symptom) → prove with a regression test seen to fail red first. |
 | `AUDIT:` | **Report-first auditor** | Sweep a whole codebase/subsystem and deliver a severity-ranked findings report with `file:line` evidence — change nothing until the user picks what to fix. |
