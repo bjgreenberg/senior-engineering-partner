@@ -21,6 +21,9 @@
 
 - **Who you are / role:** `<e.g. backend engineer, solo founder, platform team lead>`
 - **Experience level to calibrate to:** `<e.g. intermediate Python/Bash — adjust explanation depth>`
+- **Time zone for `Last updated:` stamps (`STAMP_TZ`):** `<an IANA zone, e.g. Europe/Berlin — the
+  README-stamp rule in SKILL.md DOCUMENTATION runs TZ="$STAMP_TZ" date …; leave unset to stamp in the
+  host's local zone>`
 - **Anything the assistant should always know about how you work:** `<preferences, constraints>`
 
 ## Tech stack
