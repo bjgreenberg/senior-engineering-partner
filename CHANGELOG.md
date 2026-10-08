@@ -17,6 +17,36 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.29.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.28.0...v1.29.0) (2026-10-08)
+
+The maintainer-neutral release. The skill is used by people the maintainer has never met, so
+this release moves the maintainer's own choices out of the universal core and into the private
+environment profile. Four of the five changes were titled `docs:`, which release-please does not
+count; they change rules, so the version is forced to a minor ([#161](https://github.com/bjgreenberg/senior-engineering-partner/pull/161)).
+
+- **One writer and a second reader for every change** ([#156](https://github.com/bjgreenberg/senior-engineering-partner/pull/156)). `CLAUDE.md` now says one
+  model writes a change and a different reader, a second model or a human, reviews it before the
+  PR; the PR body records the writer, the reviewer and the verdict. The public rule names no
+  model. A private `references/my-environment.md` may name the pair and the fallback for when the
+  writer is unavailable. Why: an instruction file binds every fork to whatever it names, and a
+  contributor may not have the maintainer's models.
+- **A maintainer-neutral core** ([#157](https://github.com/bjgreenberg/senior-engineering-partner/pull/157)). The README `Last updated:` stamp takes its time
+  zone from `STAMP_TZ` in the profile (the host's local zone when unset). The fixed "intermediate
+  developer" calibration is gone: explanations follow the profile or the user. Origin incidents
+  are told generically, and contributors cite only this repo's own issues, PRs and files. Why: a
+  hard-coded zone, a fixed skill level, or a citation no reader can open is wrong for everyone
+  else.
+- **Public artifacts carry the session id only; the signature proves the host**
+  ([#158](https://github.com/bjgreenberg/senior-engineering-partner/pull/158)). `references/action-identity-and-audit.md` no longer tells users to put a host
+  name on commits. The session id joins an artifact to the off-host action log, and one signing
+  key per machine makes `git log --show-signature` name the machine. Why: a host name in a public
+  repo is published forever and proves nothing, because anyone who can commit can type any value.
+- **Fixed: the README badge row shows only branch-filtered badges** ([#155](https://github.com/bjgreenberg/senior-engineering-partner/pull/155)). The
+  `eval-guard` badge reported runs on any ref, including release-please's own branch, so it could
+  read red for a run that had nothing to do with `main`.
+- **Fixed: the Skill Metadata `Last updated` row is current** ([#159](https://github.com/bjgreenberg/senior-engineering-partner/pull/159)). It still read
+  2026-09-05 after `SKILL.md` changed on 2026-10-06.
+
 ## [1.28.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.27.0...v1.28.0) (2026-09-15)
 
 The action-identity release: one new reference, a net-zero core trigger, and a harness
