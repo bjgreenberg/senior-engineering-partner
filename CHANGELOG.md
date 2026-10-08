@@ -17,6 +17,18 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.29.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.28.0...v1.29.0) (2026-10-08)
+
+
+### Bug Fixes
+
+* **skill:** refresh the stale Last updated row in the metadata table ([#159](https://github.com/bjgreenberg/senior-engineering-partner/issues/159)) ([107272c](https://github.com/bjgreenberg/senior-engineering-partner/commit/107272c1edb8f451e928f1e9e25c425aab8dae13))
+
+
+### Miscellaneous Chores
+
+* **release:** release 1.29.0 ([#161](https://github.com/bjgreenberg/senior-engineering-partner/issues/161)) ([eb5f734](https://github.com/bjgreenberg/senior-engineering-partner/commit/eb5f734e8ac19a8b03e86176f3eb81e0f606835c))
+
 ## [1.28.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.27.0...v1.28.0) (2026-09-15)
 
 The action-identity release: one new reference, a net-zero core trigger, and a harness
