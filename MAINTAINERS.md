@@ -113,10 +113,21 @@ hard way: the #54/#55 merges were both skipped this way and 1.11.0 had to be for
 
 - **Check the release-please run log after every merge to `main`** — a green run that "considered
   0 commits" is a failure wearing a success conclusion.
-- **Recover with a `Release-As` footer**: open a tiny `chore:` PR whose *entire* PR body is a short
-  plain-prose line plus a final `Release-As: X.Y.Z` line (no code spans, no long lines). That
-  forces the version; then hand-write the skipped merges' entries during the changelog-enrichment
-  step (step 1 above), citing their PR numbers.
+- **Recover with a `Release-As` footer, supplied at merge time.** This is still live: it is how
+  any version gets forced here, whatever caused the skip. Open a small `chore(release):` PR (an
+  empty commit is fine) and merge it with
+  `gh pr merge <n> --squash --admin --body "Release-As: X.Y.Z"`. The footer has to ride on the
+  squash commit, and title-only squash drops the PR body, so a footer written in the PR body never
+  reaches `main` and the force silently does nothing; `--body` sets the squash commit's body
+  explicitly and overrides the `BLANK` default. Confirm it took: the squash commit on `main`
+  carries the `Release-As:` line (`git log -1 --format=%B <sha>`), and release-please's next run
+  rewrites the open release PR to that version. Then hand-write the skipped merges' entries during
+  the changelog-enrichment step (step 1 above), citing their PR numbers. *(Learned the hard way:
+  the 1.11.0 force (#56) put the footer in the PR body and worked only because it predated the
+  title-only flip; the 1.29.0 force (#161, squash commit `eb5f734`) is the worked example of
+  the merge-time method.)*
 
 [`.github/CODEOWNERS`](.github/CODEOWNERS) documents who owns which parts and (if "require review from
 Code Owners" is ever enabled) routes review on the sensitive paths automatically.
+
+control socrates
