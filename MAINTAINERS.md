@@ -129,5 +129,3 @@ hard way: the #54/#55 merges were both skipped this way and 1.11.0 had to be for
 
 [`.github/CODEOWNERS`](.github/CODEOWNERS) documents who owns which parts and (if "require review from
 Code Owners" is ever enabled) routes review on the sensitive paths automatically.
-
-control socrates
