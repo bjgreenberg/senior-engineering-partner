@@ -19,6 +19,41 @@ in your own `references/my-environment.md`.
 
 ## [1.30.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.29.0...v1.30.0) (2026-10-26)
 
+The cross-family review release. A measured comparison of code reviewers, run on changes from
+this repo's own history, found two defects in the eval harness that the same-family reviewers
+missed and a reviewer from another model family reported. This release fixes both and adds the
+lesson to the skill: on a high-stakes diff, one adversarial lens comes from a different model
+family when one is available.
+
+- **One adversarial lens from a different model family on high-stakes diffs** ([#170](https://github.com/bjgreenberg/senior-engineering-partner/pull/170)).
+  The *Verify before done* bullet in `SKILL.md` adds one clause to the adversarial pass: one lens
+  from a different model family when one is available, its findings leads to verify, never
+  verdicts. `references/engineering-workflow.md` §4a says how to run it: on a throwaway checkout
+  of the exact commits, never the working tree; in a sandbox that denies writes, network and the
+  user's own files, with no bypass; only on code that may be shown to that reviewer's account;
+  with every finding verified or dismissed for a stated reason and the result recorded in the PR
+  body. Which tool, which command and which repos qualify is an environment binding in
+  `references/my-environment.md`, not part of the core. Why: lenses from one model family can
+  share a blind spot. The two fixes below were found that way, and the same-family passes missed
+  both.
+- **Fixed: a caught sandbox escape fails the scenario and the run** ([#168](https://github.com/bjgreenberg/senior-engineering-partner/pull/168)). The eval
+  harness snapshots the persistence surfaces before and after a scenario and records
+  `sandbox_escape` when one changed, but nothing read the field: the status came from the judge
+  alone, the summary left it out, the exit code checked only for `pass`, and baseline curation
+  rejected only errors. Now an escaped scenario grades `fail` whatever the judge said, the summary
+  tallies `SANDBOX ESCAPE: n` and names the surfaces, `run-evals.py` exits non-zero if any result
+  carries the field, and `curate-baseline.py` refuses such an entry. The backstop's purpose is
+  caught, not silent.
+- **Fixed: the workspace-evidence read is bounded by the budget, not just the output** ([#169](https://github.com/bjgreenberg/senior-engineering-partner/pull/169)).
+  `collect_workspace_evidence()` read each file whole before the output cap applied, so a
+  multi-GB artifact left in a workspace could exhaust memory and crash the sweep. It now checks
+  each file's size and reads at most the unspent budget, decoding UTF-8 incrementally so a
+  character cut at the boundary is held back and non-UTF-8 content keeps its binary marker. A
+  listed fixture too large to read whole gets its size and head, marked truncated, instead of a
+  diff against a prefix. Fixes [#167](https://github.com/bjgreenberg/senior-engineering-partner/issues/167).
+- **Fixed: the Skill Metadata `Last updated` row is current**. It read 2026-10-06 after
+  `SKILL.md` changed on 2026-10-26; this release corrects it.
+
 
 ### Features
 
