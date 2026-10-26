@@ -17,6 +17,19 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.30.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.29.0...v1.30.0) (2026-10-26)
+
+
+### Features
+
+* **skill:** one adversarial lens from a different model family on high-stakes diffs ([#170](https://github.com/bjgreenberg/senior-engineering-partner/issues/170)) ([2caf241](https://github.com/bjgreenberg/senior-engineering-partner/commit/2caf241f240151737113a78ed03d00431fc3b6be))
+
+
+### Bug Fixes
+
+* **evals:** bound the workspace-evidence read by the budget, not just the output ([#169](https://github.com/bjgreenberg/senior-engineering-partner/issues/169)) ([ebeb526](https://github.com/bjgreenberg/senior-engineering-partner/commit/ebeb5266003d144ce6f3b7fe3c26a2cade9acbe2))
+* **evals:** fail the scenario and the run when the sandbox backstop catches an escape ([#168](https://github.com/bjgreenberg/senior-engineering-partner/issues/168)) ([9de9743](https://github.com/bjgreenberg/senior-engineering-partner/commit/9de97430771f01be24ebb60234b0590ca6eb6651))
+
 ## [1.29.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.28.0...v1.29.0) (2026-10-08)
 
 The maintainer-neutral release. The skill is used by people the maintainer has never met, so
