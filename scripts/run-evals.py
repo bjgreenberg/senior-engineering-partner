@@ -77,6 +77,7 @@ keeping into evals/baselines/.
 from __future__ import annotations
 
 import argparse
+import codecs
 import concurrent.futures
 import contextlib
 import datetime
@@ -304,7 +305,7 @@ SKIP_DIRS = {
     "node_modules", ".venv", "venv", "htmlcov", "dist", "build", ".eggs",
 }
 
-EVIDENCE_LIMIT_BYTES = 60_000  # total workspace-evidence budget (UTF-8 bytes)
+EVIDENCE_LIMIT_BYTES = 60_000  # total workspace-evidence budget (UTF-8 bytes); bounds each file READ too
 NEW_FILE_CAP_CHARS = 12_000    # per new file, so one artifact can't evict the rest
 TRAIL_RESULT_CHARS = 700       # per tool-result excerpt in the trail
 TRAIL_LIMIT_BYTES = 20_000     # total tool-trail budget (UTF-8 bytes)
@@ -757,6 +758,24 @@ def check_fixture_manifests(reserved_filenames: frozenset[str] = frozenset()) ->
     return problems
 
 
+def _read_text_bounded(path: Path, limit: int) -> tuple[str, int, bool] | None:
+    """Read at most ``limit`` bytes of ``path`` as UTF-8: ``(text, size, truncated)``, or
+    ``None`` for binary or unreadable content. The size comes from ``stat`` and the read
+    stops at ``limit``, so a multi-GB artifact never comes into memory whole. A bounded
+    read can cut a multi-byte character; the incremental decoder holds the cut back
+    (``final=False``) instead of raising on it or emitting U+FFFD, while a byte sequence
+    that is invalid anywhere else still raises — non-UTF-8 content keeps its marker."""
+    try:
+        size = path.stat().st_size
+        with path.open("rb") as fh:
+            data = fh.read(max(limit, 0))
+        truncated = size > len(data)
+        text = codecs.getincrementaldecoder("utf-8")().decode(data, final=not truncated)
+    except (UnicodeDecodeError, OSError):
+        return None
+    return text, size, truncated
+
+
 def collect_workspace_evidence(
     name: str,
     files: list[str],
@@ -771,7 +790,12 @@ def collect_workspace_evidence(
     fixtures exist to sharpen (e.g. a behavior-stating test *name* that only exists in the
     written test file). Listed-fixture diffs are emitted FIRST (tool-artifact noise can
     never truncate them away), then deletions, then new files (per-file capped). The total
-    is capped at ``limit_bytes`` UTF-8 bytes. ``exclude`` names harness-written files (the
+    is capped at ``limit_bytes`` UTF-8 bytes, and that budget bounds what is READ as well
+    as what is emitted: each file is ``stat``ed first and read only up to the budget still
+    unspent, so a multi-GB artifact left in the workspace is never loaded whole (the sweep
+    used to die of a MemoryError instead of recording the scenario). A listed file too
+    large to read whole gets no diff — a diff against a prefix would read as deletions —
+    but its size and head, marked truncated. ``exclude`` names harness-written files (the
     generic runner's instructions file) that must not read as "created by the assistant" —
     or eat the budget with the SKILL.md body. Returns "" when nothing changed.
     """
@@ -795,6 +819,17 @@ def collect_workspace_evidence(
         ):
             continue
         entries.append((rel_candidate, candidate))
+    # Listed files are walked before new files — the order the evidence is emitted in —
+    # so the running budget is charged in that order too: an artifact's bounded read can
+    # never shrink the budget a listed diff is read under.
+    entries.sort(key=lambda entry: entry[0] not in listed)
+    remaining = limit_bytes
+
+    def emit(bucket: list[str], piece: str) -> None:
+        nonlocal remaining
+        bucket.append(piece)
+        remaining = max(remaining - len(piece.encode("utf-8")), 0)
+
     for rel, path in entries:
         # Mark seen BEFORE the exclude skip: an excluded file must never read as DELETED.
         seen.add(rel)
@@ -802,21 +837,29 @@ def collect_workspace_evidence(
             continue
         if path.is_symlink():
             # Never follow: a symlink could pull arbitrary host files into the judge prompt.
-            new_files.append(f"### SYMLINK {rel} -> {os.readlink(path)} (not followed)")
+            emit(new_files, f"### SYMLINK {rel} -> {os.readlink(path)} (not followed)")
             continue
-        try:
-            text = path.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+        loaded = _read_text_bounded(path, remaining)
+        if loaded is None:
             size = -1
             with contextlib.suppress(OSError):
                 size = path.stat().st_size
-            new_files.append(f"### {rel}: binary or unreadable ({size} bytes)")
+            emit(new_files, f"### {rel}: binary or unreadable ({size} bytes)")
             continue
+        text, size, truncated = loaded
         if rel in listed:
+            if truncated:
+                head = text[:NEW_FILE_CAP_CHARS]
+                emit(
+                    diffs,
+                    f"### {rel}: post-run content is {size} bytes, over the evidence "
+                    f"budget — no diff; first {len(head)} chars:\n{head}\n… (file truncated)",
+                )
+                continue
             try:
                 before = (fixture_root / (rel + FIXTURE_SUFFIX)).read_text(encoding="utf-8")
             except (UnicodeDecodeError, OSError):
-                diffs.append(f"### {rel}: fixture side unreadable — post-run content:\n{text[:NEW_FILE_CAP_CHARS]}")
+                emit(diffs, f"### {rel}: fixture side unreadable — post-run content:\n{text[:NEW_FILE_CAP_CHARS]}")
                 continue
             if text == before:
                 continue
@@ -832,14 +875,14 @@ def collect_workspace_evidence(
             # listed files' diffs that the expected behaviors grade on.
             if len(diff_text) > NEW_FILE_CAP_CHARS:
                 diff_text = diff_text[:NEW_FILE_CAP_CHARS] + "\n… (diff truncated)"
-            diffs.append(diff_text)
+            emit(diffs, diff_text)
         else:
             body = (
                 text
-                if len(text) <= NEW_FILE_CAP_CHARS
+                if len(text) <= NEW_FILE_CAP_CHARS and not truncated
                 else text[:NEW_FILE_CAP_CHARS] + "\n… (file truncated)"
             )
-            new_files.append(f"### NEW FILE {rel}\n{body}")
+            emit(new_files, f"### NEW FILE {rel}\n{body}")
     deletions = [f"### DELETED {rel}" for rel in sorted(listed - seen)]
     evidence = "\n".join(diffs + deletions + new_files)
     raw = evidence.encode("utf-8")

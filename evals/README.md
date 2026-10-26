@@ -142,7 +142,9 @@ completed scenarios. (Errored and malformed checkpoints are always re-run, never
 
 The judge receives two pieces of **harness-collected evidence** alongside the response text:
 the post-run **workspace evidence** (unified diffs vs the fixtures first, then new files —
-per-file capped, 60 KB total) and, on the claude runner, the **ordered tool-call trail**
+per-file capped, 60 KB total; the budget bounds what the harness *reads* as well, so a
+multi-GB artifact left in a workspace is never loaded whole) and, on the claude runner, the
+**ordered tool-call trail**
 (commands and edits in execution order with truncated outputs) — order properties like
 "regression test seen to fail red *before* the fix" need sequencing, which a final diff can't
 prove. A tool-granted model does the work in the workspace and its prose under-credits it, so
