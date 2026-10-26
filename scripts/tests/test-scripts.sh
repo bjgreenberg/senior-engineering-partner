@@ -516,6 +516,87 @@ with tempfile.TemporaryDirectory() as tmp:
 PYEOF2
 check "run-evals evidence EXCLUDES the harness instructions file (and no false DELETED)" 0 "$rc"
 
+# The evidence cap must bound what is READ, not just what is emitted: a multi-GB artifact
+# left in a workspace was read whole before the size check (MemoryError is not a recorded
+# scenario error — the sweep crashes). Path.open is instrumented to count the bytes every
+# read returns; a small control file proves the counter sees reads at all before the
+# bound on the oversized ones is trusted. Non-UTF-8 content keeps its "binary or
+# unreadable" marker whole or truncated. Proven red on the unpatched harness.
+rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF2' || rc=$?
+import importlib.util, sys, tempfile
+from pathlib import Path
+from unittest import mock
+spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+LIMIT = 4_000
+real_open = m.Path.open
+class Counting:
+    def __init__(self, fh): self._fh = fh
+    def read(self, *a, **k):
+        chunk = self._fh.read(*a, **k)
+        seen["bytes"] += len(chunk) if isinstance(chunk, bytes) else len(chunk.encode("utf-8"))
+        return chunk
+    def __enter__(self): return self
+    def __exit__(self, *a): return self._fh.__exit__(*a)
+    def __getattr__(self, name): return getattr(self._fh, name)
+def counting_open(self, *a, **k): return Counting(real_open(self, *a, **k))
+def collect(name, files, ws):
+    seen["bytes"] = 0
+    with mock.patch.object(m.Path, "open", counting_open):
+        return m.collect_workspace_evidence(name, files, ws, limit_bytes=LIMIT)
+seen = {"bytes": 0}
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    m.FIXTURES_DIR = root / "fixtures"
+    (m.FIXTURES_DIR / "s").mkdir(parents=True)
+    (m.FIXTURES_DIR / "s" / "listed.py.fixture").write_text("def f():\n    return 1\n")
+    # control: a small text file is read whole and the counter sees it.
+    ws = root / "ws-control"; ws.mkdir()
+    (ws / "small.txt").write_text("hello\n")
+    out = collect("s", [], ws)
+    assert seen["bytes"] == 6, seen
+    assert "### NEW FILE small.txt\nhello" in out, out
+    # (a) an oversized NEW text file (multi-byte chars, so the cut can split one).
+    ws = root / "ws-big-text"; ws.mkdir()
+    (ws / "big.txt").write_bytes("é".encode("utf-8") * 500_000)   # 1 MB, 250× the budget
+    out = collect("s", [], ws)
+    assert seen["bytes"] <= LIMIT, f"read {seen['bytes']} bytes, budget {LIMIT}"
+    assert out.startswith("### NEW FILE big.txt\néé"), out[:60]
+    assert "truncated" in out[-40:], out[-80:]
+    assert chr(0xFFFD) not in out, "a split character leaked as U+FFFD"
+    assert len(out.encode("utf-8")) <= LIMIT + len("\n… (truncated at limit)".encode("utf-8")), len(out.encode("utf-8"))
+    # (b) an oversized NON-UTF-8 file keeps the binary marker without being decoded whole.
+    ws = root / "ws-big-bin"; ws.mkdir()
+    (ws / "blob.bin").write_bytes(b"\xff\xfe\x00\x80" * 250_000)
+    out = collect("s", [], ws)
+    assert seen["bytes"] <= LIMIT, f"read {seen['bytes']} bytes, budget {LIMIT}"
+    assert out == "### blob.bin: binary or unreadable (1000000 bytes)", out
+    # (c) a small NON-UTF-8 file: unchanged marker.
+    ws = root / "ws-small-bin"; ws.mkdir()
+    (ws / "tiny.bin").write_bytes(b"\xff\xfe\x00")
+    out = collect("s", [], ws)
+    assert out == "### tiny.bin: binary or unreadable (3 bytes)", out
+    # (d) a LISTED fixture rewritten oversized: bounded read, no false DELETED, no bogus diff
+    # against a prefix — the judge gets the size and the head, marked truncated.
+    ws = root / "ws-big-listed"; ws.mkdir()
+    (ws / "listed.py").write_text("def f():\n" + "    x = 1\n" * 200_000)
+    out = collect("s", ["listed.py"], ws)
+    assert seen["bytes"] <= LIMIT, f"read {seen['bytes']} bytes, budget {LIMIT}"
+    assert "DELETED" not in out and "--- a/listed.py" not in out, out[:200]
+    assert out.startswith("### listed.py: ") and "over the evidence budget" in out, out[:120]
+    assert "def f():\n    x = 1\n" in out and "truncated" in out[-40:], out[-80:]
+    # (e) ordinary edits beside an oversized artifact still diff whole: listed diffs come
+    # first and the artifact's read cannot shrink their budget.
+    ws = root / "ws-mixed"; ws.mkdir()
+    (ws / "listed.py").write_text("def f():\n    return 2\n")
+    (ws / "zz-artifact.log").write_bytes(b"x" * 200_000)
+    out = collect("s", ["listed.py"], ws)
+    assert seen["bytes"] <= LIMIT + len("def f():\n    return 2\n"), seen
+    assert out.startswith("--- a/listed.py\n") and "+    return 2" in out, out[:200]
+    assert "### NEW FILE zz-artifact.log\nxxx" in out and out.endswith("… (truncated at limit)"), out[-120:]
+PYEOF2
+check "run-evals evidence reads at most the budget per file (oversized text/binary/listed)" 0 "$rc"
+
 rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF2' || rc=$?
 import importlib.util, sys
 spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
