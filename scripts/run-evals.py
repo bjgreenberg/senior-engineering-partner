@@ -36,7 +36,10 @@ sandbox-exec seatbelt profile that DENIES file writes outside the workspace (see
 absolute path writes to the real home, and once installed a real LaunchAgent + app bundle
 (2026-08-09). Reads stay open (the CLI reads its auth from ~/.claude), so scenario queries
 remain first-party fixtures; run sweeps only on an account you trust with that. A platform
-without sandbox-exec fails closed unless EVAL_ALLOW_UNSANDBOXED=1.
+without sandbox-exec fails closed unless EVAL_ALLOW_UNSANDBOXED=1. A pre/post snapshot of
+the persistence surfaces is the detection backstop: a mutation it catches is recorded as
+``sandbox_escape`` on the result, fails that scenario regardless of the judge, is named in
+the summary, exits the run non-zero, and is refused by ``curate-baseline.py``.
 
 Scenario runner is pluggable; the judge is not. ``--runner claude`` (default) is the
 fully-supported path above. ``--runner generic`` runs each scenario through any other
@@ -358,7 +361,16 @@ class ScenarioResult(TypedDict, total=False):
     duration_s: float
     cost_usd: float | None
     error: str
-    sandbox_escape: list[str]  # present ONLY when the detection backstop caught a mutation
+    # Present ONLY when the detection backstop caught a mutation; forces status "fail", a
+    # non-zero run exit, and a curation refusal (see sandbox_escaped).
+    sandbox_escape: list[str]
+
+
+def sandbox_escaped(result: ScenarioResult) -> bool:
+    """True when the detection backstop recorded a mutation. The FIELD is the record of the
+    breach, not the status — every consumer (verdict, summary, exit code, curation) keys on
+    it, so a status edited by hand can never launder an escape back into a pass."""
+    return bool(result.get("sandbox_escape"))
 
 
 def stage_skill_copy(dst: Path) -> None:
@@ -1076,7 +1088,9 @@ def run_scenario(
                 f"{len(anti)}/{want_anti} anti items — refusing a vacuous verdict"
             )
         result.update(
-            status=overall_status(expected, anti),
+            # A caught escape fails the scenario whatever the judge saw: the backstop exists
+            # to be "caught, not silent", and a pass that carried the field was silent.
+            status="fail" if sandbox_escaped(result) else overall_status(expected, anti),
             expected=expected,
             anti=anti,
             judge_reason=str(judgment.get("reason", "")),
@@ -1122,11 +1136,22 @@ def write_summary(out_dir: Path, results: list[ScenarioResult]) -> str:
     """Write summary.json + summary.md; returns the one-line tally."""
     tally = {s: sum(1 for r in results if r["status"] == s) for s in ("pass", "partial", "fail", "error")}
     line = " · ".join(f"{k}: {v}" for k, v in tally.items())
+    escapes = sum(1 for r in results if sandbox_escaped(r))
+    if escapes:
+        # Loud by design: the backstop caught a boundary breach, and the headline must say so.
+        line += f" · SANDBOX ESCAPE: {escapes}"
     (out_dir / "summary.json").write_text(
         json.dumps({"tally": tally, "results": results}, indent=1), encoding="utf-8"
     )
+
+    def reason(r: ScenarioResult) -> str:
+        text = r.get("judge_reason") or r.get("error", "")
+        if sandbox_escaped(r):
+            text = f"SANDBOX ESCAPE: {'; '.join(r['sandbox_escape'])} — {text}"
+        return text
+
     rows = "\n".join(
-        f"| {r['scenario']} | {r['status']} | {r.get('judge_reason') or r.get('error', '')} |"
+        f"| {r['scenario']} | {r['status']} | {reason(r)} |"
         for r in sorted(results, key=lambda r: r["scenario"])
     )
     (out_dir / "summary.md").write_text(
@@ -1253,7 +1278,8 @@ def main() -> int:
     line = write_summary(out_dir, results)
     log.info("done: %s", line)
     print(f"{line}\nresults: {out_dir}")
-    return 0 if all(r["status"] == "pass" for r in results) else 1
+    # A caught escape fails the run even if its checkpoint's status was edited by hand.
+    return 0 if all(r["status"] == "pass" and not sandbox_escaped(r) for r in results) else 1
 
 
 if __name__ == "__main__":

@@ -417,6 +417,54 @@ with mock.patch.object(m.Path, "home", staticmethod(lambda: fake_home)):
 PYEOF
 check "run-evals persistence backstop fires on a real LaunchAgents write, silent otherwise" 0 "$rc"
 
+# ...and a caught escape must FAIL the scenario, whatever the judge said. The backstop's
+# purpose is "caught, not silent": a run that mutated a persistence surface and still
+# graded pass would be silent. Deterministic — runner, judge and snapshots are mocked; the
+# real run_scenario path computes the status.
+rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, json, sys, tempfile
+from pathlib import Path
+from unittest import mock
+spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+with tempfile.TemporaryDirectory() as tmp:
+    sc = Path(tmp) / "escapee.json"
+    sc.write_text(json.dumps({"query": "q", "expected_behavior": ["does x"], "anti_behavior": []}))
+    snaps = iter([{"LaunchAgents": []}, {"LaunchAgents": ["com.acme.evil.plist"]}])  # before, after
+    judged = {"expected": [{"behavior": "does x", "verdict": "pass"}], "anti": [], "reason": "fine"}
+    with mock.patch.object(m, "_persistence_snapshot", side_effect=lambda: next(snaps)), \
+         mock.patch.object(m, "run_scenario_prompt", return_value=("did x", None, "")), \
+         mock.patch.object(m, "judge_response", return_value=judged):
+        r = m.run_scenario(sc, "baseline", "m", "j", 5, None, {"kind": "claude"})
+assert r.get("sandbox_escape") == ["LaunchAgents: +com.acme.evil.plist"], r
+assert r["status"] != "pass", f"escape graded {r['status']} — backstop was SILENT"
+PYEOF
+check "run-evals a caught sandbox escape can NEVER grade pass" 0 "$rc"
+
+# The escape must be visible in the summary and fail the run's exit status — even on a
+# checkpoint whose status was edited to pass by hand (the field, not the status, is the
+# record of the breach). main() is driven offline with run_scenario mocked.
+rc=0; python3 - "$repo_root" >/dev/null 2>&1 <<'PYEOF' || rc=$?
+import importlib.util, sys, tempfile
+from pathlib import Path
+from unittest import mock
+spec = importlib.util.spec_from_file_location("re_mod", sys.argv[1] + "/scripts/run-evals.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+forged = {"status": "pass", "sandbox_escape": ["LaunchAgents: +com.acme.evil.plist"]}
+with tempfile.TemporaryDirectory() as out:
+    line = m.write_summary(Path(out), [dict(forged, scenario="x"), {"scenario": "y", "status": "pass"}])
+    md = (Path(out) / "summary.md").read_text()
+    assert "SANDBOX ESCAPE" in line, line                      # the tally line names it
+    assert "SANDBOX ESCAPE" in md and "com.acme.evil.plist" in md, md   # the table shows it
+with tempfile.TemporaryDirectory() as out:
+    argv = ["run-evals.py", "--mode", "baseline", "--filter", "spec-first-gate", "--jobs", "1", "--out", out]
+    with mock.patch.object(m, "run_scenario", lambda path, *a, **k: dict(forged, scenario=path.stem)), \
+         mock.patch.object(sys, "argv", argv):
+        rc = m.main()
+assert rc != 0, "main exited 0 on a sandbox escape — SILENT"
+PYEOF
+check "run-evals summary SHOWS a sandbox escape and main exits non-zero on it" 0 "$rc"
+
 # --- run-evals.py fixture harness (offline: pure logic only; no model runs) -----------------
 # The fixture gates must be ABLE to fail (§3c): suffix rule + manifest drift fire on planted
 # violations, the harness-written instructions file stays out of evidence, and the judge-
@@ -581,6 +629,17 @@ rc=0; python3 "$repo_root/scripts/curate-baseline.py" "$curdir/run" "$curdir/out
 check "curate-baseline PASSES with the errored scenario spliced from a re-run" 0 "$rc"
 rc=0; grep -q "BULKY" "$curdir/out.json" && rc=1
 check "curate-baseline strips response/workspace_evidence/tool_trail" 0 "$rc"
+
+# A result the detection backstop flagged must never be curated into a baseline — even
+# with its status hand-edited to pass; the sandbox_escape field is the record of the breach.
+mkdir -p "$curdir/escaped"
+printf '%s\n' '{"tally":{},"results":[
+ {"scenario":"a","status":"pass","sandbox_escape":["LaunchAgents: +com.acme.evil.plist"]}]}' \
+  > "$curdir/escaped/summary.json"
+rc=0; out="$(python3 "$repo_root/scripts/curate-baseline.py" "$curdir/escaped" "$curdir/escaped-out.json" 2>&1)" || rc=$?
+check "curate-baseline FAILS on an entry carrying sandbox_escape (status notwithstanding)" 1 "$rc"
+rc=0; grep -q "sandbox_escape" <<<"$out" || rc=$?
+check "curate-baseline refusal names sandbox_escape" 0 "$rc"
 
 # --- baseline-coverage tripwire (repo-state assert: re-baseline due?) ------------------------
 # Every scenario in evals/scenarios/ must appear in the NEWEST committed baseline's
