@@ -36,6 +36,8 @@ The checklist above is the floor. For a high-stakes change, don't stop at one co
 then **re-review whatever folding the findings introduced** (it's a loop — the fold adds new, un-reviewed code and
 can reintroduce an overclaim). This catches a **green-but-insufficient** change: one that passes every gate and reads
 as correct yet doesn't meet its *scoped* goal, or whose docs claim more than the code delivers. Tool-agnostic —
-parallel review agents, sequential `REVIEW:` passes (a different lens each), or a `/code-review` skill; **record the
-verdict and the must-fixes folded** in the PR body. Skip it for a Tier-0 spike or a trivial diff — that's
+parallel review agents, sequential `REVIEW:` passes (a different lens each), or a `/code-review` skill. Where a reviewer
+from a **different model family** is available, make it one of the lenses (on a throwaway checkout, the user's files denied,
+no network); its findings are leads to verify against the code, never verdicts (dismiss each miss with a reason).
+**Record the verdict, which reviewers ran, and the must-fixes folded** in the PR body. Skip it for a Tier-0 spike or a trivial diff — that's
 review-theater. Full detail: `references/engineering-workflow.md` §4a.
