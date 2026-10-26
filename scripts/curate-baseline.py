@@ -12,8 +12,10 @@ that scenario's entry with the one from the given (re-run) results dir.
 
 Usage:
   scripts/curate-baseline.py <results-dir> <out.json> [--splice name=dir ...]
-Exit 0 on success; 1 on missing inputs or an unresolved error-status entry (a baseline
-must not silently contain harness errors — re-run and splice, or investigate).
+Exit 0 on success; 1 on missing inputs, an unresolved error-status entry (a baseline
+must not silently contain harness errors — re-run and splice, or investigate), or an entry
+carrying ``sandbox_escape`` (the detection backstop caught a write-boundary breach; the
+field is checked, not the status, so a hand-edited status cannot launder it in).
 """
 from __future__ import annotations
 
@@ -67,6 +69,16 @@ def main() -> int:
     slim = []
     for name in sorted(by_name):
         entry = {k: v for k, v in by_name[name].items() if k not in STRIP_KEYS}
+        if entry.get("sandbox_escape"):
+            # The field, not the status, is the record of the breach — a hand-edited status
+            # must not launder an escaped run into a baseline.
+            print(
+                f"FAIL: {name} carries sandbox_escape ({'; '.join(entry['sandbox_escape'])})"
+                " — a baseline must never record a run whose write boundary failed;"
+                " investigate the harness before re-running",
+                file=sys.stderr,
+            )
+            return 1
         if entry.get("status") == "error":
             print(
                 f"FAIL: {name} is status=error — a baseline must not contain harness"
