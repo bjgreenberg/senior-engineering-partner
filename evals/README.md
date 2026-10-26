@@ -118,7 +118,10 @@ scenario built a real `~/Library/LaunchAgents` agent + `~/Applications` bundle o
 maintainer's Mac, 2026-08-09). The seatbelt is the enforcement layer; a workspace
 `.claude/settings.json` additionally denies system-mutating exec (`launchctl`, `osascript`,
 `sudo`, …) that a file-write boundary can't express, and a pre/post persistence-surface
-snapshot is the detection backstop. **Reads stay open** so the CLI reads its own auth from
+snapshot is the detection backstop: a mutation it catches is recorded as `sandbox_escape` on
+the scenario's result, **fails that scenario whatever the judge graded**, is named in the
+summary's tally line and table, exits the run non-zero, and is refused by
+`curate-baseline.py` — caught, never silent. **Reads stay open** so the CLI reads its own auth from
 `~/.claude`; the residual — a Bash call *reading* the session token — cannot be closed at the
 sandbox layer (the reader is the CLI itself), so scenario `query`s remain first-party fixtures
 and sweeps still run only on an account you trust. On a platform without `sandbox-exec` the
@@ -142,7 +145,9 @@ completed scenarios. (Errored and malformed checkpoints are always re-run, never
 
 The judge receives two pieces of **harness-collected evidence** alongside the response text:
 the post-run **workspace evidence** (unified diffs vs the fixtures first, then new files —
-per-file capped, 60 KB total) and, on the claude runner, the **ordered tool-call trail**
+per-file capped, 60 KB total; the budget bounds what the harness *reads* as well, so a
+multi-GB artifact left in a workspace is never loaded whole) and, on the claude runner, the
+**ordered tool-call trail**
 (commands and edits in execution order with truncated outputs) — order properties like
 "regression test seen to fail red *before* the fix" need sequencing, which a final diff can't
 prove. A tool-granted model does the work in the workspace and its prose under-credits it, so
@@ -176,7 +181,8 @@ scripts/run-evals.py --mode baseline   --model <m> --judge-model opus --jobs 2 -
 scripts/run-evals.py --mode with-skill --model <m> --judge-model opus --jobs 2 --timeout 1800
 
 # slim each results dir into the committable shape (strips response/evidence/trail;
-# refuses status=error entries — re-run the scenario and splice, disclosing it):
+# refuses status=error entries — re-run the scenario and splice, disclosing it — and any
+# entry carrying sandbox_escape, which is a harness defect to investigate, never splice):
 scripts/curate-baseline.py <results-dir> evals/baselines/<date>-<model>/baseline.json \
   [--splice <scenario>=<rerun-results-dir>]
 ```
