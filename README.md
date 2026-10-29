@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-10-06 12:21 AM CDT
+Last updated: 2026-10-29 05:52 PM CDT
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -220,14 +220,14 @@ version-specific commands.
 | **Data** | `databases.md` | Postgres/Supabase RLS (+ pgTAP), BigQuery, SQLite, migrations |
 | | `caching.md` | Cache-key-must-encode-the-tenant, invalidation, what-not-to-cache |
 | **App toolchains, CI & collaboration** | `python-web-apis.md` | FastAPI/Uvicorn/psycopg: lifespan, Pydantic, auth-as-`Depends`, RLS pipeline |
-| | `github-actions.md` | Least-priv `permissions`, SHA-pinned actions, multi-gate pipelines (audit/typecheck/lint), the Swift/Apple job shape (macOS runners, pinned resolution, ASC-API-key signing), SBOM + build-provenance attestation, gated deploy + canary + release automation |
+| | `github-actions.md` | Least-priv `permissions`, SHA-pinned actions, multi-gate pipelines (audit on PRs and a daily schedule — with the 60-idle-day caveat that makes the central sweep the standing check — typecheck/lint over the whole tree, no file paths), the Swift/Apple job shape (macOS runners, pinned resolution, ASC-API-key signing), SBOM + build-provenance attestation, gated deploy + canary + release automation |
 | | `github-teams.md` | Team-grade repo hygiene (required gates, CODEOWNERS, review every agent PR) |
-| | `package-managers.md` | Brewfile/npm/mas — reproducible pinned manifests, supply-chain vetting |
+| | `package-managers.md` | Brewfile/npm/mas — reproducible pinned manifests, supply-chain vetting; the daily re-scan of every repo (idle and still-deploying archived ones included) and every administered host, the sources by role (OSV/GHSA, CISA KEV first, EPSS, the vendor channel, NVD last), fix SLAs (KEV/critical same day, high 24 h, rest 7 days) and the bounded security-fix merge lane (fixed version, past the cooldown, green CI + contract test, veto-only reviewer checking provenance) |
 | | `dev-environments.md` | VS Code/Xcode/Antigravity hygiene, extension vetting, signing |
 | | `dev-environment-isolation.md` | Never dev against prod, per-project venv/container, sandbox untrusted code |
-| | `foss-adoption.md` | Vet FOSS before adopting (license/Scorecard/CVEs) + pin/lock/contract-test |
+| | `foss-adoption.md` | Vet FOSS before adopting (license/Scorecard/CVEs) + pin/lock/contract-test; bot update PRs never merge on green alone — the bounded security-fix lane vs the human-reviewed, cooldown-gated freshness lane |
 | | `multi-agent-coordination.md` | The concurrency override when >1 writer shares a repo |
-| | `python-typing-and-packaging.md` | The TypedDict worked example + the single-file→package target layout |
+| | `python-typing-and-packaging.md` | The TypedDict worked example, the whole-tree gate config (mypy/ruff/bandit/pytest scoped to the tree by config, tests and scripts included, never a hand-kept file list) verified by file count against `git ls-files`, and the single-file→package target layout |
 | | `google-apps-script.md` | `clasp` + git over the editor, minimal `oauthScopes`, `PropertiesService` secrets/limits, `LockService`, trigger quotas + the 6-min wall, Advanced Services vs `UrlFetchApp`, `console`→Cloud Logging, pure-logic isolation for testing |
 | | `javascript-and-typescript.md` | TS strict mode (the `mypy --strict` analog) + the flags `strict` misses, runtime-validated typed boundaries (the Pydantic analog), Node `SIGTERM`/no-floating-promises patterns |
 | | `bash-scripting.md` | Strict mode's documented gaps (`-e` suspension, masked substitutions), traps/atomic output/locks, `curl -f`, stock-bash-3.2 portability, BATS + command stubs |
