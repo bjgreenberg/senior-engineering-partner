@@ -17,6 +17,55 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.31.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.30.0...v1.31.0) (2026-10-29)
+
+The whole-tree release. Two misses on the same day had one shape: a check that ran, reported
+green, and covered less than it seemed to. One change ([#172](https://github.com/bjgreenberg/senior-engineering-partner/pull/172))
+closes both and adds an eval scenario for each.
+
+- **Every gate covers the whole tree, never a hand-kept file list** ([#172](https://github.com/bjgreenberg/senior-engineering-partner/pull/172)).
+  `mypy`, `ruff`, `bandit` and `pytest` discovery are scoped to the repo root or the package by
+  config, with explicit exclusions; tests and scripts are checked too, under a per-module
+  override that relaxes only what a justified case needs. A legacy tree ratchets by a computed
+  diff scope or by overrides that shrink, never by a typed list or a blanket `# type: ignore`.
+  The gate is verified by the file count it reports against `git ls-files`, not by its exit
+  code. `references/python-typing-and-packaging.md` gives the `pyproject.toml` shape, the gate
+  script that passes no paths, and two verified gotchas (`[tool.bandit]` is read only with
+  `-c pyproject.toml`; a `tests.*` override matches nothing without `tests/__init__.py` or
+  `explicit_package_bases`). Why: a real repo's type-check gate named one file, reported
+  "no issues found in 1 source file", and stayed green while the tests and scripts beside it
+  were never type-checked. The old paragraph said "over the package" and endorsed gating the
+  touched modules; a named file checks only itself and its imports.
+- **The dependency audit re-scans daily, with fix SLAs** ([#172](https://github.com/bjgreenberg/senior-engineering-partner/pull/172)).
+  The merge-blocking audit runs when code changes; advisories do not wait for a commit. A
+  central scheduled sweep now audits every repo, idle ones included, and the software installed
+  on every administered host, with the feeds named by role: OSV and the GitHub Advisory
+  Database for packages, CISA KEV first, EPSS next, the vendor's update channel for hosts, NVD
+  last. Detection without a deadline is not security: KEV or critical same day, high 24 hours,
+  the rest 7 days, each finding aged against its clock. A routine security-fix PR (a patch or
+  minor bump to the fixed version, past the release-age cooldown, green CI including the
+  contract test) merges once an automated reviewer that can only veto has read the diff, the
+  install scripts and the provenance; everything else waits for a person, and blind auto-merge
+  stays forbidden. `references/package-managers.md` carries the section and its stated blind
+  spots (Homebrew has no advisory feed; matching a CVE to installed software by name is
+  approximate). Why: advisories land against code nobody touched, and findings stood for days
+  with fix PRs deadlocked behind other open advisories. The old rule made the audit
+  merge-blocking on change and said nothing about what did not change, about hosts, or about a
+  deadline.
+- **Two eval scenarios** ([#172](https://github.com/bjgreenberg/senior-engineering-partner/pull/172)).
+  `whole-tree-gates-not-file-list`: a one-file `typecheck.sh` and a request to add ruff and
+  bandit "the same way"; the skill must name the one-file gate as the defect, scope every gate
+  by config, keep tests and scripts in, and verify by file count. `dependency-rescan-daily-with-sla`:
+  idle repos called "covered by definition" by a green PR gate; the skill must push back,
+  prescribe the daily sweep over repos and hosts, name the feeds by role, set the SLAs, and
+  bound the merge path. The baseline increment `evals/baselines/2026-10-29-fable/` records
+  39/28/0/0 on 67 scenarios; the bare model scores 2 of 4 and 1 of 6 on the two new ones.
+
+
+### Features
+
+* **skill:** gates cover the whole tree, and the dependency audit re-scans daily with fix SLAs ([#172](https://github.com/bjgreenberg/senior-engineering-partner/issues/172)) ([0af4668](https://github.com/bjgreenberg/senior-engineering-partner/commit/0af466853d90092433efcb26dc26b1f8d7d6b1ca))
+
 ## [1.30.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.29.0...v1.30.0) (2026-10-26)
 
 The cross-family review release. A measured comparison of code reviewers, run on changes from
