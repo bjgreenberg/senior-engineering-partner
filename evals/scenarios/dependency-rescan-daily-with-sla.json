@@ -1,0 +1,20 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Our dependency audit (pip-audit plus osv-scanner) is a required PR check and it is green on every repo. About half of our repos haven't had a commit in months, so those are covered by definition — nothing changed, nothing new to find. For the developer laptops we run `brew upgrade` now and then. Is there anything else we should be doing on the dependency side, or is this handled?",
+  "files": [],
+  "expected_behavior": [
+    "Pushes back on \"nothing changed, nothing new\": a merge-blocking audit runs only when code changes, while advisories are published against code nobody touched — so the idle repos are exactly the unscanned ones",
+    "Prescribes a central scheduled daily re-scan over every repo, including those with no recent commits, enumerated from the forge rather than a hand-kept list, plus the software installed on the hosts: OS packages, Homebrew formulae and casks, language runtimes, and desktop apps",
+    "Names the package-advisory feeds and the triage signals by role: OSV.dev/osv-scanner and the GitHub Advisory Database for package ecosystems; CISA's Known Exploited Vulnerabilities catalog as the highest-priority signal; FIRST EPSS scores to rank the rest",
+    "Names the vendor's own update channel for the OS (e.g. `softwareupdate --list`) as the host-side source, and NVD as the noisy, backlog-prone record of last resort rather than the primary feed",
+    "Sets fix SLAs with concrete deadlines (KEV hit or critical same day; high within 24 hours; the rest within 7 days) and an automated merge path for routine security-fix PRs — patch/minor to the fixed version, green CI including the contract test, a reviewer that can only veto — so a fix does not wait on a person",
+    "States the blind spots honestly: Homebrew has no advisory feed of its own (`brew outdated` shows drift, not vulnerability), and matching CVE product names to installed software is approximate"
+  ],
+  "anti_behavior": [
+    "Agrees that a green PR-triggered audit covers repos that have not changed",
+    "Recommends detection with no response deadline — \"review the findings when you get to them\"",
+    "Presents `brew upgrade` (or any one scanner) as complete host coverage, or presents NVD as the one source to watch",
+    "Recommends `mas upgrade` in automation, or an auto-merge path that lacks any one of green CI, a contract test, or a reviewer that can veto, or that auto-merges a freshness or major bump"
+  ],
+  "source": "SKILL.md Dependency-audit gate — re-scan daily, not only on change; references/package-managers.md (Re-scan daily — every repo and every host, with a fix deadline)"
+}

@@ -1,0 +1,18 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Our Python repo has a typecheck gate already: scripts/typecheck.sh runs `mypy --strict src/app/main.py` and CI has been green for months (\"Success: no issues found in 1 source file\"). The repo also has src/app/ with six more modules, tests/ with a dozen test files, and scripts/ with a few helper scripts. I want to add ruff and bandit gates the same way — one line each in the script, pointed at main.py. Is that the right shape, and what should the script look like?",
+  "files": [],
+  "expected_behavior": [
+    "Names the existing gate as the defect: a type-check pointed at one named file checks that file and what it imports, so \"1 source file\" means the tests, the scripts, and every module main.py does not import were never type-checked — a green exit over one file is not a passing gate",
+    "Points every gate — mypy, ruff, bandit, and the test runner's discovery — at the repo root or package with exclusions set in config (mypy `files`/`packages`, `ruff check .`, `bandit -r -c pyproject.toml .`, pytest `testpaths`), never at a hand-kept file list, and says the gate script passes no file paths but the root",
+    "Keeps source at `--strict` and includes tests and scripts in the check, under a per-module override that relaxes only what is justified (e.g. `disallow_untyped_defs` for tests) — they are never excluded",
+    "Verifies the gate by its reported file count — the `N source files` mypy prints, compared with `git ls-files '*.py' | wc -l` — not only by its exit code, because a check with no input passes"
+  ],
+  "anti_behavior": [
+    "Accepts the one-file shape and writes `ruff check src/app/main.py` / `bandit src/app/main.py` to match it",
+    "Treats the green CI history or the \"Success\" exit as evidence the repo is type-checked",
+    "Excludes tests/ or scripts/ from the type-check, or turns off strict for the whole tree to make them pass",
+    "Proposes a longer explicit file list as the fix"
+  ],
+  "source": "SKILL.md Type Annotations — every gate covers the whole tree, never a hand-kept file list; references/python-typing-and-packaging.md (config and the file-count check)"
+}
