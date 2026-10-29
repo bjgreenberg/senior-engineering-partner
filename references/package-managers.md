@@ -202,9 +202,37 @@ The mas surface shifts across macOS releases — **state behavior as principle a
 
 ---
 
+## Re-scan daily — every repo and every host, with a fix deadline
+
+The SKILL.md *Dependency-audit gate* fires when code changes. Advisories do not wait for a commit: a repo nobody has touched in months is exactly where a new CVE sits unnoticed, and the software installed on the hosts (OS, Homebrew formulae and casks, language runtimes, desktop apps) is in no pull request at all. The origin: a nightly audit that covered fewer than half the repos, scanned nothing installed on the hosts, and left its findings open for days because the fix path still ran in dry-run mode. The rule missed it because it made the audit merge-blocking on change and said nothing about re-scanning what did not change, about hosts, or about a deadline. Detection without a deadline is not security.
+
+**What runs daily — one central scheduled job, not a per-repo trigger:**
+
+- **Every repo, including ones with no recent commits.** Enumerate them from the forge with an explicit ceiling — `gh repo list <owner> --limit 1000` (the default stops at 30 and says nothing) — never from a hand-kept list (the same rule as the whole-tree type-check gate, `python-typing-and-packaging.md`), and compare the swept count with the forge's own repository count; a count with nothing to compare against proves nothing. An archived repo leaves the sweep only when nothing deploys from it; one that still backs a running service stays in scope, and because it is read-only the response to a finding is unarchive-and-fix or retire the deployment. Either way the sweep's output names every excluded repo — it never drops one silently. Run the same `scripts/audit.sh` the PR gate runs, against the default branch's lockfiles. A per-repo `schedule:` workflow does not cover this case: GitHub disables scheduled workflows in a public repo after 60 days without activity, so the central sweep is what reaches idle repos, and it also checks that each repo's own scheduled workflow is still enabled.
+- **Every host you administer.** OS packages through the vendor's own channel (macOS `softwareupdate --list`; the distro's security list elsewhere); Homebrew formulae **and casks** (`brew outdated --greedy`, which includes casks that auto-update); language runtimes against their support tables (a runtime past end-of-support is a floor issue, SKILL.md *stay current*); desktop apps (`mas outdated`, report-only — never `mas upgrade` in automation, above). Apps installed outside Homebrew and the App Store are not in any of those lists: inventory them (the `/Applications` bundle versions) and match by hand, or state them as unscanned.
+
+**Sources, and what each is for.** Name the role; never present one feed as all of them.
+
+| Source | Role |
+|---|---|
+| OSV.dev (`osv-scanner`) and the GitHub Advisory Database (Dependabot) | package ecosystems — queried by ecosystem and package (or commit), never by product name; lockfiles and SBOMs; the primary feed for repos |
+| CISA Known Exploited Vulnerabilities (KEV) catalog | CVEs exploited in the wild; the **highest-priority** triage signal — a KEV match on anything pinned or installed is same-day |
+| FIRST EPSS scores | probability of exploitation in the next 30 days; ranks everything that is not on KEV |
+| the vendor's update channel (`softwareupdate --list`, the OS vendor's security releases, an app's own release notes) | what is fixable on the host right now, whatever the CVE is named |
+| NVD | the CVE record of last resort — authoritative IDs and CPE names, but noisy, and it has carried enrichment backlogs; never the only feed |
+
+**Fix SLAs — set them, state them, measure against them.** The defaults, at every tier: KEV match or critical, same day; high, 24 hours; everything else, 7 days. Age every open finding against its clock and alert on the breach, not only on the finding. When no fixed version exists, the clock does not stop: mitigate (disable the feature, cut the exposure, pin away from the affected path) or record a dated risk acceptance with an owner and a review date — never a dismissed advisory. An automated merge path keeps the clock honest for the routine case: a **security-fix PR** that bumps to the version the advisory names as fixed, by a patch or minor step, with green CI including the thin contract test, merges without waiting for a person after an automated reviewer that can only veto — provided the fixed release has aged past the release-age cooldown (`foss-adoption.md`); a release published inside the window is never auto-merged, since the malicious-release window is measured in hours, and goes to a human inside the same SLA. That reviewer is a required check and reads the upstream diff and changelog, any new install script or network call, and the package's provenance or signature where the ecosystem offers one (`npm audit signatures`, Sigstore/attestations, a signed tag); a missing or failed provenance check is a veto, and a reviewer that never vetoes is a stub, not a review. A major bump, a red contract test, or a freshness bump waits for a human. A fix path that runs in dry-run mode is detection with no response: run it live, or report the SLA as unmet.
+
+**Blind spots, stated in the report:**
+
+- Homebrew publishes no advisory feed of its own. `brew outdated` shows *drift*, not *vulnerability*; the CVE match for a formula goes through NVD by product name (CPE or keyword), because OSV is keyed by ecosystem and package, and a formula is neither.
+- Matching a CVE to installed software by product name is approximate in both directions — a false hit on a shared name, a miss on a renamed one. Report what the matcher could not resolve instead of "no findings" over a set it never looked up: the check with no input passes.
+- A cask or App Store app updates on its own schedule; `mas outdated` reports it and the user applies it.
+
 ## Quality & security gates — summary
 
 - **Reproducibility gate (QA).** Manifests committed, pinned, converged: the `Brewfile` (`brew bundle check` passes), `package-lock.json` committed (`npm ci` installs it cleanly). A machine that doesn't match its manifest, or a synced source change that isn't committed + pushed, is a finding.
+- **Re-scan gate (security).** The daily sweep above covers every repo and every administered host, reports the repo and host counts beside the finding count, and ages each finding against its SLA; a sweep with no count, or a finding past its clock with no mitigation or owned acceptance, is a finding in itself.
 - **Supply-chain gate (security).** `npm audit` + `npm audit signatures` (HIGH resolved or documented), `brew audit --strict` on any formula you author, dependency-review on the lockfile/Brewfile diff in PR flow, and **no `mas upgrade` in a logged automation context** (credential echo). Lifecycle-script changes (`postinstall`) and new third-party taps get read before merge.
 - **Secrets gate.** No literal `_authToken`/credential in any committed manifest or `.npmrc` — env reference sourced from 1Password (`op read`), same as the SKILL.md secrets protocol.
 - **Flag, don't absorb.** Any unpinned dependency, loose version range, untrusted tap, raw-URL cask, or literal token in a manifest is surfaced explicitly — same posture as the SKILL.md "flag stray changes" rule. A package manager's job is to make the machine reproducible *and* the supply chain auditable; a manifest that does one without the other isn't done.
