@@ -59,6 +59,16 @@ partial) and `typecheck-gate-required` **partial** (4 of 5; carried entry partia
 item is "ruff subsumes flake8/black/isort", wording this change did not touch). No regression;
 the carried entries are kept as recorded, not replaced.
 
+`frozen-resolver-cutoff` (carried: pass 5/5) was re-run because the word-budget trims had moved
+the inline `uv lock --exclude-newer <timestamp>` example out of SKILL.md. Run r1, without the
+example: **partial 4/5**, missing the rolling-cooldown-vs-frozen-date item (the judge wanted it
+said that the frozen date adds no reproducibility beyond the lockfile). Run r2, with the inline
+example restored: **partial 4/5**, same item. Run r3, after also restoring the supply-chain goal
+line's definition of reproducible ("re-runs fetch byte-identical inputs", which the trims had
+dropped): **pass 5/5**. Both clauses are back in SKILL.md, paid for from this change's own
+sentences; the carried entry is kept as recorded. N=1 per run, so r3 is directional, but the
+missed item and the restored clause are the same idea.
+
 ## Provenance
 
 The 65 carried entries are byte-identical to `../2026-09-14-fable/with-skill.json` (checked by
@@ -69,7 +79,7 @@ file only (the older baselines are left as recorded). A scrub step belongs in
 `evals/results/2026-10-29-whole-tree-with-skill-fable-r4/` and
 `evals/results/2026-10-29-rescan-with-skill-fable-r5/` (git-ignored); `response`,
 `workspace_evidence` and `tool_trail` stripped, statuses, judgments and reasons kept. The
-earlier with-skill runs (r1–r4), the two bare runs (`…-baseline-fable-r1`) and the two
-regression runs (`…-regress-with-skill-fable`) existed only in the writer's git-ignored
+earlier with-skill runs (r1–r4), the two bare runs (`…-baseline-fable-r1`) and the
+regression runs (`…-regress-with-skill-fable…`) existed only in the writer's git-ignored
 `evals/results/` and were removed with its worktree after the PR opened; their verdicts
 and per-item counts are as stated above and in the PR body. No `sandbox_escape` on any run.
