@@ -250,7 +250,7 @@ tripwire; details and the multi-cycle-assembly caveat in its `BASELINE.md`. **Ne
 increments** (disclosed one- and two-scenario additions onto that run, not re-sweeps):
 [`baselines/2026-09-14-fable/`](baselines/2026-09-14-fable/BASELINE.md) and
 [`baselines/2026-10-29-fable/`](baselines/2026-10-29-fable/BASELINE.md) — with-skill
-**40/27/0/0 on 67 scenarios**; a full re-sweep on the `--add-dir`-fixed harness is still due.
+**39/28/0/0 on 67 scenarios**; a full re-sweep on the `--add-dir`-fixed harness is still due.
 **Prior (harness v2, 56-scenario suite, recorded 2026-07-27/28):**
 [`baselines/2026-07-27-opus/`](baselines/2026-07-27-opus/BASELINE.md) — bare 15/28/13/0 vs
 with-skill **42/13/1/0**;

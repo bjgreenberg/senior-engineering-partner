@@ -1,7 +1,7 @@
 {
  "tally": {
-  "pass": 40,
-  "partial": 27,
+  "pass": 39,
+  "partial": 28,
   "fail": 0,
   "error": 0
  },
@@ -1723,7 +1723,7 @@
     {
      "behavior": "For the non-FDA case, prescribes a descriptively-named one-line exec wrapper (arguments stay in the plist and pass through \"$@\") or a proper .app bundle with CFBundleDisplayName",
      "verdict": "pass",
-     "evidence": "wrapper `photos-backup-sync` containing `exec /Users/brian/scripts/photos_backup/run.sh \"$@\"`, plist ProgramArguments points at wrapper"
+     "evidence": "wrapper `photos-backup-sync` containing `exec $HOME/scripts/photos_backup/run.sh \"$@\"`, plist ProgramArguments points at wrapper"
     },
     {
      "behavior": "Points to references/macos-app-bundles.md",
@@ -3268,7 +3268,7 @@
     {
      "behavior": "Writes a regression test that reproduces the bug and is seen to FAIL red BEFORE the fix (iron-law TDD at Tier 2)",
      "verdict": "fail",
-     "evidence": "Tool trail shows the test Edit precedes the source Edit, but no test run ever executed: the only `python3 -m unittest -v` attempt returned `EPERM ... mkdir '/Users/brian/.claude/session-env/...'`, and the response concedes \"the red→green cycle is verified by trace analysis, not by an observed run.\" Test-first ordering yes; observed red, no."
+     "evidence": "Tool trail shows the test Edit precedes the source Edit, but no test run ever executed: the only `python3 -m unittest -v` attempt returned `EPERM ... mkdir '$HOME/.claude/session-env/...'`, and the response concedes \"the red→green cycle is verified by trace analysis, not by an observed run.\" Test-first ordering yes; observed red, no."
     },
     {
      "behavior": "Then makes the minimum change to pass, refactors with the test green",
@@ -3570,64 +3570,69 @@
    "model": "fable",
    "runner": "claude",
    "judge_model": "opus",
-   "status": "pass",
+   "status": "partial",
    "expected": [
     {
      "behavior": "Pushes back on \"nothing changed, nothing new\": a merge-blocking audit runs only when code changes, while advisories are published against code nobody touched — so the idle repos are exactly the unscanned ones",
      "verdict": "pass",
-     "evidence": "\"The idle repos are the most exposed, not the least. A PR check fires when code changes. Advisories are published against code nobody touched.\""
+     "evidence": "\"Idle repos are the least covered, not the most... A repo with no commits in months has not been audited in months.\""
     },
     {
      "behavior": "Prescribes a central scheduled daily re-scan over every repo, including those with no recent commits, enumerated from the forge rather than a hand-kept list, plus the software installed on the hosts: OS packages, Homebrew formulae and casks, language runtimes, and desktop apps",
      "verdict": "pass",
-     "evidence": "\"One central daily sweep... Enumerate repos from the forge\"; hosts: \"softwareupdate --list, brew outdated --greedy for formulae and casks, runtime versions..., mas outdated\" and a mention of /Applications apps"
+     "evidence": "\"One central scheduled sweep, daily. Enumerate repos from the forge, never from a hand-kept list\"; the host sweep covers the OS, formulae and casks, runtimes, App Store apps and apps installed outside Homebrew"
     },
     {
      "behavior": "Names the package-advisory feeds and the triage signals by role: OSV.dev/osv-scanner and the GitHub Advisory Database for package ecosystems; CISA's Known Exploited Vulnerabilities catalog as the highest-priority signal; FIRST EPSS scores to rank the rest",
-     "verdict": "pass",
-     "evidence": "\"CISA ... (KEV) matches first, then FIRST ... (EPSS) for everything else. OSV and the GitHub Advisory Database are the primary feeds for packages.\""
+     "verdict": "fail",
+     "evidence": "Names GitHub's advisory database, CISA KEV first and EPSS for ranking. It never names OSV.dev or osv-scanner as a package-advisory feed; it only says \"the same audit script the PR gate uses\""
     },
     {
      "behavior": "Names the vendor's own update channel for the OS (e.g. `softwareupdate --list`) as the host-side source, and NVD as the noisy, backlog-prone record of last resort rather than the primary feed",
      "verdict": "pass",
-     "evidence": "\"softwareupdate --list\" listed for hosts; \"NVD is last resort\", with matching described as \"approximate in both directions\""
+     "evidence": "\"OS through the vendor channel with `softwareupdate --list`\"; \"with NVD as the record of last resort\""
     },
     {
-     "behavior": "Sets fix SLAs with concrete deadlines (KEV hit or critical same day; high within 24 hours; the rest within 7 days) and an automated merge path for routine security-fix PRs — patch/minor to the fixed version, green CI including the contract test, a reviewer that can only veto — so a fix does not wait on a person",
+     "behavior": "Sets fix SLAs with concrete deadlines (KEV hit or critical same day; high within 24 hours; the rest within 7 days) and an automated merge path for routine security-fix PRs — patch/minor to the fixed version, green CI including the contract test, a reviewer that can only veto and checks the upstream diff or changelog, any new install scripts or network calls, and package provenance or signatures where the ecosystem offers them — so a fix does not wait on a person; a release younger than the cooldown window is not auto-merged",
      "verdict": "pass",
-     "evidence": "\"KEV or critical same day, high within 24 hours, everything else within 7 days\"; \"patch or minor bump to the advisory's fixed version, green CI including the thin contract test, and a veto-only automated reviewer\""
+     "evidence": "Table gives same day / 24 hours / 7 days. The auto-merge path covers patch/minor to the fixed version, green CI including the contract test, a veto-only reviewer reading the upstream diff, install scripts and provenance, and the cooldown. Network calls are not mentioned."
     },
     {
      "behavior": "States the blind spots honestly: Homebrew has no advisory feed of its own (`brew outdated` shows drift, not vulnerability), and matching CVE product names to installed software is approximate",
      "verdict": "pass",
-     "evidence": "\"It shows drift, not exposure\"; \"Homebrew has no advisory feed and formula matching goes through NVD by product name, which is approximate in both directions\""
+     "evidence": "\"Homebrew publishes no advisory feed, so `brew outdated` tells you what is stale, not what is exploitable\"; \"Homebrew CVE matching goes through NVD by product name and is approximate in both directions\""
     }
    ],
    "anti": [
     {
      "behavior": "Agrees that a green PR-triggered audit covers repos that have not changed",
      "verdict": "clean",
-     "evidence": "Opens with \"Not handled.\" and says idle repos are the most exposed"
+     "evidence": "Explicitly refutes it"
     },
     {
      "behavior": "Recommends detection with no response deadline — \"review the findings when you get to them\"",
      "verdict": "clean",
-     "evidence": "Sets concrete SLAs and says to \"alert on the breach\""
+     "evidence": "\"Detection without a deadline is not security\", followed by the SLA table"
     },
     {
      "behavior": "Presents `brew upgrade` (or any one scanner) as complete host coverage, or presents NVD as the one source to watch",
      "verdict": "clean",
-     "evidence": "\"Occasional brew upgrade is not a vulnerability check\"; NVD is called the last resort"
+     "evidence": "Calls brew upgrade drift management and treats NVD as the record of last resort"
     },
     {
      "behavior": "Recommends `mas upgrade` in automation, or an auto-merge path that lacks any one of green CI, a contract test, or a reviewer that can veto, or that auto-merges a freshness or major bump",
      "verdict": "clean",
-     "evidence": "\"Never mas upgrade from automation\"; \"Majors, red contract tests, and freshness bumps wait for a human\""
+     "evidence": "\"Never `mas upgrade` in automation\"; major bumps go to a human; auto-merge requires green CI, the contract test and a veto reviewer"
+    },
+    {
+     "behavior": "Recommends an auto-merge path with no provenance/signature check, or one that merges a release published inside the cooldown window",
+     "verdict": "clean",
+     "evidence": "The reviewer checks provenance, and \"The fixed release must be past your release-age cooldown first\""
     }
    ],
-   "judge_reason": "The response meets all six expected behaviors with concrete specifics and violates none of the anti-behaviors.",
-   "cost_usd": 1.5876715,
-   "duration_s": 60.9
+   "judge_reason": "The response pushes back correctly, covers repos and hosts, and sets SLAs and a safe auto-merge path, but it never names OSV.dev/osv-scanner as a package-advisory feed.",
+   "cost_usd": 1.6384115,
+   "duration_s": 56.8
   }
  ]
 }
