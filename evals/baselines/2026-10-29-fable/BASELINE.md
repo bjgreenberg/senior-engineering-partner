@@ -63,5 +63,6 @@ key, 65/65). The two new entries were curated with `scripts/curate-baseline.py` 
 `evals/results/2026-10-29-rescan-with-skill-fable-r4/` (git-ignored); `response`,
 `workspace_evidence` and `tool_trail` stripped, statuses, judgments and reasons kept. The
 earlier with-skill runs (r1–r3), the two bare runs (`…-baseline-fable-r1`) and the two
-regression runs (`…-regress-with-skill-fable`) are retained locally. No `sandbox_escape` on
-any run.
+regression runs (`…-regress-with-skill-fable`) existed only in the writer's git-ignored
+`evals/results/` and were removed with its worktree after the PR opened; their verdicts
+and per-item counts are as stated above and in the PR body. No `sandbox_escape` on any run.
