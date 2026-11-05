@@ -78,3 +78,10 @@ and a second reader catches what the writer misses.
 Changes that add or sharpen a discipline follow the consent-gated loop in
 `references/skill-self-improvement.md`: propose via PR, never silently edit
 the skill, and never *relax* a rule — loosening is human-initiated only.
+
+## Expert panel
+
+A decision about the skill (a new or sharpened rule, a reference, a gate) opens with what
+the maintainer's expert panel says — named experts, quoted and sourced — then the
+recommendation and where it departs from them. The panel is kept privately, outside the
+repo; `docs/expert-panel.md` explains the rule and the public evidence a decision cites.
