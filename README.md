@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-10-29 05:52 PM CDT
+Last updated: 2026-11-05 02:20 PM CST
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -414,6 +414,10 @@ environment-specific claim**, so the more complete it is, the more grounded the 
   the universal core universal; anything specific belongs in your (un-committed) `my-environment.md`.
 - **Add or extend an `evals/` scenario** whenever you add a load-bearing rule — a lesson
   without a guarding eval can silently regress.
+- **Every decision about the skill opens with its expert panel.**
+  [`docs/expert-panel.md`](docs/expert-panel.md) names the experts behind each discipline,
+  quotes them with sources, says where the skill departs from them, and lists where the
+  repo's own evidence lives. A proposal or PR that changes a rule cites the panel first.
 - **The skill improves itself — with consent.** `SKILL.md` carries the always-loaded trigger
   of an active, consent-gated self-improvement loop (full procedure:
   [`references/skill-self-improvement.md`](references/skill-self-improvement.md)): when a

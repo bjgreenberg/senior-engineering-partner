@@ -78,3 +78,9 @@ and a second reader catches what the writer misses.
 Changes that add or sharpen a discipline follow the consent-gated loop in
 `references/skill-self-improvement.md`: propose via PR, never silently edit
 the skill, and never *relax* a rule — loosening is human-initiated only.
+
+## Expert panel
+
+A decision about the skill (a new or sharpened rule, a reference, a gate) opens with what
+`docs/expert-panel.md` says — named experts, quoted and sourced — then the recommendation
+and where it departs from them. A missing seat is a PR to that file.
