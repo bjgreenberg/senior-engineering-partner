@@ -82,5 +82,6 @@ the skill, and never *relax* a rule — loosening is human-initiated only.
 ## Expert panel
 
 A decision about the skill (a new or sharpened rule, a reference, a gate) opens with what
-`docs/expert-panel.md` says — named experts, quoted and sourced — then the recommendation
-and where it departs from them. A missing seat is a PR to that file.
+the maintainer's expert panel says — named experts, quoted and sourced — then the
+recommendation and where it departs from them. The panel is kept privately, outside the
+repo; `docs/expert-panel.md` explains the rule and the public evidence a decision cites.
