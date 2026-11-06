@@ -19,6 +19,33 @@ in your own `references/my-environment.md`.
 
 ## [1.32.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.31.0...v1.32.0) (2026-11-06)
 
+The independent-verification release. Every lens the skill runs on a high-stakes diff reads
+the code: the self-review, the bot reviewer, the adversarial pass, the second-family reviewer
+added in 1.30.0. A lens that reads the code finds what the change got wrong. It cannot prove
+the change does what was asked. One change ([#177](https://github.com/bjgreenberg/senior-engineering-partner/pull/177))
+adds the method that can.
+
+- **Independent verification when a high-stakes change states a rule** ([#177](https://github.com/bjgreenberg/senior-engineering-partner/pull/177)).
+  The *Verify before done* bullet in `SKILL.md` adds one clause to the adversarial pass: when
+  the change states a rule, add acceptance tests written from the requirement text alone, red
+  on `main` first, never edited by the implementer. `references/engineering-workflow.md` §4a
+  says how. Write the requirement in a few plain sentences, define every term the tests will
+  depend on (one undefined word is one false failure), and commit it before any test exists,
+  so the text the tests come from is fixed. A reviewer that has not seen the diff, the history
+  or the implementation writes the tests from that text: a different model family when one is
+  available, otherwise a fresh context, and the PR says which. The tests go in unchanged and
+  run on `main` first; they must fail there, or they test nothing. The implementer never edits
+  them: a test that looks wrong means the requirement is wrong or unclear, so the requirement
+  is fixed, and the tests are written again from it. A pure refactor or a docs change skips the
+  step. Which tool, which repos qualify and where the files live is an environment binding in
+  `references/my-environment.md`, not part of the core. Why: a reviewer that reads the code is
+  framed by the code, so none of the existing lenses can show the requirement was met. In one
+  pilot the requirement tests caught the target (a forged pass header reached the trusted
+  result; 27 of 27 red on `main` while the implementer's own tests were green) and none of the
+  parser edge cases, which the adversarial lenses found. Each method finds what the other
+  cannot, so the skill keeps both: requirement tests prove the requirement is met, and they do
+  not find what it forgot.
+
 
 ### Features
 
