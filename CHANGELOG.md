@@ -17,6 +17,13 @@ internal-version specifics (private project names, hosts, and work history) are 
 omitted, and the universal core carries **zero** environment-specific detail — all of that lives
 in your own `references/my-environment.md`.
 
+## [1.32.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.31.0...v1.32.0) (2026-11-06)
+
+
+### Features
+
+* independent verification for high-stakes changes ([#177](https://github.com/bjgreenberg/senior-engineering-partner/issues/177)) ([1f5bd0e](https://github.com/bjgreenberg/senior-engineering-partner/commit/1f5bd0e237fdad673f1c5662c3d00cec806253bb))
+
 ## [1.31.0](https://github.com/bjgreenberg/senior-engineering-partner/compare/v1.30.0...v1.31.0) (2026-10-29)
 
 The whole-tree release. Two misses on the same day had one shape: a check that ran, reported
