@@ -34,7 +34,7 @@ The governing rule: **a failure in one dependency must not cascade into a total 
 
 ## 4. Fast mitigation levers — flags & kill switches
 - **Feature-flag / kill-switch the risky surfaces.** A new integration, an expensive code path, or a flaky provider gets a flag you can flip *without a deploy* so the first incident move (mitigate before you diagnose — `observability-and-incident-response.md`) is one toggle, not a hotfix-and-redeploy under pressure. Roll back first, debug after.
-- **An agent loop's or unattended job's kill switch has levels.** One level stops anything that writes outward (messages, PRs, issues, payments, deploys); the next stops everything. Its budget (turns, time, cost) ends in a distinct `exhausted` outcome that is never retried automatically: `llm-apps.md` §5.
+- **A loop or unattended job that acts on the world has a kill switch with levels.** One level stops anything that writes outward (messages, PRs, issues, payments, deploys); the next stops everything. Its budget (turns, time, cost) ends in a distinct `exhausted` outcome that is never retried automatically: `llm-apps.md` §5.
 - **Prefer rolling back to rolling forward.** The fastest mitigation is usually reverting to the last known-good (deploy or flag state); the deploy/rollback discipline in `github-actions.md` is the continuity lever for a bad release.
 - **Test the failure path.** A fallback/breaker/degraded mode that's never been exercised is `disaster-recovery.md`'s untested-backup problem in code form. Inject the failure (a fault test, a dependency stubbed to error, a lightweight game-day) and prove the system degrades as designed — don't first discover the breaker is misconfigured during the real outage.
 

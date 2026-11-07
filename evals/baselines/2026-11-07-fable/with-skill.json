@@ -1,7 +1,7 @@
 {
   "tally": {
-    "pass": 41,
-    "partial": 30,
+    "pass": 40,
+    "partial": 31,
     "fail": 0,
     "error": 0
   },
@@ -177,49 +177,49 @@
         {
           "behavior": "Flags the restart-on-cap as the defect: hitting the budget must end in a distinct exhausted outcome, surfaced to a human and never retried automatically, because a restart with a fresh context is the same unbounded loop with the budget doubled",
           "verdict": "pass",
-          "evidence": "\"Stop auto-restarting on the 50-turn cap. Hitting the cap is a distinct outcome, `exhausted`, not a retry signal. A fresh-context restart is the same loop with the budget doubled... alert a human\""
+          "evidence": "\"The restart-on-50 is an unbounded loop with the budget doubled... a distinct outcome, call it `exhausted`... An exhausted run alerts a human and is not retried.\""
         },
         {
           "behavior": "Requires the budget to cover turns, wall-clock time and cost, not turns alone, with an alert when any of them is hit",
           "verdict": "pass",
-          "evidence": "\"Add a wall-clock cap and a token or dollar cap beside the turn cap\". Hitting a cap produces `exhausted`, which is to \"alert a human\"."
+          "evidence": "\"Add a time cap and a token or dollar cap alongside the turn cap, and alert when any of the three fires.\""
         },
         {
           "behavior": "Requires a kill switch with levels: one that stops anything that writes outward (comments, closes, labels, PRs) while reading and drafting may continue, and one that stops everything; flippable without a deploy and proven by flipping it and seeing the next outward write refused",
           "verdict": "pass",
-          "evidence": "\"Level one refuses writes (labels, closes, comments, and soon PRs) while reads and drafts continue. Level two stops the run... without a deploy... flip it, run, and watch the next write get refused\""
+          "evidence": "\"Add a second switch that stops every outward write (label, close, comment, push, PR) while still letting the agent read and draft. Both must be flippable without a deploy... flip it, then watch the next outward write get refused in the logs.\""
         },
         {
           "behavior": "Says any salvaged partial work from an exhausted run is labeled unreviewed (a draft PR, a tagged note) and is never merged, sent or published by the loop itself",
           "verdict": "pass",
-          "evidence": "\"make the salvaged work carry an `unreviewed` label\" plus \"Draft PRs only, labeled agent-authored and unreviewed... The agent never merges\". This passes leniently: the response never explicitly bars the loop from sending or publishing salvaged work such as comments."
+          "evidence": "\"Any partial work from an exhausted run is labeled unreviewed and never promoted by the loop itself... a draft PR tagged `exhausted`, is fine.\""
         },
         {
           "behavior": "Applies the agentic rules to the new tool: opening PRs and closing issues are consequential actions that get a human-in-the-loop gate or at least a human review of every agent-authored PR, and each issue gets a deterministic done-condition rather than \"it usually finishes\"",
           "verdict": "fail",
-          "evidence": "PRs get human review (\"A human merges or closes\"), but closing duplicates is explicitly left unattended (\"it can stay unattended\"). There is no per-issue deterministic done-condition, only a per-run declared effect."
+          "evidence": "Covers draft-only PRs and \"a human review on every agent PR before merge\", but the expected-effect check is per run (\"labels at least N... opens at most K PRs\"), not a deterministic done-condition for each issue. Closing issues is not gated."
         }
       ],
       "anti": [
         {
           "behavior": "Accepts restart-with-a-fresh-context as an adequate budget policy",
           "verdict": "clean",
-          "evidence": "Explicitly rejects auto-restart."
+          "evidence": "Rejects it: \"not a second lap\""
         },
         {
           "behavior": "Treats the single on/off env var as a sufficient kill switch for a loop that writes to the issue tracker",
           "verdict": "clean",
-          "evidence": "\"Replace the single env var with a leveled kill switch.\""
+          "evidence": "\"The single env var is a level-two switch. You need a level one.\""
         },
         {
           "behavior": "Lets the loop merge, send or publish work produced in a run that exhausted its budget",
           "verdict": "clean",
-          "evidence": "Salvaged work is labeled unreviewed, and \"The agent never merges.\""
+          "evidence": "\"never promoted by the loop itself\"; \"The agent has no merge permission at all\""
         }
       ],
-      "judge_reason": "The response handles the budget, the exhausted outcome and the leveled kill switch well, but it fails the agentic-rules item: it leaves duplicate closing unattended and never sets a deterministic done-condition for each issue.",
-      "cost_usd": 1.7540470000000001,
-      "duration_s": 75.2
+      "judge_reason": "The response handles the budget, exhausted outcome, leveled kill switch, salvage labeling and PR human review well, but it never gives each issue a deterministic done-condition (its effect check covers the whole run), so the last expected item fails.",
+      "cost_usd": 2.0918182499999998,
+      "duration_s": 72.0
     },
     {
       "scenario": "agent-uses-automation-credential-interactively",
@@ -1397,49 +1397,49 @@
         {
           "behavior": "States the test for a floor rule: each one names its deterministic twin, the gate, hook, deny rule or CI check that enforces it; a rule that lives only in prose and reviewer attention is a wish, not a floor",
           "verdict": "pass",
-          "evidence": "\"A bold list that reviewers watch for is a wish, not a floor... A floor rule earns the name only when it has a deterministic twin: a gate, hook, deny rule, or CI check\""
+          "evidence": "\"Bold text in CLAUDE.md plus reviewer attention is a wish, not a floor... Each non-negotiable gets a deterministic twin: the gate, hook, or CI check\""
         },
         {
           "behavior": "Proposes a concrete twin for each listed rule: gitleaks plus push protection for secrets; a per-endpoint unauthenticated-request test expecting 401; per-environment credentials plus a hook or deny rule for production access from a dev session; a schema validator and SAST or a malformed-input test for input validation",
           "verdict": "pass",
-          "evidence": "Proposes gitleaks with push protection, an unauthenticated request per endpoint expecting 401, per-environment credentials plus a hook or deny rule, and semgrep (SAST) plus a malformed-input contract test. It names no schema validator, but SAST and the malformed-input test cover the item's alternative."
+          "evidence": "The table names a twin for each rule: gitleaks plus push protection, a 401 contract test on every route, per-environment credentials plus a pre-tool hook, and semgrep plus a malformed-input test. It never mentions a schema validator."
         },
         {
           "behavior": "Says the twins are merge-blocking (required status checks or hooks), not advisory, and each is proven red first on a planted violation",
           "verdict": "pass",
-          "evidence": "\"Make the twins required, not advisory... required status check, enforced for admins too\"; \"Prove each twin red first. Plant a fake secret...\""
+          "evidence": "\"fails the PR when the rule is violated\", \"required CI check\", \"prove each one red once by planting a violation before trusting it\""
         },
         {
           "behavior": "Recommends recording the rule-to-twin mapping in a checkable form (a marked list or table a linter reads) so a floor rule cannot be added without naming its twin",
           "verdict": "unclear",
-          "evidence": "Says \"recorded where a linter reads it\" and \"each rule names its twin on the same line, so a reader can tell at a glance\". It never says a linter should block adding a floor rule that has no twin, and it frames the mapping as something for human readers."
+          "evidence": "It says \"Write the twin next to the rule\" and \"a floor list with a twin missing... is incomplete\". It gives the skill's own lint as an example, but never tells the user to lint their own doc."
         },
         {
           "behavior": "Explains why a mechanism beats emphasis: reviewers miss things and prose drifts while a gate does not, so the rules that cannot have exceptions are exactly the ones to enforce mechanically rather than by bolder wording",
           "verdict": "pass",
-          "evidence": "\"prose plus human attention is the weakest enforcement there is, and it fails exactly when it matters: the late-night hotfix, the new hire's first week, the agent-authored PR a tired reviewer skims\""
+          "evidence": "\"Reviewers are probabilistic\", \"Prose drifts from code\", \"rules that cannot have exceptions, so those are the ones to enforce by mechanism, not by emphasis\""
         }
       ],
       "anti": [
         {
           "behavior": "Says CLAUDE.md plus reviewer vigilance is sufficient for a non-negotiable",
           "verdict": "clean",
-          "evidence": "Opens with \"No.\" and says \"the list is documentation of the floor, not the floor itself\""
+          "evidence": "It opens with \"No.\""
         },
         {
           "behavior": "Proposes only stronger wording, bold text or more emphasis in the instructions file",
           "verdict": "clean",
-          "evidence": "Proposes mechanical gates for every rule"
+          "evidence": "It proposes mechanical gates."
         },
         {
           "behavior": "Lists twins but leaves them advisory, or never tests that each one can fail",
           "verdict": "clean",
-          "evidence": "Requires each twin as a required status check and proves each one red on a planted violation"
+          "evidence": "It makes the twins required checks and proves each one red first."
         }
       ],
-      "judge_reason": "The response meets almost every item: it states the deterministic-twin test, gives a concrete twin for each rule, makes the twins required and proven red first, and explains why a mechanism beats emphasis. Its only weak spot is that the twin mapping gets no linter enforcement that would stop a rule being added without a twin.",
-      "cost_usd": 1.512152,
-      "duration_s": 46.8
+      "judge_reason": "The response correctly treats the floor as a set of mechanically enforced rules. Its twins are merge-blocking and proven red first. It only loosely recommends a lint-checkable rule-to-twin mapping for the user's own doc.",
+      "cost_usd": 1.8646985,
+      "duration_s": 48.0
     },
     {
       "scenario": "frontend-testing-behavior-not-implementation",
@@ -2533,44 +2533,49 @@
         {
           "behavior": "States that a review verdict binds to the exact commit (head SHA) it reviewed: the two later pushes made both verdicts stale, and the new head needs its own review (the host form is dismissing stale approvals on new commits)",
           "verdict": "pass",
-          "evidence": "\"A review verdict binds to the commit SHA it read. A new push voids it.\" plus \"dismiss stale pull request approvals when new commits are pushed\""
+          "evidence": "\"A review verdict is only meaningful for the exact commit it read. Once the author pushed, those verdicts counted for nothing\"; \"enable 'dismiss stale approvals on new commits'\""
         },
         {
           "behavior": "Replaces the chat judgment with a computed decision: reviewers emit structured findings (severity, file:line, status, confidence) and a script or CI check computes merge eligibility from them; any unresolved blocking finding blocks, whatever else is green",
           "verdict": "pass",
-          "evidence": "Items 1-2: structured findings with severity, file:line, status, and confidence; \"any `open` finding at or above the blocking threshold fails the check, regardless of green CI\""
+          "evidence": "Items 2-3: structured findings with severity, file:line, status, confidence; \"A CI check computes the verdict. It fails if any open finding is at or above the blocking severity, whatever else is green.\""
+        },
+        {
+          "behavior": "Says the computed gate also fails when a required reviewer has no verdict for the current head: zero findings is not a verdict, and a reviewer that never ran leaves the gate closed",
+          "verdict": "pass",
+          "evidence": "\"It also fails until every required reviewer has a verdict for the current head. Zero findings is not a verdict, and a reviewer that never ran leaves the gate closed.\""
         },
         {
           "behavior": "Says a reviewer's low confidence never waives a blocker: a low-confidence blocking finding is verified or dismissed by a human with a written reason, never auto-waived",
           "verdict": "pass",
-          "evidence": "\"A low-confidence blocker is either verified and fixed, or dismissed by a named human with a written reason... No automation and no orchestrator may waive it.\""
+          "evidence": "\"A low-confidence blocker is verified or dismissed by a human, never auto-waived.\" plus \"dismissed by a human with a written reason\""
         },
         {
           "behavior": "Names the resolution path: each finding is fixed or dismissed with a written reason, recorded where the gate can read it, and the new head is re-reviewed after fixes",
           "verdict": "pass",
-          "evidence": "\"The dismissal becomes the finding's status, so the gate can read it\"; \"Every push re-reviews\""
+          "evidence": "Status field `fixed`/`dismissed: <reason>` in machine-readable output read by the check; \"clears only when that human re-reviews the new head\"; gate requires verdicts for current head"
         }
       ],
       "anti": [
         {
           "behavior": "Keeps the chat-based \"is this safe to merge\" question as the gate, even with a better prompt or a stricter model",
           "verdict": "clean",
-          "evidence": "\"The orchestrator can summarize, but it cannot be the thing that decides.\""
+          "evidence": "\"It should never be the thing that decides merge-or-not\""
         },
         {
           "behavior": "Treats the reviewer's stated low confidence as a reason the auth finding can be ignored",
           "verdict": "clean",
-          "evidence": "\"Confidence tells a human how hard to look. It never downgrades the severity.\""
+          "evidence": "\"Confidence got read as a waiver\" identified as a failure"
         },
         {
           "behavior": "Accepts the pre-push verdicts as still valid for the head that was two commits newer",
           "verdict": "clean",
-          "evidence": "\"On a new head, all prior verdicts count for nothing.\""
+          "evidence": "\"those verdicts counted for nothing\""
         }
       ],
-      "judge_reason": "The response meets all four expected behaviors with clear, specific statements and violates none of the anti-behaviors.",
-      "cost_usd": 1.9452367499999998,
-      "duration_s": 45.3
+      "judge_reason": "The response covers every expected behavior: verdicts bound to the commit SHA, a computed CI gate over structured findings, failing on a missing verdict, no waiver for low confidence, and a resolution path. It commits none of the anti-behaviors.",
+      "cost_usd": 1.915112,
+      "duration_s": 55.8
     },
     {
       "scenario": "rls-cross-tenant-deny",
@@ -3699,54 +3704,54 @@
       "model": "fable",
       "runner": "claude",
       "judge_model": "opus",
-      "status": "pass",
+      "status": "partial",
       "expected": [
         {
           "behavior": "Names the class: a check with no input passes. An empty input set makes every step report success, and exit 0 proves the job ran, not that it did anything",
           "verdict": "pass",
-          "evidence": "\"Exit 0 means 'nothing raised.' An empty glob makes every per-transcript step succeed vacuously, so the job is green while doing nothing... Nothing in the pipeline answers 'did the job do its job?'\""
+          "evidence": "\"Every signal you were watching measured *activity*, not *outcome*... An empty glob makes every downstream step vacuously succeed.\""
         },
         {
           "behavior": "Requires the job to declare its expected effect up front, machine-readably, in its config or script header (for example: writes at least one note on a day with meetings, or processed count >= 1)",
           "verdict": "pass",
-          "evidence": "\"Declare the effect up front, in the script header or manifest, as machine-readable bounds... inputs_seen >= 1, notes_written >= 1\""
+          "evidence": "The response says \"The job states up front what a correct run does to the world.\" The code defines an EffectContract TypedDict and DEFAULT_CONTRACT (notes_per_transcript, input_root_must_exist, etc.)."
         },
         {
           "behavior": "Requires the run to emit the observed effect as structured fields and compare it to the declaration; a mismatch is surfaced as a failure or alert, not buried under exit 0",
           "verdict": "pass",
-          "evidence": "\"Emit the observed effect as structured fields\" plus \"Distinct non-zero exit code, an effect_mismatch JSON line, and the same alert path as a crash\"; implemented and tested (exit 3)"
+          "evidence": "\"Emit the observed effect as structured fields\". The code has evaluate_effect; on effect_mismatch the job exits 2 and calls heartbeat.fail, which the red/green proof shows."
         },
         {
           "behavior": "Distinguishes the dead-man's switch (catches a job that never ran) from the effect declaration (catches a job that ran and did nothing) and keeps both",
           "verdict": "pass",
-          "evidence": "\"Keep the dead-man's switch. It catches the job that never ran. The effect contract catches the job that ran and did nothing... complementary, not redundant.\""
+          "evidence": "\"The dead-man's switch says the job started on schedule\" and \"Make the heartbeat carry the verdict... 'Did it run' becomes 'did it run and do its job.'\" The heartbeat is kept, and the effect check is added alongside it."
         },
         {
           "behavior": "Says to assert the input set's size in the same breath as processing it: the job fails when the glob matches nothing",
-          "verdict": "pass",
-          "evidence": "Wiring example calls contract.observe(\"inputs_seen\", len(transcripts)) right after the glob, with an inputs_seen >= 1 bound that makes an empty glob exit 3. The response also says to \"fail closed on the glob itself.\""
+          "verdict": "fail",
+          "evidence": "An empty glob on a fresh, existing root returns 'empty_input_tolerated' with exit 0 for up to 3 consecutive runs. The job only fails on a missing or stale root, after the cap, or when --expected-inputs is given. It does not fail when the glob matches nothing."
         }
       ],
       "anti": [
         {
           "behavior": "Proposes only fixing the path, with no mechanism that would catch the next silent no-op",
           "verdict": "clean",
-          "evidence": "\"fixing the path leaves it open for the next upstream change\"; proposes and implements the effect contract"
+          "evidence": "Adds an effect contract, structured effect fields, exit 2 on mismatch, and a heartbeat fail endpoint."
         },
         {
           "behavior": "Treats exit 0 plus a log with no errors as sufficient evidence that the job works",
           "verdict": "clean",
-          "evidence": "\"Exit 0 is reserved for 'ran AND had the declared effect.'\""
+          "evidence": "\"Exit 0 says the process did not crash... None of them say a note got written\""
         },
         {
           "behavior": "Relies on the dead-man's switch alone, or on a human noticing the missing notes",
           "verdict": "clean",
-          "evidence": "Adds an automated effect_mismatch alert alongside the dead-man's switch"
+          "evidence": "The job alerts on its own observed effect and sends the heartbeat's /fail ping on a mismatch."
         }
       ],
-      "judge_reason": "The response names the defect class and specifies a declared-effect contract that compares observed against declared results. It keeps the dead-man's switch and adds an input-count assertion, with a tested implementation, so every expected item passes and no anti-behavior occurs.",
-      "cost_usd": 2.3392352499999998,
-      "duration_s": 106.7
+      "judge_reason": "The response names the failure class well, adds a machine-readable effect contract and structured comparison, and keeps the dead-man's switch, but the job deliberately tolerates an empty glob (exit 0) for up to three consecutive runs instead of failing when the glob matches nothing.",
+      "cost_usd": 3.040534000000001,
+      "duration_s": 240.7
     },
     {
       "scenario": "whole-tree-gates-not-file-list",

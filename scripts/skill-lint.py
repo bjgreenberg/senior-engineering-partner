@@ -33,8 +33,19 @@ AI tools"):
      `<!-- floor-twins:end -->`; the list is rules separated by `;` (outside parentheses),
      and every rule ends with `(twin: ...)` naming, in at least one backtick code span, the
      gate, hook, deny rule or CI check that enforces it. A placeholder (`none`, `tbd`,
-     `manual`, `review`, ...) fails, in backticks or not, whatever prose surrounds it. A floor rule a gate cannot see is a wish, not a floor;
-     this check is how the skill holds itself to its own enforce-the-floor rule.
+     `manual`, `review`, ...) fails, in backticks or not, whatever prose surrounds it; so does
+     a digits-only name (`401`, `200`: a status, not a mechanism). Parentheses must balance:
+     a `)` at depth 0 or an unclosed `(` fails, because an unbalanced paren would otherwise
+     swallow the following rules into one (a second-family review planted `(see below` and
+     lost two twins to a PASS). When a README.md sits beside SKILL.md (the real repo shape,
+     as in check 7) the list must hold at least FLOOR_MIN_RULES rules: a RATCHET, like the
+     word budget, raised when a floor rule is added and never lowered without a recorded
+     maintainer decision. Known limits, recorded rather than tightened: a backticked word
+     that is not a mechanism (`deny`, `manual-review`) passes; two rules joined by a comma
+     read as one rule; a floor rule stated outside the markers is unseen. The check proves
+     a mechanism is NAMED, not that it exists or runs; that proof is the fixture test's.
+     A floor rule a gate cannot see is a wish, not a floor; this check is how the skill
+     holds itself to its own enforce-the-floor rule.
 
 Exit 0 = all checks pass (warnings allowed). Exit 1 = any check failed.
 Usage: scripts/skill-lint.py [path-to-SKILL.md]
@@ -68,10 +79,18 @@ FLOOR_WORD_RE = re.compile(r"\bfloor\b", re.IGNORECASE)
 TWIN_RE = re.compile(r"\(twin:\s*(.*)\)\s*\.?\s*$", re.DOTALL)
 CODE_SPAN_RE = re.compile(r"`[^`]+`")
 TWIN_PLACEHOLDERS = {"none", "tbd", "todo", "n/a", "na", "manual", "review", "judgment", "-", "—"}
+PLACEHOLDER_PREFIXES = ("tbd", "todo", "manual")
+# Ratchet: the real core carries this many floor rules; raise when one is added, never lower
+# without a recorded maintainer decision.
+FLOOR_MIN_RULES = 10
 
 
-def split_floor_rules(block: str) -> list[str]:
-    """Split the floor list into rules at `;` outside parentheses (a twin may hold a `;`)."""
+def split_floor_rules(block: str) -> tuple[list[str], str | None]:
+    """Split the floor list into rules at `;` outside parentheses (a twin may hold a `;`).
+
+    Returns (rules, error); error names an unbalanced paren, which must fail the check
+    rather than silently merge the rules that follow it into one.
+    """
     rules: list[str] = []
     depth = 0
     current: list[str] = []
@@ -79,17 +98,27 @@ def split_floor_rules(block: str) -> list[str]:
         if ch == "(":
             depth += 1
         elif ch == ")":
-            depth = max(0, depth - 1)
+            if depth == 0:
+                return [], "a `)` with no matching `(` in the floor-twins list"
+            depth -= 1
         if ch == ";" and depth == 0:
             rules.append("".join(current))
             current = []
         else:
             current.append(ch)
     rules.append("".join(current))
-    return [r.strip().rstrip(".").strip() for r in rules if r.strip().rstrip(".").strip()]
+    if depth != 0:
+        return [], f"{depth} unclosed `(` in the floor-twins list (an open paren swallows the rules after it)"
+    return [r.strip().rstrip(".").strip() for r in rules if r.strip().rstrip(".").strip()], None
 
 
-def check_floor_twins(body: str) -> tuple[list[str], int]:
+def is_placeholder(name: str) -> bool:
+    """A twin name that names no mechanism: a placeholder word, a prefix of one, or digits only."""
+    n = name.strip("` .:;,").lower()
+    return not n or n in TWIN_PLACEHOLDERS or n.startswith(PLACEHOLDER_PREFIXES) or n.isdigit()
+
+
+def check_floor_twins(body: str, real_repo_shape: bool) -> tuple[list[str], int]:
     """Return (check-8 failures, floor rules counted) for a SKILL.md body; [] = pass or exempt."""
     has_begin, has_end = FLOOR_BEGIN in body, FLOOR_END in body
     if not has_begin and not has_end:
@@ -105,10 +134,18 @@ def check_floor_twins(body: str) -> tuple[list[str], int]:
     if not (has_begin and has_end) or body.index(FLOOR_END) < body.index(FLOOR_BEGIN):
         return ["floor-twins markers are unpaired or out of order"], 0
     block = body[body.index(FLOOR_BEGIN) + len(FLOOR_BEGIN) : body.index(FLOOR_END)]
-    rules = split_floor_rules(block)
+    rules, err = split_floor_rules(block)
+    if err:
+        return [err], 0
     if not rules:
         return ["the floor-twins list is empty — a stated floor has at least one rule"], 0
     failures: list[str] = []
+    if real_repo_shape and len(rules) < FLOOR_MIN_RULES:
+        failures.append(
+            f"the floor-twins list has {len(rules)} rules, below the FLOOR_MIN_RULES ratchet of"
+            f" {FLOOR_MIN_RULES} — a floor rule was dropped or merged; restore it (the ratchet"
+            " only moves up)"
+        )
     for rule in rules:
         label = re.sub(r"\s+", " ", rule)[:60]
         m = TWIN_RE.search(rule)
@@ -118,8 +155,8 @@ def check_floor_twins(body: str) -> tuple[list[str], int]:
         twin = m.group(1).strip()
         # The mechanism is the backticked name; a placeholder in backticks (`tbd`) is still a
         # placeholder, however much prose surrounds it (a second-family review caught this).
-        names = [c.strip("` ").lower() for c in CODE_SPAN_RE.findall(twin)]
-        if not any(n and n not in TWIN_PLACEHOLDERS for n in names):
+        names = CODE_SPAN_RE.findall(twin)
+        if not any(not is_placeholder(n) for n in names):
             failures.append(
                 f"floor rule's twin names no mechanism (needs a backticked gate/hook/check,"
                 f" not a placeholder): {label!r}"
@@ -254,7 +291,7 @@ def main() -> int:
         )
 
     # Check 8 — every floor rule names its deterministic twin (see module docstring).
-    floor_failures, floor_rules = check_floor_twins(body)
+    floor_failures, floor_rules = check_floor_twins(body, real_repo_shape=readme_path.is_file())
     failures.extend(floor_failures)
 
     for w in warnings:

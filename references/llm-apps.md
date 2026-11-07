@@ -120,9 +120,10 @@ the status `exhausted`, distinct from `done` and from `failed`. An `exhausted` r
 retried automatically: a restart with a fresh context is the same unbounded loop with the
 budget doubled. Surface the run to a human. Any salvaged partial work is labeled
 **unreviewed** (a draft PR, a note tagged `unreviewed`) and is never merged, sent or published
-by the loop itself. The same three controls (a leveled kill switch, a budget, the `exhausted`
-outcome) apply to every unattended job, scheduled agent and cron script alike, and every such
-job also declares its expected effect before it runs (`logging-and-monitoring.md`,
+by the loop itself. The budget and the `exhausted` outcome apply to every unattended job; the leveled kill switch
+to every loop or job that acts on the world (a scheduled agent that comments or opens PRs, a
+deploy job; not a log rotator, not an in-request evaluator loop). Every unattended job also
+declares its expected effect before it runs (`logging-and-monitoring.md`,
 *Monitoring & alerting for unattended automation*).
 
 ## 6. Evals — the outer loop
