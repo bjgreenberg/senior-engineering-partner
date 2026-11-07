@@ -193,6 +193,34 @@ mkdir -p "$budgetdir"
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$budgetdir/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint FAILS a body over the core word budget" 1 "$rc"
 
+# Check 8 (floor rules name their deterministic twin) — red first on both failure shapes, then
+# green. A floor rule a gate cannot see is a wish; the linter is how the skill holds itself to
+# its own enforce-the-floor rule.
+floordir="$scratch/skill-fixture/floor-skill"
+mkdir -p "$floordir"
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor: no hardcoded secrets; validate inputs.\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a stated floor with no floor-twins list" 1 "$rc"
+
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries.\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a floor rule with no (twin: ...)" 1 "$rc"
+
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries (twin: manual review).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a twin that names no mechanism (no backticked gate, hook or check)" 1 "$rc"
+
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check; push protection); validate inputs at trust boundaries (twin: `semgrep` plus a malformed-input test).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint PASSES when every floor rule ends with a backticked twin (a ; inside the twin is fine)" 0 "$rc"
+
 # --- eval-guard.py fixtures ------------------------------------------------------------------
 # A scratch git repo: base commit, then per-case head commits. The gate must FAIL a bare rule
 # change, and PASS each of its three documented outs (rides-with-eval, metadata-only, waiver).

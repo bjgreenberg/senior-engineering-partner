@@ -102,15 +102,28 @@ skill makes it a mandate. Every loop ships with **all three**:
 
 1. **A deterministic done-condition** — the test passes, the schema validates, the score
    clears the threshold. Not "the model says it's done" alone.
-2. **An iteration/turn cap** — a hard maximum, chosen deliberately, alerting when hit (a loop
+2. **A turn cap and a time cap** — hard maxima, chosen deliberately, alerting when hit (a loop
    that regularly hits its cap is a design smell, not a config to raise silently).
 3. **A token/cost budget** — per run and per tenant, metered where the money is counted
    (`usage_events` — `observability-and-incident-response.md`), with a per-tenant spend alert.
    Cost is a security property here, not an optimization.
 
-Add a **kill-switch** for any loop that acts on the world (`resilience-engineering.md`) —
-flippable without a deploy — and fail *closed* on verifier errors: a loop that can't verify
-must stop, not shrug and continue (SKILL.md *Reliability for Automation*).
+Add a **kill switch** for any loop that acts on the world (`resilience-engineering.md`),
+flippable without a deploy, **with levels**. Level one stops anything that writes outward:
+messages, comments, issues, PRs, payments, deploys. The loop may still read and draft. Level
+two stops everything. Prove each level red first: flip it, then watch the next outward write
+get refused. And fail *closed* on verifier errors: a loop that can't verify must stop, not
+shrug and continue (SKILL.md *Reliability for Automation*).
+
+**Exhaustion is its own outcome.** A loop that hits any budget (turns, time or cost) ends with
+the status `exhausted`, distinct from `done` and from `failed`. An `exhausted` run is never
+retried automatically: a restart with a fresh context is the same unbounded loop with the
+budget doubled. Surface the run to a human. Any salvaged partial work is labeled
+**unreviewed** (a draft PR, a note tagged `unreviewed`) and is never merged, sent or published
+by the loop itself. The same three controls (a leveled kill switch, a budget, the `exhausted`
+outcome) apply to every unattended job, scheduled agent and cron script alike, and every such
+job also declares its expected effect before it runs (`logging-and-monitoring.md`,
+*Monitoring & alerting for unattended automation*).
 
 ## 6. Evals — the outer loop
 

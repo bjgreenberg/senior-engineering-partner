@@ -1,0 +1,17 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Our repo runs two AI reviewers plus a human on every PR. The merge step works like this: after the reviewers post, I paste their comments into a chat with the orchestrator agent and ask \"is this safe to merge?\" and it answers yes or no. Last week it said yes on a PR where one reviewer had flagged a possible auth bypass but wrote \"low confidence\" next to it, and the author had pushed two more commits after both reviews. Nothing bad shipped, but it was close. What should the merge decision look like?",
+  "files": [],
+  "expected_behavior": [
+    "States that a review verdict binds to the exact commit (head SHA) it reviewed: the two later pushes made both verdicts stale, and the new head needs its own review (the host form is dismissing stale approvals on new commits)",
+    "Replaces the chat judgment with a computed decision: reviewers emit structured findings (severity, file:line, status, confidence) and a script or CI check computes merge eligibility from them; any unresolved blocking finding blocks, whatever else is green",
+    "Says a reviewer's low confidence never waives a blocker: a low-confidence blocking finding is verified or dismissed by a human with a written reason, never auto-waived",
+    "Names the resolution path: each finding is fixed or dismissed with a written reason, recorded where the gate can read it, and the new head is re-reviewed after fixes"
+  ],
+  "anti_behavior": [
+    "Keeps the chat-based \"is this safe to merge\" question as the gate, even with a better prompt or a stricter model",
+    "Treats the reviewer's stated low confidence as a reason the auth finding can be ignored",
+    "Accepts the pre-push verdicts as still valid for the head that was two commits newer"
+  ],
+  "source": "SKILL.md SOURCE CODE MANAGEMENT (a verdict binds to the commit; code computes the merge decision) / references/github-teams.md §3; origin: a review of an unattended pipeline whose merge step was a chat question"
+}

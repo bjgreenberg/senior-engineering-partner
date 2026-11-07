@@ -1,6 +1,6 @@
 # senior-engineering-partner
 
-Last updated: 2026-11-05 02:59 PM CST
+Last updated: 2026-11-06 07:00 PM CST
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/bjgreenberg/senior-engineering-partner?sort=semver&label=release)](https://github.com/bjgreenberg/senior-engineering-partner/releases)
@@ -61,7 +61,8 @@ environment profile. Three ideas run through everything:
 
 - **Phase-aware rigor, with a security floor that never moves.** Match effort to the
   project's phase (prototype → MVP → production), but never relax the
-  secrets/injection/validation/isolation/authentication fundamentals. *Cheap ≠ insecure.*
+  secrets/injection/validation/isolation/authentication fundamentals. *Cheap ≠ insecure.* Every
+  floor rule names the gate, hook or check that enforces it; `skill-lint` fails one that does not.
 - **Deterministic-first, anti-hallucination discipline.** Verify before asserting (claims
   about the environment come from a tool run *this turn*), never invent flags/paths/APIs,
   and mechanize anything checkable (counting, parsing, regex, transforms) in a script
@@ -257,7 +258,7 @@ support directories:
   call), `run-evals.py` (the eval-suite runner — below), `eval-guard.py` (the
   substantive-SKILL.md-change-needs-an-eval gate), `curate-baseline.py` (slims a sweep
   into a committable baseline), `skill-lint.py` (name/description/word-budget/
-  reference-integrity), and `self-review.md` (the verify-before-done checklist).
+  reference-integrity/floor-twins), and `self-review.md` (the verify-before-done checklist).
   Pin `render-diagrams.sh`'s `MMDC_IMAGE` to a digest before relying on it.
 - **`evals/`** — a regression suite. Each `scenarios/*.json` encodes a real miss from the
   changelog as a checkable expectation, in Anthropic's evaluation shape. `evals/README.md`

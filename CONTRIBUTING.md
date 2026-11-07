@@ -102,6 +102,14 @@ A load-bearing rule also earns an **eval** (workflow step 7) — the executable 
 falsifiability: if you can't write a scenario that fails without the rule and passes with it, the rule
 may not be checkable enough yet.
 
+**A floor rule also names its deterministic twin.** The floor list in `SKILL.md` (*Project Phase &
+Rigor Ladder*) sits between `<!-- floor-twins:begin -->` and `<!-- floor-twins:end -->`. Rules are
+separated by `;`, and every rule ends with `(twin: …)` naming, in backticks, the gate, hook, deny rule
+or CI check that enforces it. `scripts/skill-lint.py` fails when a floor rule has no twin, or when the
+twin is a placeholder with no named mechanism, so a floor rule cannot be stated without saying what
+enforces it. The rules that cannot have exceptions are the ones to enforce by mechanism; if a line
+keeps getting more emphasis and is still missed, that is the sign it belongs in a hook.
+
 ## How your PR gets reviewed and merged
 
 - **A maintainer reviews every contributor PR before it merges** — read like a code review, with

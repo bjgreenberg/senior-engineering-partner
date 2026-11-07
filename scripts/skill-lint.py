@@ -28,6 +28,13 @@ AI tools"):
      .md) is NAMED somewhere in the README — the catalogue/prose must not silently lag
      the tree (the 2026-08-08 docs audit found two references and four scripts missing;
      this is that audit's LOW-11 "mechanize it", the same move that created check 5).
+  8. Floor rules name their deterministic twin. A body that states a floor (the word
+     "floor" appears) carries the floor list between `<!-- floor-twins:begin -->` and
+     `<!-- floor-twins:end -->`; the list is rules separated by `;` (outside parentheses),
+     and every rule ends with `(twin: ...)` naming, in at least one backtick code span, the
+     gate, hook, deny rule or CI check that enforces it. A placeholder twin (`none`, `tbd`,
+     `manual`, `review`, ...) fails. A floor rule a gate cannot see is a wish, not a floor;
+     this check is how the skill holds itself to its own enforce-the-floor rule.
 
 Exit 0 = all checks pass (warnings allowed). Exit 1 = any check failed.
 Usage: scripts/skill-lint.py [path-to-SKILL.md]
@@ -52,6 +59,69 @@ CORE_WORD_WARN = 12_000
 # CI), and locally present but not required to be named — exempt from check 5 both ways.
 PRIVATE_REFS = {"my-environment.md"}
 REF_LINK_RE = re.compile(r"references/([A-Za-z0-9._-]+\.md)")
+# Check 8 — the floor list and its twins. The markers delimit the list; FLOOR_WORD_RE decides
+# whether a body states a floor at all (a fixture skill with no floor is exempt, the real
+# core cannot drop the list without dropping every mention of the floor).
+FLOOR_BEGIN = "<!-- floor-twins:begin -->"
+FLOOR_END = "<!-- floor-twins:end -->"
+FLOOR_WORD_RE = re.compile(r"\bfloor\b", re.IGNORECASE)
+TWIN_RE = re.compile(r"\(twin:\s*(.*)\)\s*\.?\s*$", re.DOTALL)
+CODE_SPAN_RE = re.compile(r"`[^`]+`")
+TWIN_PLACEHOLDERS = {"none", "tbd", "todo", "n/a", "na", "manual", "review", "judgment", "-", "—"}
+
+
+def split_floor_rules(block: str) -> list[str]:
+    """Split the floor list into rules at `;` outside parentheses (a twin may hold a `;`)."""
+    rules: list[str] = []
+    depth = 0
+    current: list[str] = []
+    for ch in block:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth = max(0, depth - 1)
+        if ch == ";" and depth == 0:
+            rules.append("".join(current))
+            current = []
+        else:
+            current.append(ch)
+    rules.append("".join(current))
+    return [r.strip().rstrip(".").strip() for r in rules if r.strip().rstrip(".").strip()]
+
+
+def check_floor_twins(body: str) -> tuple[list[str], int]:
+    """Return (check-8 failures, floor rules counted) for a SKILL.md body; [] = pass or exempt."""
+    has_begin, has_end = FLOOR_BEGIN in body, FLOOR_END in body
+    if not has_begin and not has_end:
+        if FLOOR_WORD_RE.search(body):
+            return [
+                (
+                    "SKILL.md states a floor but has no floor-twins list — wrap the floor rules in"
+                    f" `{FLOOR_BEGIN}` … `{FLOOR_END}` and give every rule a `(twin: …)` naming"
+                    " the gate, hook, deny rule or CI check that enforces it"
+                )
+            ], 0
+        return [], 0
+    if not (has_begin and has_end) or body.index(FLOOR_END) < body.index(FLOOR_BEGIN):
+        return ["floor-twins markers are unpaired or out of order"], 0
+    block = body[body.index(FLOOR_BEGIN) + len(FLOOR_BEGIN) : body.index(FLOOR_END)]
+    rules = split_floor_rules(block)
+    if not rules:
+        return ["the floor-twins list is empty — a stated floor has at least one rule"], 0
+    failures: list[str] = []
+    for rule in rules:
+        label = re.sub(r"\s+", " ", rule)[:60]
+        m = TWIN_RE.search(rule)
+        if not m:
+            failures.append(f"floor rule has no `(twin: …)`: {label!r}")
+            continue
+        twin = m.group(1).strip()
+        if twin.strip("`*_ ").lower() in TWIN_PLACEHOLDERS or not CODE_SPAN_RE.search(twin):
+            failures.append(
+                f"floor rule's twin names no mechanism (needs a backticked gate/hook/check,"
+                f" not a placeholder): {label!r}"
+            )
+    return failures, len(rules)
 
 
 def parse_frontmatter(text: str) -> dict[str, str] | None:
@@ -180,6 +250,10 @@ def main() -> int:
             f" budget {CORE_WORD_BUDGET}) — nearing the core budget"
         )
 
+    # Check 8 — every floor rule names its deterministic twin (see module docstring).
+    floor_failures, floor_rules = check_floor_twins(body)
+    failures.extend(floor_failures)
+
     for w in warnings:
         print(f"WARN: {w}", file=sys.stderr)
     if failures:
@@ -188,7 +262,8 @@ def main() -> int:
         return 1
     print(
         f"PASS: skill-lint — name OK, description {len(description)}/{DESCRIPTION_LIMIT} chars,"
-        f" body {words}/{CORE_WORD_BUDGET} words, {len(named - PRIVATE_REFS)} reference links OK"
+        f" body {words}/{CORE_WORD_BUDGET} words, {len(named - PRIVATE_REFS)} reference links OK,"
+        f" {floor_rules} floor rules twinned"
         + (f", {len(warnings)} warning(s)" if warnings else "")
     )
     return 0

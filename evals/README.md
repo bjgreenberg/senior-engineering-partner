@@ -1,6 +1,6 @@
 # Evals for senior-engineering-partner
 
-Last updated: 2026-08-13 11:24 PM CDT
+Last updated: 2026-11-06 07:07 PM CST
 
 A regression suite for the skill itself. Each scenario encodes a **real miss** the skill exists to
 prevent — most are drawn straight from the SKILL.md changelog — so the suite is the executable form of
@@ -247,10 +247,11 @@ the sandboxed harness and the record that closed the four v1.25.0 `Eval-waiver`s
 reference remains the 2026-07-28 run — same model, no bare re-sweep). The 2026-08-14
 amendment appended `launchd-descriptive-executable-name` (pass) per the coverage
 tripwire; details and the multi-cycle-assembly caveat in its `BASELINE.md`. **Newest
-increments** (disclosed one- and two-scenario additions onto that run, not re-sweeps):
-[`baselines/2026-09-14-fable/`](baselines/2026-09-14-fable/BASELINE.md) and
-[`baselines/2026-10-29-fable/`](baselines/2026-10-29-fable/BASELINE.md) — with-skill
-**39/28/0/0 on 67 scenarios**; a full re-sweep on the `--add-dir`-fixed harness is still due.
+increments** (disclosed one-, two- and four-scenario additions onto that run, not re-sweeps):
+[`baselines/2026-09-14-fable/`](baselines/2026-09-14-fable/BASELINE.md),
+[`baselines/2026-10-29-fable/`](baselines/2026-10-29-fable/BASELINE.md) and
+[`baselines/2026-11-06-fable/`](baselines/2026-11-06-fable/BASELINE.md) — with-skill
+**41/30/0/0 on 71 scenarios**; a full re-sweep on the `--add-dir`-fixed harness is still due.
 **Prior (harness v2, 56-scenario suite, recorded 2026-07-27/28):**
 [`baselines/2026-07-27-opus/`](baselines/2026-07-27-opus/BASELINE.md) — bare 15/28/13/0 vs
 with-skill **42/13/1/0**;
