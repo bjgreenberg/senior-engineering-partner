@@ -215,6 +215,15 @@ printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint FAILS a twin that names no mechanism (no backticked gate, hook or check)" 1 "$rc"
 
+# A placeholder in backticks with prose around it is still a placeholder (codex-review P2 on
+# this change: `tbd` satisfied the code-span test while the whole-twin text dodged the
+# placeholder set; proven red on the unpatched linter first).
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries (twin: `tbd` pending implementation).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a backticked placeholder twin wrapped in prose" 1 "$rc"
+
 # shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
 printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check; push protection); validate inputs at trust boundaries (twin: `semgrep` plus a malformed-input test).\n<!-- floor-twins:end -->\n' \
   > "$floordir/SKILL.md"

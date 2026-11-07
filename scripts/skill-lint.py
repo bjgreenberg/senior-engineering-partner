@@ -32,8 +32,8 @@ AI tools"):
      "floor" appears) carries the floor list between `<!-- floor-twins:begin -->` and
      `<!-- floor-twins:end -->`; the list is rules separated by `;` (outside parentheses),
      and every rule ends with `(twin: ...)` naming, in at least one backtick code span, the
-     gate, hook, deny rule or CI check that enforces it. A placeholder twin (`none`, `tbd`,
-     `manual`, `review`, ...) fails. A floor rule a gate cannot see is a wish, not a floor;
+     gate, hook, deny rule or CI check that enforces it. A placeholder (`none`, `tbd`,
+     `manual`, `review`, ...) fails, in backticks or not, whatever prose surrounds it. A floor rule a gate cannot see is a wish, not a floor;
      this check is how the skill holds itself to its own enforce-the-floor rule.
 
 Exit 0 = all checks pass (warnings allowed). Exit 1 = any check failed.
@@ -116,7 +116,10 @@ def check_floor_twins(body: str) -> tuple[list[str], int]:
             failures.append(f"floor rule has no `(twin: …)`: {label!r}")
             continue
         twin = m.group(1).strip()
-        if twin.strip("`*_ ").lower() in TWIN_PLACEHOLDERS or not CODE_SPAN_RE.search(twin):
+        # The mechanism is the backticked name; a placeholder in backticks (`tbd`) is still a
+        # placeholder, however much prose surrounds it (a second-family review caught this).
+        names = [c.strip("` ").lower() for c in CODE_SPAN_RE.findall(twin)]
+        if not any(n and n not in TWIN_PLACEHOLDERS for n in names):
             failures.append(
                 f"floor rule's twin names no mechanism (needs a backticked gate/hook/check,"
                 f" not a placeholder): {label!r}"
