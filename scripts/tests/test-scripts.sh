@@ -246,6 +246,15 @@ printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint FAILS a twin whose only backticked name is digits" 1 "$rc"
 
+# The twin is the FINAL balanced parenthetical only: a greedy regex captured through later prose,
+# so a placeholder twin borrowed a mechanism named after it (codex-review P2, second run; proven
+# red on the unpatched linter first).
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` plus push protection); validate inputs at trust boundaries (twin: `tbd`) (formerly `semgrep`).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a placeholder twin followed by prose that names a mechanism" 1 "$rc"
+
 # The rule-count ratchet applies to the real repo shape (a README beside SKILL.md): a two-rule
 # list there means floor rules were dropped or merged. Fixture skills without a README stay exempt
 # (the PASS case above).

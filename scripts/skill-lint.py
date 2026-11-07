@@ -76,7 +76,6 @@ REF_LINK_RE = re.compile(r"references/([A-Za-z0-9._-]+\.md)")
 FLOOR_BEGIN = "<!-- floor-twins:begin -->"
 FLOOR_END = "<!-- floor-twins:end -->"
 FLOOR_WORD_RE = re.compile(r"\bfloor\b", re.IGNORECASE)
-TWIN_RE = re.compile(r"\(twin:\s*(.*)\)\s*\.?\s*$", re.DOTALL)
 CODE_SPAN_RE = re.compile(r"`[^`]+`")
 TWIN_PLACEHOLDERS = {"none", "tbd", "todo", "n/a", "na", "manual", "review", "judgment", "-", "—"}
 PLACEHOLDER_PREFIXES = ("tbd", "todo", "manual")
@@ -110,6 +109,28 @@ def split_floor_rules(block: str) -> tuple[list[str], str | None]:
     if depth != 0:
         return [], f"{depth} unclosed `(` in the floor-twins list (an open paren swallows the rules after it)"
     return [r.strip().rstrip(".").strip() for r in rules if r.strip().rstrip(".").strip()], None
+
+
+def trailing_twin(rule: str) -> str | None:
+    """Return the text of the `(twin: ...)` group that ENDS the rule, or None.
+
+    Only the final balanced parenthetical counts, found by matching parens backwards from the
+    rule's last `)`: a greedy regex captured through later prose, so `(twin: `tbd`) (formerly
+    `semgrep`)` borrowed `semgrep` as its mechanism (a second-family review caught this).
+    """
+    rule = rule.rstrip().rstrip(".").rstrip()
+    if not rule.endswith(")"):
+        return None
+    depth = 0
+    for i in range(len(rule) - 1, -1, -1):
+        if rule[i] == ")":
+            depth += 1
+        elif rule[i] == "(":
+            depth -= 1
+            if depth == 0:
+                inner = rule[i + 1 : -1].strip()
+                return inner[len("twin:") :].strip() if inner.lower().startswith("twin:") else None
+    return None
 
 
 def is_placeholder(name: str) -> bool:
@@ -148,11 +169,10 @@ def check_floor_twins(body: str, real_repo_shape: bool) -> tuple[list[str], int]
         )
     for rule in rules:
         label = re.sub(r"\s+", " ", rule)[:60]
-        m = TWIN_RE.search(rule)
-        if not m:
-            failures.append(f"floor rule has no `(twin: …)`: {label!r}")
+        twin = trailing_twin(rule)
+        if twin is None:
+            failures.append(f"floor rule does not end with `(twin: …)`: {label!r}")
             continue
-        twin = m.group(1).strip()
         # The mechanism is the backticked name; a placeholder in backticks (`tbd`) is still a
         # placeholder, however much prose surrounds it (a second-family review caught this).
         names = CODE_SPAN_RE.findall(twin)
