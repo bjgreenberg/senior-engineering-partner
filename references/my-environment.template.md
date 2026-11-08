@@ -61,6 +61,8 @@ The concrete setup behind `SKILL.md` *Source Code Management*.
   unattended-automation exemption.
 - **Push/fetch transport:** `<e.g. per-repo deploy keys at ~/.ssh/deploy_keys/<owner>__<repo>,
   IdentitiesOnly+IdentityAgent=none; or the agent default>`
+  The symptom that this binding exists to prevent: an agent-held key for another repo wins the
+  SSH auth and the push fails with a silent `ERROR: Repository not found`; record the fix you use.
 - **Merge method:** `<e.g. squash, never rebase>` and approvals policy.
 - **Branch protection / PR-flow:** `<your default, and any documented single-writer exemptions>`
 - **Where house standards are written down:** `<e.g. a team handbook repo>`

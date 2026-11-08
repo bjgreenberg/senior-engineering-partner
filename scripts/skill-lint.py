@@ -28,6 +28,29 @@ AI tools"):
      .md) is NAMED somewhere in the README — the catalogue/prose must not silently lag
      the tree (the 2026-08-08 docs audit found two references and four scripts missing;
      this is that audit's LOW-11 "mechanize it", the same move that created check 5).
+  8. Floor rules name their deterministic twin. A body that states a floor (the word
+     "floor" appears) carries the floor list between `<!-- floor-twins:begin -->` and
+     `<!-- floor-twins:end -->`; the list is rules separated by `;` (outside parentheses),
+     and every rule ends with `(twin: ...)` naming, in at least one backtick code span, the
+     gate, hook, deny rule or CI check that enforces it. A placeholder (`none`, `tbd`,
+     `manual`, `review`, ...) fails, in backticks or not, whatever prose surrounds it; so does
+     a digits-only name (`401`, `200`: a status, not a mechanism). Parentheses must balance:
+     a `)` at depth 0 or an unclosed `(` fails, because an unbalanced paren would otherwise
+     swallow the following rules into one (a second-family review planted `(see below` and
+     lost two twins to a PASS). When a README.md sits beside SKILL.md (the real repo shape,
+     as in check 7) the list must hold at least FLOOR_MIN_RULES rules; a fixture skill with no
+     README is exempt from the minimum, by design. The minimum is a RATCHET, like the
+     word budget, raised when a floor rule is added and never lowered without a recorded
+     maintainer decision. Known limits, recorded rather than tightened: a backticked word
+     that is not a mechanism (`deny`, `manual-review`) passes; a placeholder with an invisible
+     character INSIDE it (`t<U+200B>bd`) or a Unicode confusable letter passes (the edges are
+     trimmed, the interior is not); two rules joined by a comma read as one rule; a floor rule
+     stated outside the markers is unseen. The check proves
+     a mechanism is NAMED, not that it exists or runs; that proof belongs to the project that
+     installs the twin, red first on a planted violation. The fixture tests in scripts/tests/
+     prove only this check: that it fails on a missing, placeholder or swallowed twin.
+     A floor rule a gate cannot see is a wish, not a floor; this check is how the skill
+     holds itself to its own enforce-the-floor rule.
 
 Exit 0 = all checks pass (warnings allowed). Exit 1 = any check failed.
 Usage: scripts/skill-lint.py [path-to-SKILL.md]
@@ -52,6 +75,125 @@ CORE_WORD_WARN = 12_000
 # CI), and locally present but not required to be named — exempt from check 5 both ways.
 PRIVATE_REFS = {"my-environment.md"}
 REF_LINK_RE = re.compile(r"references/([A-Za-z0-9._-]+\.md)")
+# Check 8 — the floor list and its twins. The markers delimit the list; FLOOR_WORD_RE decides
+# whether a body states a floor at all (a fixture skill with no floor is exempt, the real
+# core cannot drop the list without dropping every mention of the floor).
+FLOOR_BEGIN = "<!-- floor-twins:begin -->"
+FLOOR_END = "<!-- floor-twins:end -->"
+FLOOR_WORD_RE = re.compile(r"\bfloor\b", re.IGNORECASE)
+# A Markdown code span opens and closes on backtick runs of the SAME length (`x`, ``x``), so
+# ``tbd`` or ``todo`` is two spans, not the three the single-backtick pattern read (`tbd`, ` or `,
+# `todo`, with the prose passing as a mechanism — a review planted it). Group 2 is the content.
+CODE_SPAN_RE = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)", re.DOTALL)
+TWIN_PLACEHOLDERS = {"none", "tbd", "todo", "n/a", "na", "manual", "review", "judgment", "-", "—"}
+PLACEHOLDER_PREFIXES = ("tbd", "todo", "manual")
+# Ratchet: the real core carries this many floor rules; raise when one is added, never lower
+# without a recorded maintainer decision.
+FLOOR_MIN_RULES = 10
+
+
+def split_floor_rules(block: str) -> tuple[list[str], str | None]:
+    """Split the floor list into rules at `;` outside parentheses (a twin may hold a `;`).
+
+    Returns (rules, error); error names an unbalanced paren, which must fail the check
+    rather than silently merge the rules that follow it into one.
+    """
+    rules: list[str] = []
+    depth = 0
+    current: list[str] = []
+    for ch in block:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            if depth == 0:
+                return [], "a `)` with no matching `(` in the floor-twins list"
+            depth -= 1
+        if ch == ";" and depth == 0:
+            rules.append("".join(current))
+            current = []
+        else:
+            current.append(ch)
+    rules.append("".join(current))
+    if depth != 0:
+        return [], f"{depth} unclosed `(` in the floor-twins list (an open paren swallows the rules after it)"
+    return [r.strip().rstrip(".").strip() for r in rules if r.strip().rstrip(".").strip()], None
+
+
+def trailing_twin(rule: str) -> str | None:
+    """Return the text of the `(twin: ...)` group that ENDS the rule, or None.
+
+    Only the final balanced parenthetical counts, found by matching parens backwards from the
+    rule's last `)`: a greedy regex captured through later prose, so `(twin: `tbd`) (formerly
+    `semgrep`)` borrowed `semgrep` as its mechanism (a second-family review caught this).
+    """
+    rule = rule.rstrip().rstrip(".").rstrip()
+    if not rule.endswith(")"):
+        return None
+    depth = 0
+    for i in range(len(rule) - 1, -1, -1):
+        if rule[i] == ")":
+            depth += 1
+        elif rule[i] == "(":
+            depth -= 1
+            if depth == 0:
+                inner = rule[i + 1 : -1].strip()
+                return inner[len("twin:") :].strip() if inner.lower().startswith("twin:") else None
+    return None
+
+
+def is_placeholder(name: str) -> bool:
+    """A twin name that names no mechanism: a placeholder word, a prefix of one, or digits only."""
+    # Trim every non-word character at both ends, Unicode-aware: backticks, punctuation, ASCII
+    # and Unicode whitespace (NBSP, U+2007, U+202F) and zero-width characters (U+200B, U+FEFF)
+    # are all `\W` in a str pattern, so `\ntbd\n`, `<U+00A0>tbd<U+00A0>` and `<U+200B>tbd<U+200B>` are all `tbd`
+    # planted each in turn and each passed a per-character strip set).
+    n = re.sub(r"^[\W_]+|[\W_]+$", "", name).lower()
+    return not n or n in TWIN_PLACEHOLDERS or n.startswith(PLACEHOLDER_PREFIXES) or n.isdigit()
+
+
+def check_floor_twins(body: str, real_repo_shape: bool) -> tuple[list[str], int]:
+    """Return (check-8 failures, floor rules counted) for a SKILL.md body; [] = pass or exempt."""
+    has_begin, has_end = FLOOR_BEGIN in body, FLOOR_END in body
+    if not has_begin and not has_end:
+        if FLOOR_WORD_RE.search(body):
+            return [
+                (
+                    "SKILL.md states a floor but has no floor-twins list — wrap the floor rules in"
+                    f" `{FLOOR_BEGIN}` … `{FLOOR_END}` and give every rule a `(twin: …)` naming"
+                    " the gate, hook, deny rule or CI check that enforces it"
+                )
+            ], 0
+        return [], 0
+    if not (has_begin and has_end) or body.index(FLOOR_END) < body.index(FLOOR_BEGIN):
+        return ["floor-twins markers are unpaired or out of order"], 0
+    block = body[body.index(FLOOR_BEGIN) + len(FLOOR_BEGIN) : body.index(FLOOR_END)]
+    rules, err = split_floor_rules(block)
+    if err:
+        return [err], 0
+    if not rules:
+        return ["the floor-twins list is empty — a stated floor has at least one rule"], 0
+    failures: list[str] = []
+    if real_repo_shape and len(rules) < FLOOR_MIN_RULES:
+        failures.append(
+            f"the floor-twins list has {len(rules)} rules, below the FLOOR_MIN_RULES ratchet of"
+            f" {FLOOR_MIN_RULES} — a floor rule was dropped or merged; restore it (the ratchet"
+            " only moves up)"
+        )
+    for rule in rules:
+        label = re.sub(r"\s+", " ", rule)[:60]
+        twin = trailing_twin(rule)
+        if twin is None:
+            failures.append(f"floor rule does not end with `(twin: …)`: {label!r}")
+            continue
+        # The mechanism is the backticked name; a placeholder in backticks (`tbd`) is still a
+        # placeholder, however much prose surrounds it (a second-family review caught this).
+        names = [m.group(2) for m in CODE_SPAN_RE.finditer(twin)]
+        if not any(not is_placeholder(n) for n in names):
+            failures.append(
+                f"floor rule's twin names no mechanism (needs a backticked gate/hook/check,"
+                f" not a placeholder): {label!r}"
+            )
+    return failures, len(rules)
 
 
 def parse_frontmatter(text: str) -> dict[str, str] | None:
@@ -180,6 +322,10 @@ def main() -> int:
             f" budget {CORE_WORD_BUDGET}) — nearing the core budget"
         )
 
+    # Check 8 — every floor rule names its deterministic twin (see module docstring).
+    floor_failures, floor_rules = check_floor_twins(body, real_repo_shape=readme_path.is_file())
+    failures.extend(floor_failures)
+
     for w in warnings:
         print(f"WARN: {w}", file=sys.stderr)
     if failures:
@@ -188,7 +334,8 @@ def main() -> int:
         return 1
     print(
         f"PASS: skill-lint — name OK, description {len(description)}/{DESCRIPTION_LIMIT} chars,"
-        f" body {words}/{CORE_WORD_BUDGET} words, {len(named - PRIVATE_REFS)} reference links OK"
+        f" body {words}/{CORE_WORD_BUDGET} words, {len(named - PRIVATE_REFS)} reference links OK,"
+        f" {floor_rules} floor rules twinned"
         + (f", {len(warnings)} warning(s)" if warnings else "")
     )
     return 0

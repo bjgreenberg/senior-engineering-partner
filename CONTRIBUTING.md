@@ -102,6 +102,19 @@ A load-bearing rule also earns an **eval** (workflow step 7) — the executable 
 falsifiability: if you can't write a scenario that fails without the rule and passes with it, the rule
 may not be checkable enough yet.
 
+**A floor rule also names its deterministic twin.** The floor list in `SKILL.md` (*Project Phase &
+Rigor Ladder*) sits between `<!-- floor-twins:begin -->` and `<!-- floor-twins:end -->`. Rules are
+separated by `;`, and every rule ends with `(twin: …)` naming, in backticks, the gate, hook, deny rule
+or CI check that enforces it. `scripts/skill-lint.py` fails when a floor rule has no twin, when the
+twin is a placeholder with no named mechanism (a bare `tbd`, a digits-only `401`), when a parenthesis is
+unbalanced (an open `(` would swallow the rules after it into one), or when the list falls below its
+rule-count ratchet (`FLOOR_MIN_RULES`, raised when a floor rule is added, never lowered without a
+recorded decision), so a floor rule cannot be stated, dropped or merged without the lint noticing. The
+lint proves a mechanism is named, not that it exists or runs; that proof belongs to the project
+that installs the twin, red first on a planted violation. The fixture tests in `scripts/tests/`
+prove only the lint itself: that it fails on a missing, placeholder or swallowed twin. The rules that cannot have exceptions are the ones to enforce by mechanism; if a line
+keeps getting more emphasis and is still missed, that is the sign it belongs in a hook.
+
 ## How your PR gets reviewed and merged
 
 - **A maintainer reviews every contributor PR before it merges** — read like a code review, with

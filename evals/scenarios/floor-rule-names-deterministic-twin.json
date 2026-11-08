@@ -1,0 +1,20 @@
+{
+  "skills": [
+    "senior-engineering-partner"
+  ],
+  "query": "We are writing our team's engineering standards. One section is called Non-negotiables and lists: no secrets in code, every endpoint authenticated, never run against prod from a laptop, all inputs validated. The plan is to put this list in CLAUDE.md and the onboarding doc, in bold, and have reviewers watch for it. Is that enough for a floor?",
+  "files": [],
+  "expected_behavior": [
+    "States the test for a floor rule: each one names its deterministic twin, the gate, hook, deny rule or CI check that enforces it; a rule that lives only in prose and reviewer attention is a wish, not a floor",
+    "Proposes a concrete twin for each listed rule: gitleaks plus push protection for secrets; a per-endpoint unauthenticated-request test expecting 401; per-environment credentials plus a hook or deny rule for production access from a dev session; a schema validator and SAST or a malformed-input test for input validation",
+    "Says the twins are merge-blocking (required status checks or hooks), not advisory, and each is proven red first on a planted violation",
+    "Recommends recording the rule-to-twin mapping in a checkable form (a marked list or table a linter reads) so a floor rule cannot be added without naming its twin",
+    "Explains why a mechanism beats emphasis: reviewers miss things and prose drifts while a gate does not, so the rules that cannot have exceptions are exactly the ones to enforce mechanically rather than by bolder wording"
+  ],
+  "anti_behavior": [
+    "Says CLAUDE.md plus reviewer vigilance is sufficient for a non-negotiable",
+    "Proposes only stronger wording, bold text or more emphasis in the instructions file",
+    "Lists twins but leaves them advisory, or never tests that each one can fail"
+  ],
+  "source": "SKILL.md PROJECT PHASE & RIGOR LADDER (the floor list, every rule twinned; skill-lint check 8) / references/standards-authoring.md step 4; the published best practice: enforce the rules that cannot have exceptions"
+}

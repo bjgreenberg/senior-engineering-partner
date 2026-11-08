@@ -55,7 +55,11 @@ file the discovered-issues separately, with their go-ahead.
 **4. Classify floor-vs-overridable, then write + validate.**
 - **Floor (never overridable):** the absolute invariants — no hardcoded secrets, input validation at
   boundaries, injection prevention, environment isolation, authentication, tenant isolation. Word them
-  with **no exception clause**.
+  with **no exception clause**, and name each one's **deterministic twin**: the gate, hook, deny rule
+  or CI check that enforces it. A floor rule with no twin is unenforced prose; the rules that cannot
+  have exceptions are exactly the ones to enforce by mechanism, not by emphasis. SKILL.md's own floor
+  list is the worked example: every rule ends with `(twin: …)`, and `scripts/skill-lint.py` fails the
+  lint when one is missing.
 - **Overridable:** everything else — a tier-scaled or stylistic rule a documented ADR can waive *by
   naming it* (SKILL.md *DOCUMENTATION* → the ADR-override rule).
 - Give each rule a **stable id you never reuse or renumber** (gaps are fine — a retired rule's id stays

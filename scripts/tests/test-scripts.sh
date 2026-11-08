@@ -193,6 +193,130 @@ mkdir -p "$budgetdir"
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$budgetdir/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint FAILS a body over the core word budget" 1 "$rc"
 
+# Check 8 (floor rules name their deterministic twin) — red first on both failure shapes, then
+# green. A floor rule a gate cannot see is a wish; the linter is how the skill holds itself to
+# its own enforce-the-floor rule.
+floordir="$scratch/skill-fixture/floor-skill"
+mkdir -p "$floordir"
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor: no hardcoded secrets; validate inputs.\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a stated floor with no floor-twins list" 1 "$rc"
+
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries.\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a floor rule with no (twin: ...)" 1 "$rc"
+
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries (twin: manual review).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a twin that names no mechanism (no backticked gate, hook or check)" 1 "$rc"
+
+# A placeholder in backticks with prose around it is still a placeholder (codex-review P2 on
+# this change: `tbd` satisfied the code-span test while the whole-twin text dodged the
+# placeholder set; proven red on the unpatched linter first).
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries (twin: `tbd` pending implementation).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a backticked placeholder twin wrapped in prose" 1 "$rc"
+
+# A placeholder wrapped in whitespace inside the code span (`\ntbd\n`, `\ttbd\t`): the
+# normalization stripped only backticks, spaces and punctuation, so the newline-padded name
+# missed the placeholder set and passed as a mechanism (third-round codex finding; proven red
+# on the unpatched linter first).
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries (twin: `\ntbd\n`).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a placeholder twin padded with newlines inside its code span" 1 "$rc"
+
+# The same class, Unicode: a placeholder padded with non-breaking spaces (U+00A0, octal
+# \302\240) or zero-width spaces (U+200B, octal \342\200\213) inside the code span. The
+# ASCII-only strip set let both pass (fourth-round codex finding; proven red on the
+# unpatched linter first). The fix trims every non-word character at both ends.
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries (twin: `\302\240tbd\302\240`).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a placeholder twin padded with non-breaking spaces" 1 "$rc"
+
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries (twin: `\342\200\213tbd\342\200\213`).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a placeholder twin padded with zero-width spaces" 1 "$rc"
+
+# Double-backtick code spans: ``tbd`` or ``todo`` read by the single-backtick regex as the
+# spans `tbd`, ` or ` and `todo`, so the prose between them passed as a mechanism (fifth-round
+# codex finding; proven red on the unpatched linter first). Spans now open and close on
+# backtick runs of the same length, as Markdown reads them.
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries (twin: ``tbd`` or ``todo``).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS placeholder twins in double-backtick spans joined by prose" 1 "$rc"
+
+# And the double-backtick span naming a real mechanism must still PASS, so the fix does not
+# turn every ``name`` into a missing twin.
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: ``gitleaks`` as a required check); validate inputs at trust boundaries (twin: `semgrep`).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint PASSES a real mechanism named in a double-backtick span" 0 "$rc"
+
+# Parentheses must balance (a second-family review planted `(see below` in one rule, which
+# swallowed the next two rules and their missing twins into a PASS with "2 floor rules twinned";
+# proven red on the unpatched linter first). Both shapes: an unclosed `(` and a stray `)`.
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` plus push protection); validate inputs (see below; no injection; authentication on anything exposed (twin: `semgrep`).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS an unclosed ( that would swallow the following floor rules" 1 "$rc"
+
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets) (twin: `gitleaks` plus push protection); validate inputs (twin: `semgrep`).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a stray ) at depth 0 in the floor-twins list" 1 "$rc"
+
+# A digits-only name is a status, not a mechanism.
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` plus push protection); authentication on anything exposed (twin: every endpoint returns `401`).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a twin whose only backticked name is digits" 1 "$rc"
+
+# The twin is the FINAL balanced parenthetical only: a greedy regex captured through later prose,
+# so a placeholder twin borrowed a mechanism named after it (codex-review P2, second run; proven
+# red on the unpatched linter first).
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` plus push protection); validate inputs at trust boundaries (twin: `tbd`) (formerly `semgrep`).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a placeholder twin followed by prose that names a mechanism" 1 "$rc"
+
+# The rule-count ratchet applies to the real repo shape (a README beside SKILL.md): a two-rule
+# list there means floor rules were dropped or merged. Fixture skills without a README stay exempt
+# (the PASS case above).
+fewdir="$scratch/skill-fixture/few-floor-skill"
+mkdir -p "$fewdir"
+printf '# README\n' > "$fewdir/README.md"
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: few-floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` plus push protection); validate inputs (twin: `semgrep`).\n<!-- floor-twins:end -->\n' \
+  > "$fewdir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$fewdir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a real-shape skill whose floor list is below the FLOOR_MIN_RULES ratchet" 1 "$rc"
+
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check; push protection); validate inputs at trust boundaries (twin: `semgrep` plus a malformed-input test).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint PASSES when every floor rule ends with a backticked twin (a ; inside the twin is fine)" 0 "$rc"
+
 # --- eval-guard.py fixtures ------------------------------------------------------------------
 # A scratch git repo: base commit, then per-case head commits. The gate must FAIL a bare rule
 # change, and PASS each of its three documented outs (rides-with-eval, metadata-only, waiver).

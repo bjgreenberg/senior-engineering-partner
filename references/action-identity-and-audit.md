@@ -44,7 +44,7 @@ Ask these of the real system and write the answers in a table; the answers are u
 
 A log line is a diary. A refused action is a control. Put enforcement at every point that can refuse:
 
-- **Host rulesets:** signed commits required; required checks; a required review from the human on pull requests authored by the agent identity. (An author cannot approve their own pull request on most hosts — verify on a real PR — which is exactly why the agent needs its own identity.)
+- **Host rulesets:** signed commits required; required checks; a required review from the human on pull requests authored by the agent identity; stale approvals dismissed on every new push, because a verdict binds to the commit it reviewed (`github-teams.md` §3). (An author cannot approve their own pull request on most hosts — verify on a real PR — which is exactly why the agent needs its own identity.)
 - **A pre-tool hook that refuses interactive use of automation credentials** (the deploy bot's token, the dashboard's read-only token) from an interactive session, and names the correct interactive credential instead. Prove it red first: run the forbidden command, see the refusal.
 - **A CI gate for agent commits:** a pull request whose agent-signed commits lack the session trailer fails. Local git hooks are bypassable; the gate lives in CI.
 

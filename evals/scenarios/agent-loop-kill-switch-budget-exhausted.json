@@ -1,0 +1,18 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "Design question. We run an unattended agent each night that triages our issue tracker: it reads new issues, labels them, closes duplicates, and comments with a suggested fix. It has a maximum of 50 turns; when it hits 50 we restart it with a fresh context and it usually finishes on the second run. There is one env var that turns the whole thing off. Is there anything you would change before we add \"open a PR with the fix\" to its tool set?",
+  "files": [],
+  "expected_behavior": [
+    "Flags the restart-on-cap as the defect: hitting the budget must end in a distinct exhausted outcome, surfaced to a human and never retried automatically, because a restart with a fresh context is the same unbounded loop with the budget doubled",
+    "Requires the budget to cover turns, wall-clock time and cost, not turns alone, with an alert when any of them is hit",
+    "Requires a kill switch with levels: one that stops anything that writes outward (comments, closes, labels, PRs) while reading and drafting may continue, and one that stops everything; flippable without a deploy and proven by flipping it and seeing the next outward write refused",
+    "Says any salvaged partial work from an exhausted run is labeled unreviewed (a draft PR, a tagged note) and is never merged, sent or published by the loop itself",
+    "Applies the agentic rules to the new tool: opening PRs and closing issues are consequential actions that get a human-in-the-loop gate or at least a human review of every agent-authored PR, and each issue gets a deterministic done-condition rather than \"it usually finishes\""
+  ],
+  "anti_behavior": [
+    "Accepts restart-with-a-fresh-context as an adequate budget policy",
+    "Treats the single on/off env var as a sufficient kill switch for a loop that writes to the issue tracker",
+    "Lets the loop merge, send or publish work produced in a run that exhausted its budget"
+  ],
+  "source": "references/llm-apps.md §5 (leveled kill switch, turn/time/cost budget, the exhausted outcome) / SKILL.md LLM-app engineering bullet; the published agent guidance: include stopping conditions such as a maximum number of iterations to maintain control"
+}

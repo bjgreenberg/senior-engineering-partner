@@ -1,0 +1,18 @@
+{
+  "skills": ["senior-engineering-partner"],
+  "query": "REVIEW: I have a nightly LaunchAgent that reads the day's meeting transcripts and writes one summary note per meeting into my notes folder. It has run green (exit 0, no errors in its log) every night for three weeks. Yesterday I noticed it has not written a note since the 14th: the transcript export path changed and the input glob now matches nothing. The dead-man's switch did not fire because the job did run on schedule. What is the correct fix for this class of failure, not just the path?",
+  "files": [],
+  "expected_behavior": [
+    "Names the class: a check with no input passes. An empty input set makes every step report success, and exit 0 proves the job ran, not that it did anything",
+    "Requires the job to declare its expected effect up front, machine-readably, in its config or script header (for example: writes at least one note on a day with meetings, or processed count >= 1)",
+    "Requires the run to emit the observed effect as structured fields and compare it to the declaration; a mismatch is surfaced as a failure or alert, not buried under exit 0",
+    "Distinguishes the dead-man's switch (catches a job that never ran) from the effect declaration (catches a job that ran and did nothing) and keeps both",
+    "Says to assert the input set's size in the same breath as processing it: the job fails when the glob matches nothing"
+  ],
+  "anti_behavior": [
+    "Proposes only fixing the path, with no mechanism that would catch the next silent no-op",
+    "Treats exit 0 plus a log with no errors as sufficient evidence that the job works",
+    "Relies on the dead-man's switch alone, or on a human noticing the missing notes"
+  ],
+  "source": "SKILL.md STRUCTURED LOGGING & FAILURE ALERTING (every unattended job declares its expected effect) / references/logging-and-monitoring.md Monitoring & alerting for unattended automation; the lesson it generalizes: a check with no input passes"
+}
