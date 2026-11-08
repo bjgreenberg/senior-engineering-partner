@@ -1,7 +1,7 @@
 {
   "tally": {
-    "pass": 40,
-    "partial": 31,
+    "pass": 41,
+    "partial": 30,
     "fail": 0,
     "error": 0
   },
@@ -1392,54 +1392,54 @@
       "model": "fable",
       "runner": "claude",
       "judge_model": "opus",
-      "status": "partial",
+      "status": "pass",
       "expected": [
         {
           "behavior": "States the test for a floor rule: each one names its deterministic twin, the gate, hook, deny rule or CI check that enforces it; a rule that lives only in prose and reviewer attention is a wish, not a floor",
           "verdict": "pass",
-          "evidence": "\"Bold text in CLAUDE.md plus reviewer attention is a wish, not a floor... Each non-negotiable gets a deterministic twin: the gate, hook, or CI check\""
+          "evidence": "\"A bold list that reviewers watch for is a wish, not a floor... give each rule a deterministic twin: a gate, hook, or CI check that fails red on a violation\""
         },
         {
           "behavior": "Proposes a concrete twin for each listed rule: gitleaks plus push protection for secrets; a per-endpoint unauthenticated-request test expecting 401; per-environment credentials plus a hook or deny rule for production access from a dev session; a schema validator and SAST or a malformed-input test for input validation",
           "verdict": "pass",
-          "evidence": "The table names a twin for each rule: gitleaks plus push protection, a 401 contract test on every route, per-environment credentials plus a pre-tool hook, and semgrep plus a malformed-input test. It never mentions a schema validator."
+          "evidence": "Gives gitleaks plus push protection; a per-endpoint unauthenticated test asserting 401; per-environment credentials plus a pre-tool hook; semgrep/bandit, a malformed-input contract test and Pydantic/runtime schema"
         },
         {
           "behavior": "Says the twins are merge-blocking (required status checks or hooks), not advisory, and each is proven red first on a planted violation",
           "verdict": "pass",
-          "evidence": "\"fails the PR when the rule is violated\", \"required CI check\", \"prove each one red once by planting a violation before trusting it\""
+          "evidence": "\"Prove each one red first. Plant a violation...\"; \"Make them required status checks. A red-but-optional check still merges.\""
         },
         {
           "behavior": "Recommends recording the rule-to-twin mapping in a checkable form (a marked list or table a linter reads) so a floor rule cannot be added without naming its twin",
-          "verdict": "unclear",
-          "evidence": "It says \"Write the twin next to the rule\" and \"a floor list with a twin missing... is incomplete\". It gives the skill's own lint as an example, but never tells the user to lint their own doc."
+          "verdict": "pass",
+          "evidence": "\"recorded where a linter reads it\"; \"A rule with no named twin is the finding your own lint should flag.\""
         },
         {
           "behavior": "Explains why a mechanism beats emphasis: reviewers miss things and prose drifts while a gate does not, so the rules that cannot have exceptions are exactly the ones to enforce mechanically rather than by bolder wording",
           "verdict": "pass",
-          "evidence": "\"Reviewers are probabilistic\", \"Prose drifts from code\", \"rules that cannot have exceptions, so those are the ones to enforce by mechanism, not by emphasis\""
+          "evidence": "\"Humans skim, bots get told to skip things, and a rule only holds when a machine refuses the merge.\" Prose drift is not named explicitly, but the core reasoning is there."
         }
       ],
       "anti": [
         {
           "behavior": "Says CLAUDE.md plus reviewer vigilance is sufficient for a non-negotiable",
           "verdict": "clean",
-          "evidence": "It opens with \"No.\""
+          "evidence": "Opens with \"No.\""
         },
         {
           "behavior": "Proposes only stronger wording, bold text or more emphasis in the instructions file",
           "verdict": "clean",
-          "evidence": "It proposes mechanical gates."
+          "evidence": "Proposes mechanical gates throughout"
         },
         {
           "behavior": "Lists twins but leaves them advisory, or never tests that each one can fail",
           "verdict": "clean",
-          "evidence": "It makes the twins required checks and proves each one red first."
+          "evidence": "Makes them required checks and proves each one red first"
         }
       ],
-      "judge_reason": "The response correctly treats the floor as a set of mechanically enforced rules. Its twins are merge-blocking and proven red first. It only loosely recommends a lint-checkable rule-to-twin mapping for the user's own doc.",
-      "cost_usd": 1.8646985,
-      "duration_s": 48.0
+      "judge_reason": "The response rejects prose-only floors, gives a concrete merge-blocking twin for each rule, requires each twin to be proven red first, and records the rule-to-twin mapping where a linter can check it. Its unrelated .claude/settings.json deny-list file does not affect any checklist item.",
+      "cost_usd": 0.85424775,
+      "duration_s": 40.7
     },
     {
       "scenario": "frontend-testing-behavior-not-implementation",

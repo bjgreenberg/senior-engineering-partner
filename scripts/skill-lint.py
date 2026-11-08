@@ -38,7 +38,8 @@ AI tools"):
      a `)` at depth 0 or an unclosed `(` fails, because an unbalanced paren would otherwise
      swallow the following rules into one (a second-family review planted `(see below` and
      lost two twins to a PASS). When a README.md sits beside SKILL.md (the real repo shape,
-     as in check 7) the list must hold at least FLOOR_MIN_RULES rules: a RATCHET, like the
+     as in check 7) the list must hold at least FLOOR_MIN_RULES rules; a fixture skill with no
+     README is exempt from the minimum, by design. The minimum is a RATCHET, like the
      word budget, raised when a floor rule is added and never lowered without a recorded
      maintainer decision. Known limits, recorded rather than tightened: a backticked word
      that is not a mechanism (`deny`, `manual-review`) passes; two rules joined by a comma
