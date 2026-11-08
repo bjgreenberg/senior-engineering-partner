@@ -136,7 +136,8 @@ def trailing_twin(rule: str) -> str | None:
 
 def is_placeholder(name: str) -> bool:
     """A twin name that names no mechanism: a placeholder word, a prefix of one, or digits only."""
-    n = name.strip("` .:;,").lower()
+    # Strip all whitespace too: `\ntbd\n` is still `tbd` (a review planted it and it passed).
+    n = name.strip("` \t\r\n.:;,").lower()
     return not n or n in TWIN_PLACEHOLDERS or n.startswith(PLACEHOLDER_PREFIXES) or n.isdigit()
 
 

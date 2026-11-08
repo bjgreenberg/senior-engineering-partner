@@ -224,6 +224,16 @@ printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint FAILS a backticked placeholder twin wrapped in prose" 1 "$rc"
 
+# A placeholder wrapped in whitespace inside the code span (`\ntbd\n`, `\ttbd\t`): the
+# normalization stripped only backticks, spaces and punctuation, so the newline-padded name
+# missed the placeholder set and passed as a mechanism (third-round codex finding; proven red
+# on the unpatched linter first).
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries (twin: `\ntbd\n`).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a placeholder twin padded with newlines inside its code span" 1 "$rc"
+
 # Parentheses must balance (a second-family review planted `(see below` in one rule, which
 # swallowed the next two rules and their missing twins into a PASS with "2 floor rules twinned";
 # proven red on the unpatched linter first). Both shapes: an unclosed `(` and a stray `)`.
