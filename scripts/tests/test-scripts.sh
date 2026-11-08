@@ -234,6 +234,22 @@ printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint FAILS a placeholder twin padded with newlines inside its code span" 1 "$rc"
 
+# The same class, Unicode: a placeholder padded with non-breaking spaces (U+00A0, octal
+# \302\240) or zero-width spaces (U+200B, octal \342\200\213) inside the code span. The
+# ASCII-only strip set let both pass (fourth-round codex finding; proven red on the
+# unpatched linter first). The fix trims every non-word character at both ends.
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries (twin: `\302\240tbd\302\240`).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a placeholder twin padded with non-breaking spaces" 1 "$rc"
+
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries (twin: `\342\200\213tbd\342\200\213`).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS a placeholder twin padded with zero-width spaces" 1 "$rc"
+
 # Parentheses must balance (a second-family review planted `(see below` in one rule, which
 # swallowed the next two rules and their missing twins into a PASS with "2 floor rules twinned";
 # proven red on the unpatched linter first). Both shapes: an unclosed `(` and a stray `)`.

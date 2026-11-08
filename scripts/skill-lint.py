@@ -42,8 +42,10 @@ AI tools"):
      README is exempt from the minimum, by design. The minimum is a RATCHET, like the
      word budget, raised when a floor rule is added and never lowered without a recorded
      maintainer decision. Known limits, recorded rather than tightened: a backticked word
-     that is not a mechanism (`deny`, `manual-review`) passes; two rules joined by a comma
-     read as one rule; a floor rule stated outside the markers is unseen. The check proves
+     that is not a mechanism (`deny`, `manual-review`) passes; a placeholder with an invisible
+     character INSIDE it (`t<U+200B>bd`) or a Unicode confusable letter passes (the edges are
+     trimmed, the interior is not); two rules joined by a comma read as one rule; a floor rule
+     stated outside the markers is unseen. The check proves
      a mechanism is NAMED, not that it exists or runs; that proof is the fixture test's.
      A floor rule a gate cannot see is a wish, not a floor; this check is how the skill
      holds itself to its own enforce-the-floor rule.
@@ -136,8 +138,11 @@ def trailing_twin(rule: str) -> str | None:
 
 def is_placeholder(name: str) -> bool:
     """A twin name that names no mechanism: a placeholder word, a prefix of one, or digits only."""
-    # Strip all whitespace too: `\ntbd\n` is still `tbd` (a review planted it and it passed).
-    n = name.strip("` \t\r\n.:;,").lower()
+    # Trim every non-word character at both ends, Unicode-aware: backticks, punctuation, ASCII
+    # and Unicode whitespace (NBSP, U+2007, U+202F) and zero-width characters (U+200B, U+FEFF)
+    # are all `\W` in a str pattern, so `\ntbd\n`, `<U+00A0>tbd<U+00A0>` and `<U+200B>tbd<U+200B>` are all `tbd`
+    # planted each in turn and each passed a per-character strip set).
+    n = re.sub(r"^[\W_]+|[\W_]+$", "", name).lower()
     return not n or n in TWIN_PLACEHOLDERS or n.startswith(PLACEHOLDER_PREFIXES) or n.isdigit()
 
 
