@@ -46,7 +46,9 @@ AI tools"):
      character INSIDE it (`t<U+200B>bd`) or a Unicode confusable letter passes (the edges are
      trimmed, the interior is not); two rules joined by a comma read as one rule; a floor rule
      stated outside the markers is unseen. The check proves
-     a mechanism is NAMED, not that it exists or runs; that proof is the fixture test's.
+     a mechanism is NAMED, not that it exists or runs; that proof belongs to the project that
+     installs the twin, red first on a planted violation. The fixture tests in scripts/tests/
+     prove only this check: that it fails on a missing, placeholder or swallowed twin.
      A floor rule a gate cannot see is a wish, not a floor; this check is how the skill
      holds itself to its own enforce-the-floor rule.
 
