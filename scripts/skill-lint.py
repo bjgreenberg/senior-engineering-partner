@@ -79,7 +79,10 @@ REF_LINK_RE = re.compile(r"references/([A-Za-z0-9._-]+\.md)")
 FLOOR_BEGIN = "<!-- floor-twins:begin -->"
 FLOOR_END = "<!-- floor-twins:end -->"
 FLOOR_WORD_RE = re.compile(r"\bfloor\b", re.IGNORECASE)
-CODE_SPAN_RE = re.compile(r"`[^`]+`")
+# A Markdown code span opens and closes on backtick runs of the SAME length (`x`, ``x``), so
+# ``tbd`` or ``todo`` is two spans, not the three the single-backtick pattern read (`tbd`, ` or `,
+# `todo`, with the prose passing as a mechanism — a review planted it). Group 2 is the content.
+CODE_SPAN_RE = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)", re.DOTALL)
 TWIN_PLACEHOLDERS = {"none", "tbd", "todo", "n/a", "na", "manual", "review", "judgment", "-", "—"}
 PLACEHOLDER_PREFIXES = ("tbd", "todo", "manual")
 # Ratchet: the real core carries this many floor rules; raise when one is added, never lower
@@ -182,7 +185,7 @@ def check_floor_twins(body: str, real_repo_shape: bool) -> tuple[list[str], int]
             continue
         # The mechanism is the backticked name; a placeholder in backticks (`tbd`) is still a
         # placeholder, however much prose surrounds it (a second-family review caught this).
-        names = CODE_SPAN_RE.findall(twin)
+        names = [m.group(2) for m in CODE_SPAN_RE.finditer(twin)]
         if not any(not is_placeholder(n) for n in names):
             failures.append(
                 f"floor rule's twin names no mechanism (needs a backticked gate/hook/check,"

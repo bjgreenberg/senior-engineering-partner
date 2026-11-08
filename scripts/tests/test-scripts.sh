@@ -250,6 +250,24 @@ printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor
 rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
 check "skill-lint FAILS a placeholder twin padded with zero-width spaces" 1 "$rc"
 
+# Double-backtick code spans: ``tbd`` or ``todo`` read by the single-backtick regex as the
+# spans `tbd`, ` or ` and `todo`, so the prose between them passed as a mechanism (fifth-round
+# codex finding; proven red on the unpatched linter first). Spans now open and close on
+# backtick runs of the same length, as Markdown reads them.
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: `gitleaks` as a required check); validate inputs at trust boundaries (twin: ``tbd`` or ``todo``).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint FAILS placeholder twins in double-backtick spans joined by prose" 1 "$rc"
+
+# And the double-backtick span naming a real mechanism must still PASS, so the fix does not
+# turn every ``name`` into a missing twin.
+# shellcheck disable=SC2016  # the backticks are literal Markdown code spans in the fixture
+printf -- '---\nname: floor-skill\ndescription: "t"\n---\nThe floor:\n<!-- floor-twins:begin -->\nno hardcoded secrets (twin: ``gitleaks`` as a required check); validate inputs at trust boundaries (twin: `semgrep`).\n<!-- floor-twins:end -->\n' \
+  > "$floordir/SKILL.md"
+rc=0; python3 "$repo_root/scripts/skill-lint.py" "$floordir/SKILL.md" >/dev/null 2>&1 || rc=$?
+check "skill-lint PASSES a real mechanism named in a double-backtick span" 0 "$rc"
+
 # Parentheses must balance (a second-family review planted `(see below` in one rule, which
 # swallowed the next two rules and their missing twins into a PASS with "2 floor rules twinned";
 # proven red on the unpatched linter first). Both shapes: an unclosed `(` and a stray `)`.
